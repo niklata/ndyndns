@@ -52,10 +52,18 @@ wildcard
 Constructing the chroot:
 -----------------------
 
+This part of installation is the worst bit.  It's much easier if you are using
+a distro package, since all of this should be done for you.  If not, you'll
+have to muddle through with these directions.  There's a lot of variance
+between distributions, so these instructions are generalized.  They
+specifically work for Gentoo and Slackware systems, but might need minor
+modifications to suit your system.
+
 You'll need to copy over your libresolv/nss libraries into the chroot if you
 are using a glibc system.  On my amd64 system, the working chroot looks like:
 
-I would suggest hardlinking the files to save space, if possible.
+I would suggest hardlinking the files to save space, if possible.  Copies
+are also acceptable.  Symlinks outside the chroot will not work.
 
 .:
 dev  lib
@@ -68,24 +76,28 @@ null  random  urandom
 hosts  nsswitch.conf  resolv.conf
 
 ./lib:
-libnss_compat-2.3.5.so  libnss_files.so.2        libnss_nisplus.so.2
-libnss_compat.so.2      libnss_hesiod-2.3.5.so   libnss_nis.so.2
-libnss_dns-2.3.5.so     libnss_hesiod.so.2       libresolv-2.3.5.so
-libnss_dns.so.2         libnss_nis-2.3.5.so      libresolv.so.2
-libnss_files-2.3.5.so   libnss_nisplus-2.3.5.so
+libnss_compat-2.3.5.so*  libnss_files.so.2@        libnss_nisplus.so.2@
+libnss_compat.so.2@      libnss_hesiod-2.3.5.so*   libnss_nis.so.2@
+libnss_dns-2.3.5.so*     libnss_hesiod.so.2@       libresolv-2.3.5.so*
+libnss_dns.so.2@         libnss_nis-2.3.5.so*      libresolv.so.2@
+libnss_files-2.3.5.so*   libnss_nisplus-2.3.5.so*
 
 ./lib64:
-libnss_compat-2.3.5.so  libnss_files.so.2        libnss_nisplus.so.2
-libnss_compat.so.2      libnss_hesiod-2.3.5.so   libnss_nis.so.2
-libnss_dns-2.3.5.so     libnss_hesiod.so.2       libresolv-2.3.5.so
-libnss_dns.so.2         libnss_nis-2.3.5.so      libresolv.so.2
-libnss_files-2.3.5.so   libnss_nisplus-2.3.5.so
+libnss_compat-2.3.5.so*  libnss_files.so.2@        libnss_nisplus.so.2@
+libnss_compat.so.2@      libnss_hesiod-2.3.5.so*   libnss_nis.so.2@
+libnss_dns-2.3.5.so*     libnss_hesiod.so.2@       libresolv-2.3.5.so*
+libnss_dns.so.2@         libnss_nis-2.3.5.so*      libresolv.so.2@
+libnss_files-2.3.5.so*   libnss_nisplus-2.3.5.so*
+
+The symlinks (files ending with @) are linked to the matching .so files.  The
+.so files are hardlinks of my libraries (copies will also work).
 
 If you are using default paths (/var/lib/ndyndns) and user/group
 (dyndns/dyndns), then the following commands will set up correct permissions.
 
 find /var/lib/ndyndns -type d chmod 755 {} \;
-find /var/lib/ndyndns -type d chown root.root {} \;
+find /var/lib/ndyndns/lib chmod 755 {} \;
+find /var/lib/ndyndns/lib64 chmod 755 {} \;
 find /var/lib/ndyndns chmod 644 {} \;
 find /var/lib/ndyndns chown root.root {} \;
 chown dyndns.dyndns /var/lib/dyndns
