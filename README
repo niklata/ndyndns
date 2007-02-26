@@ -29,6 +29,9 @@ wildcard
 You'll need to copy over your libresolv/nss libraries into the chroot if you
 are using a glibc system.  The result ought to look something like:
 
+dev:
+null  random  urandom
+
 etc:
 hosts  nsswitch.conf  resolv.conf
 
@@ -40,6 +43,13 @@ libnss_dns.so.2         libnss_nis-2.3.2.so     libresolv.so.2
 libnss_files-2.3.2.so   libnss_nis.so.2
 
 I would suggest hardlinking the files to save space, if possible.
+
+Make sure that the chroot directory is owned by the dyndns user and that the
+dyndns user can perform read/writes to the directory.  All files in the
+directory should be owned by root, however.
+
+As an alternative, static-linking ndyndns will spare you from having to set
+up dynamic libraries in the chroot.
 
 Then all that remains is to invoke ndyndns:
 
