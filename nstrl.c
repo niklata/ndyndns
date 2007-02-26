@@ -1,5 +1,4 @@
 /* nstrl.c - strlcpy/strlcat implementation
-   Time-stamp: <2003-05-28 02:35:13 njk>
    
    (C) 2003 Nicholas J. Kain <njk@aerifal.cx>
 
@@ -22,26 +21,26 @@
 
 size_t strlcpy (char *dest, char *src, size_t size) 
 {
-   register char *d = dest, *s = src;
-   
-   for (; *s != '\0' && size > 0; size--, d++, s++)
-      *d = *s;
+	register unsigned int i = 0;
 
-   *d = '\0';
-   return (d - dest) + (s - src);   
+	if (size > 0) {
+		size--;
+		for (i=0; size > 0 && src[i] != '\0'; ++i, size--)
+			dest[i] = src[i];
+
+		dest[i] = '\0';
+	}
+	while (src[i++]);
+
+	return i;
 }
 
 size_t strlcat (char *dest, char *src, size_t size)
 {
-   register char *d = dest, *s = src;
-   
-   for (; size > 0 && *d != '\0'; size--, d++);
+	register char *d = dest;
 
-   for (; *s != '\0' && size > 0; size--, d++, s++)
-      *d = *s;
-
-   *d = '\0';
-   return (d - dest) + (s - src);
+	for (; size > 0 && *d != '\0'; size--, d++);
+	return (d - dest) + strlcpy(d, src, size);
 }
 
 #endif

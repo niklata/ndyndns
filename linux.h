@@ -1,5 +1,4 @@
 /* linux.h - Linux-specific functions include
- * Time-stamp: <2004-06-13 njk>
  *  
  * (C) 2004 Nicholas J. Kain <njk@aerifal.cx>
  *

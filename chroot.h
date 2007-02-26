@@ -1,5 +1,4 @@
 /* chroot.h - include file for chroot.c
-   Time-stamp: <2003-11-06 19:13:41 njk>
    
    (C) 2003 Nicholas J. Kain <njk@aerifal.cx>
 

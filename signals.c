@@ -1,5 +1,4 @@
 /* signals.c - abstracts signal handling
-   Time-stamp: <2004-01-27 njk>
    
    (C) 2004 Nicholas J. Kain <njk@aerifal.cx>
 

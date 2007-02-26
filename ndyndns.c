@@ -1,5 +1,4 @@
 /* ndyndns.c - dynamic dns update daemon
- * Time-stamp: <2005-06-29 njk>
  *  
  * (C) 2005-2007 Nicholas J. Kain <njk@aerifal.cx>
  *

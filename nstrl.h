@@ -1,5 +1,4 @@
 /* nstrl.h - header file for strlcpy/strlcat implementation
-   Time-stamp: <2003-05-28 02:34:47 njk>
    
    (C) 2003 Nicholas J. Kain <njk@aerifal.cx>
 
