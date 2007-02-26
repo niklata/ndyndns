@@ -366,9 +366,25 @@ out:
 	return ret;
 }
 
+static void do_populate(host_data_t **list, char *host)
+{
+	char *ip;
+
+	if (strlen(host)) {
+		ip = get_dnsip(host);
+		if (ip) {
+			log_line("adding: [%s] ip: [%s]\n", host, ip);
+			add_to_host_data_list(list, host, ip, get_dnsdate(host));
+		} else {
+			log_line("No ip found for [%s].  No updates will be done.", host);
+		}
+		free(ip);
+	}
+}
+
 static void populate_hostlist(host_data_t **list, char *hostname)
 {
-	char *left = hostname, *right = (char *)1, *t = NULL, *ip;
+	char *left = hostname, *right = (char *)1, *t = NULL;
 	size_t len;
 
 	if (!list || !left)
@@ -386,20 +402,11 @@ static void populate_hostlist(host_data_t **list, char *hostname)
 			t = xmalloc(len);
 			memset(t, '\0', len);
 			memcpy(t, left, len - 1);
-			if (strlen(t)) {
-				ip = get_dnsip(t);
-				log_line("adding: [%s] ip: [%s]\n", t, ip);
-				add_to_host_data_list(list, t, ip, get_dnsdate(t));
-				free(ip);
-			}
+			do_populate(list, t);
 			free(t);
 			left = right + 1;
 		} else {
-			ip = get_dnsip(left);
-			log_line("adding: [%s] ip: [%s]\n", left, ip);
-			add_to_host_data_list(list, left, ip,
-				 get_dnsdate(left));
-			free(ip);
+			do_populate(list, left);
 			break;
 		}
 	} while (1);
