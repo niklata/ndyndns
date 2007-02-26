@@ -514,11 +514,11 @@ int parse_config(char *file, dyndns_conf_t *dc)
 			dc->wildcard = WC_YES;
 			continue;
 		}
-		if (strstr(buf, "nobackmx")) {
+		if (strstr(buf, "primarymx")) {
 			dc->backmx = BMX_NO;
 			continue;
 		}
-		if (strstr(buf, "backmx")) {
+		if (strstr(buf, "backupmx")) {
 			dc->backmx = BMX_YES;
 			continue;
 		}

@@ -1,11 +1,20 @@
-ndyndns, Copyright (C)2005 Nicholas J. Kain < niklata @ n0spzaamz aerifal cx >
+ndyndns, Copyright (c) 2005-2007
+Nicholas J. Kain < njkain <at> gmail <dot> com >
 Licensed under GPL2.
 
-REQUIREMENTS:
+REQUIREMENTS
+============
+Linux-based system (2.6.x tested)
+gcc (3.3.5-4.1.2 tested), curl+libcurl (7.14.0+ tested)
 
-gcc (3.3.5 tested), curl+libcurl (7.14.0 tested)
+Note that it is quite possible to add support for non-Linux systems.  However,
+I don't have any such systems here, so patches would be welcome.  Please
+refer to linux.c and linux.h and duplicate the platform-specific functions
+defined there for your operating system.
 
-INSTALLING:
+
+INSTALLING
+==========
 
 make
 make install
@@ -55,12 +64,18 @@ Then all that remains is to invoke ndyndns:
 
 ndyndns -n -c /var/lib/ndyndns -f /etc/ndyndns.conf -i eth0 -u dyndns -g dyndns
 
+If you are having problems with DNS resolution, then it is quite likely that
+your chroot is not properly set up.  "Temporary error connecting to host:
+[Couldn't resolve host '...']." almost certainly indicates that your chroot is
+missing necessary libraries if your other programs are properly resolving DNS.
 
-Documentation is rather sparse.  If you're wondering about more configuration
-options and such, I suggest reading config.c.  It's not too hard to pick out
-the details that you'll need even if you're not proficient with C.
+Make certain that you have all the libnss_* and libresolv* libraries
+accessible and with proper permissions.  If you're running a 64-bit system,
+you will likely need the libraries from lib64 rather than lib.
 
-Given sufficient time, I should write better documentation.
+
+TROUBLESHOOTING
+===============
 
 Note that for certain classes of error, ndyndns will refuse to update a
 given hostname.  This condition will only affect one hostname if multiple
@@ -74,7 +89,12 @@ becomes outdated, corrupt, or whatever, just delete the files there.  However,
 it's not a good idea to unnecessarily remove these files, since they are
 what allow ndyndns to avoid frivolous updates between restarts and reboots.
 
+
+CONTACT
+=======
+
 ndyndns is completely compliant with dyndns.org's protocol specs and client
 recommendations, at least as far as I can tell.  If you find any problems,
 don't hesitate to contact me.
+
 

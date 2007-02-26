@@ -18,7 +18,9 @@ nstrl.o:
 log.o :
 
 install: ndyndns
-	-install -s -m 755 ndyndns /usr/sbin/ndyndns
+	-install -s -m 755 ndyndns /usr/local/sbin/ndyndns
+	-install -m 644 ndyndns.1.gz /usr/local/man/man1/ndyndns.1.gz
+	-install -m 644 ndyndns.conf.5.gz /usr/local/man/man5/ndyndns.conf.5.gz
 tags:
 	-ctags -f tags *.[ch]
 	-cscope -b
