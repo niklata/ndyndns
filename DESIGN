@@ -1,0 +1,60 @@
+flow graph
+
+1. parse ndyndns.conf
+2. chroot into <rundir>, drop root to <runuser>
+3. open a rw fd on dnsdate and dnsip
+	parse dnsdata to find previous state; if dnsdata does not exist, we
+	will query dns to find current ip
+
+MAINLOOP:
+4. if an update is required, continue, else sleep <interval> and goto MAINLOOP
+5. send update, check response: 
+	hard failure -> program exit
+	soft failure -> MAINLOOP
+	success -> update dnsdata and sync -> MAINLOOP
+
+tricky parts:
+
+querydns()             --- wrap gethostbyname()
+get_interface_ip()     --- wrap ioctl() SIOCGIFADDR
+
+REFRESH_INTERVAL = 28 days + error
+UPDATE_INTERVAL = 2m default
+
+
+We must track dnsdate and dnsip per-hostname.  This means that we need
+a linked list of structures:
+
+typedef struct {
+	char *host;
+	char *ip;
+	time_t date;
+	void *next;
+} host_data_t;
+
+
+A hashtable would scale better, but in practice, the list will be very
+short, so the overhead of hashing won't pay.
+
+
+
+<host>-dnsdate
+-------
+date
+
+<host>-dnsip
+-------
+ip
+
+ndyndns.conf
+------------
+
+username=
+password=
+hostname=<LIST: host1,host2,...,hostN>
+wildcard|nowildcard (default: NOCHG)
+mx=host (default: NOCHG)
+backmx|nobackmx (default: NOCHG)
+offline (default: NO)
+
+

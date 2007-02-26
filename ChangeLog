@@ -1,0 +1,20 @@
+20060802
+Fixed a possible NULL dereference on an interface that lacks an IP.
+
+20050721
+Minor code clarity fix.  Documentation updated to explain requirements
+for a proper chroot a bit more lucidly.
+
+20050701
+Replaced all malloc() with xmalloc().  Minor code rearrangement for
+readability purposes (no functional change).
+
+20050629
+Fixed minor memory leak.  Handle http/https errors intelligently.
+
+20050628
+First released version.
+
+20050627
+Development started.
+

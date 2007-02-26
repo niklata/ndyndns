@@ -1,0 +1,70 @@
+ndyndns, Copyright (C)2005 Nicholas J. Kain < niklata @ n0spzaamz aerifal cx >
+Licensed under GPL2.
+
+REQUIREMENTS:
+
+gcc (3.3.5 tested), curl+libcurl (7.14.0 tested)
+
+INSTALLING:
+
+make
+make install
+groupadd -g dyndns
+useradd -g dyndns dyndns
+mkdir /var/lib/ndyndns
+chown dyndns.dyndns /var/lib/ndyndns
+vim /etc/ndyndns.conf
+
+-----------------
+example config
+-----------------
+
+username=test
+password=test
+hostname=test.dyndns.org,test.ath.cx,test.dnsalias.net,test.dnsalias.org
+wildcard
+
+-----------------
+
+You'll need to copy over your libresolv/nss libraries into the chroot if you
+are using a glibc system.  The result ought to look something like:
+
+etc:
+hosts  nsswitch.conf  resolv.conf
+
+lib:
+libnss_compat-2.3.2.so  libnss_files.so.2       libnss_nisplus-2.3.2.so
+libnss_compat.so.2      libnss_hesiod-2.3.2.so  libnss_nisplus.so.2
+libnss_dns-2.3.2.so     libnss_hesiod.so.2      libresolv-2.3.2.so
+libnss_dns.so.2         libnss_nis-2.3.2.so     libresolv.so.2
+libnss_files-2.3.2.so   libnss_nis.so.2
+
+I would suggest hardlinking the files to save space, if possible.
+
+Then all that remains is to invoke ndyndns:
+
+ndyndns -n -c /var/lib/ndyndns -f /etc/ndyndns.conf -i eth0 -u dyndns -g dyndns
+
+
+Documentation is rather sparse.  If you're wondering about more configuration
+options and such, I suggest reading config.c.  It's not too hard to pick out
+the details that you'll need even if you're not proficient with C.
+
+Given sufficient time, I should write better documentation.
+
+Note that for certain classes of error, ndyndns will refuse to update a
+given hostname.  This condition will only affect one hostname if multiple
+hosts are present.  The error can be found by looking at
+<CHROOTDIR>/<HOST>-dnserr.  Once the problem has been corrected, it is
+only necessary to remove the corresponding <CHROOTDIR>/<HOST>-dnserr file
+to resume updates.
+
+ndyndns atomically keeps state information in the <CHROOTDIR>.  If it
+becomes outdated, corrupt, or whatever, just delete the files there.  However,
+it's not a good idea to unnecessarily remove these files, since they are
+what allow ndyndns to avoid frivolous updates between restarts and reboots.
+
+ndyndns is completely compliant with dyndns.org's protocol specs and client
+recommendations, at least as far as I can tell.  If you find any problems,
+don't hesitate to contact me.
+
