@@ -62,9 +62,6 @@ modifications to suit your system.
 You'll need to copy over your libresolv/nss libraries into the chroot if you
 are using a glibc system.  On my amd64 system, the working chroot looks like:
 
-I would suggest hardlinking the files to save space, if possible.  Copies
-are also acceptable.  Symlinks outside the chroot will not work.
-
 .:
 dev  lib
 etc  lib64
@@ -90,7 +87,8 @@ libnss_dns.so.2@         libnss_nis-2.3.5.so*      libresolv.so.2@
 libnss_files-2.3.5.so*   libnss_nisplus-2.3.5.so*
 
 The symlinks (files ending with @) are linked to the matching .so files.  The
-.so files are hardlinks of my libraries (copies will also work).
+.so files are hardlinks of my libraries (copies will also work).  Symlinks
+to files outside the chroot jail will not work.
 
 If you are using default paths (/var/lib/ndyndns) and user/group
 (dyndns/dyndns), then the following commands will set up correct permissions.
