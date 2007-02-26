@@ -13,29 +13,6 @@
 #include "nstrl.h"
 #include "chroot.h"
 
-void init_host_data(host_data_t *p)
-{
-	if (!p)
-		return;
-	p->host = NULL;
-	p->ip = NULL;
-	p->date = 0;
-	p->next = NULL;
-}
-
-void free_host_data(host_data_t *head)
-{
-	host_data_t *p = head, *q = NULL;
-
-	while (p != NULL) {
-		free(p->host);
-		free(p->ip);
-		q = p;
-		p = p->next;
-		free(q);
-	}
-}
-
 void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host)
 {
 	host_data_t *cur = conf->hostlist, *after = NULL, *p;
@@ -161,36 +138,6 @@ out:
 	free(item->host);
 	free(item->ip);
 	free(item);
-}
-
-char *get_hostip_from_list(host_data_t *list, char *host)
-{
-	host_data_t *t;
-
-	if (!list || !host)
-		return NULL;
-
-	for (t = list; t && strcmp(t->host, host); t = t->next);
-
-	if (!t)
-		return NULL; /* not found */
-
-	return t->ip;
-}
-
-time_t get_hostdate_from_list(host_data_t *list, char *host)
-{
-	host_data_t *t;
-
-	if (!list || !host)
-		return 0;
-
-	for (t = list; t && strcmp(t->host, host); t = t->next);
-
-	if (!t)
-		return 0; /* not found */
-
-	return t->date;
 }
 
 void modify_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip)

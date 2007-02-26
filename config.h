@@ -16,24 +16,24 @@ offline (default: NO)
 typedef enum {
 	WC_NOCHANGE,
 	WC_YES,
-	WC_NO,
+	WC_NO
 } wc_state;
 
 typedef enum {
 	BMX_NOCHANGE,
 	BMX_YES,
-	BMX_NO,
+	BMX_NO
 } backmx_state;
 
 typedef enum {
 	OFFLINE_NO,
-	OFFLINE_YES,
+	OFFLINE_YES
 } offline_state;
 
 typedef enum {
 	SYSTEM_DYNDNS,
 	SYSTEM_STATDNS,
-	SYSTEM_CUSTOMDNS,
+	SYSTEM_CUSTOMDNS
 } dyndns_system;
 
 typedef struct {
@@ -54,13 +54,7 @@ typedef struct {
 	dyndns_system system;
 } dyndns_conf_t;
 
-void init_host_data(host_data_t *p);
-void free_host_data(host_data_t *head);
 void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host);
-void print_host_data(host_data_t *item);
-void print_host_data_list(host_data_t *head);
-char *get_hostip_from_list(host_data_t *list, char *host);
-time_t get_hostdate_from_list(host_data_t *list, char *host);
 void modify_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip);
 void modify_hostdate_in_list(dyndns_conf_t *conf, char *host, time_t time);
 void init_dyndns_conf(dyndns_conf_t *t);

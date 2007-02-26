@@ -1,4 +1,4 @@
-CC = gcc -Wall -Wpointer-arith -Wstrict-prototypes
+CC = gcc -Wall -Wpointer-arith -Wstrict-prototypes -pedantic
 AR = ar
 objects = log.o nstrl.o util.o chroot.o pidfile.o signals.o strlist.o linux.o config.o ndyndns.o
 

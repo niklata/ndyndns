@@ -81,7 +81,7 @@ typedef enum {
 	RET_ABUSE,
 	RET_NUMHOST,
 	RET_DNSERR,
-	RET_911,
+	RET_911
 } return_codes;
 
 typedef struct {
@@ -451,7 +451,7 @@ static void update_ip(char *curip)
 	CURL *h;
 	CURLcode ret;
 	int len, runonce = 0;
-	char url[MAX_BUF]; // XXX: better to dynamically allocate here
+	char url[MAX_BUF]; /* XXX: better to dynamically allocate here */
 	char tbuf[32];
 	char unpwd[256];
 	char useragent[64];
