@@ -20,6 +20,5 @@
 
 void *xmalloc(size_t size);
 void null_crlf(char *data);
-void raw_copy(char *d, char *s, unsigned int l);
 #endif
 
