@@ -2,8 +2,10 @@ ndyndns, Copyright (c) 2005-2007
 Nicholas J. Kain < njkain <at> gmail <dot> com >
 Licensed under GPL2.
 
+
 REQUIREMENTS
 ============
+
 Linux-based system (2.6.x tested)
 gcc (3.3.5-4.1.2 tested), curl+libcurl (7.14.0+ tested)
 
@@ -11,6 +13,9 @@ Note that it is quite possible to add support for non-Linux systems.  However,
 I don't have any such systems here, so patches would be welcome.  Please
 refer to linux.c and linux.h and duplicate the platform-specific functions
 defined there for your operating system.
+
+It will also be necessary to update the Makefile to reflect the requirements
+for your libc to resolve dns names.
 
 
 INSTALLING
@@ -52,19 +57,12 @@ wildcard
 Constructing the chroot:
 -----------------------
 
-This part of installation is the worst bit.  It's much easier if you are using
-a distro package, since all of this should be done for you.  If not, you'll
-have to muddle through with these directions.  There's a lot of variance
-between distributions, so these instructions are generalized.  They
-specifically work for Gentoo and Slackware systems, but might need minor
-modifications to suit your system.
-
-You'll need to copy over your libresolv/nss libraries into the chroot if you
-are using a glibc system.  On my amd64 system, the working chroot looks like:
+The following files and devices should be created in your chroot directory
+(by default, /var/lib/ndyndns).  Either copies or hardlinks will work fine;
+avoid softlinks, since they won't resolve from within the chroot.
 
 .:
-dev  lib
-etc  lib64
+dev  etc
 
 ./dev:
 null  random  urandom
@@ -72,30 +70,10 @@ null  random  urandom
 ./etc:
 hosts  nsswitch.conf  resolv.conf
 
-./lib:
-libnss_compat-2.3.5.so*  libnss_files.so.2@        libnss_nisplus.so.2@
-libnss_compat.so.2@      libnss_hesiod-2.3.5.so*   libnss_nis.so.2@
-libnss_dns-2.3.5.so*     libnss_hesiod.so.2@       libresolv-2.3.5.so*
-libnss_dns.so.2@         libnss_nis-2.3.5.so*      libresolv.so.2@
-libnss_files-2.3.5.so*   libnss_nisplus-2.3.5.so*
-
-./lib64:
-libnss_compat-2.3.5.so*  libnss_files.so.2@        libnss_nisplus.so.2@
-libnss_compat.so.2@      libnss_hesiod-2.3.5.so*   libnss_nis.so.2@
-libnss_dns-2.3.5.so*     libnss_hesiod.so.2@       libresolv-2.3.5.so*
-libnss_dns.so.2@         libnss_nis-2.3.5.so*      libresolv.so.2@
-libnss_files-2.3.5.so*   libnss_nisplus-2.3.5.so*
-
-The symlinks (files ending with @) are linked to the matching .so files.  The
-.so files are hardlinks of my libraries (copies will also work).  Symlinks
-to files outside the chroot jail will not work.
-
 If you are using default paths (/var/lib/ndyndns) and user/group
 (dyndns/dyndns), then the following commands will set up correct permissions.
 
 find /var/lib/ndyndns -type d chmod 755 {} \;
-find /var/lib/ndyndns/lib chmod 755 {} \;
-find /var/lib/ndyndns/lib64 chmod 755 {} \;
 find /var/lib/ndyndns chmod 644 {} \;
 find /var/lib/ndyndns chown root.root {} \;
 chown dyndns.dyndns /var/lib/dyndns
@@ -104,21 +82,6 @@ chmod 700 /var/lib/dyndns
 Then all that remains is to invoke ndyndns:
 
 ndyndns -n -c /var/lib/ndyndns -f /etc/ndyndns.conf -i eth0 -u dyndns -g dyndns
-
-Problems:
---------
-
-If you are having problems with DNS resolution, then it is quite likely that
-your chroot is not properly set up.  "Temporary error connecting to host:
-[Couldn't resolve host '...']." almost certainly indicates that your chroot is
-missing necessary libraries if your other programs are properly resolving DNS.
-
-Make certain that you have all the libnss_* and libresolv* libraries accessible
-and with proper permissions.  They should be either hardlinks to your real
-libraries or copies.  Symlinks will not be accessible from the chroot.
-
-If you're running a 64-bit system, you will likely need the libraries from
-lib64 rather than lib.
 
 
 TROUBLESHOOTING

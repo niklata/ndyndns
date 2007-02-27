@@ -1,9 +1,10 @@
 CC = gcc -Wall -Wpointer-arith -Wstrict-prototypes -pedantic
 AR = ar
+dnsinc = -lnss_dns
 objects = log.o nstrl.o util.o chroot.o pidfile.o signals.o strlist.o linux.o config.o ndyndns.o
 
 ndyndns : $(objects)
-	$(CC) $(LDFLAGS) `curl-config --libs --cflags` -o ndyndns $(objects)
+	$(CC) $(LDFLAGS) $(dnsinc) `curl-config --libs --cflags` -o ndyndns $(objects)
 
 ndyndns.o : log.h nstrl.h util.h chroot.h pidfile.h signals.h strlist.h linux.h config.h
 	$(CC) $(CFLAGS) $(archflags) -c -o $@ ndyndns.c
