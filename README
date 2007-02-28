@@ -73,11 +73,11 @@ hosts  nsswitch.conf  resolv.conf
 If you are using default paths (/var/lib/ndyndns) and user/group
 (dyndns/dyndns), then the following commands will set up correct permissions.
 
-find /var/lib/ndyndns -type d chmod 755 {} \;
 find /var/lib/ndyndns chmod 644 {} \;
+find /var/lib/ndyndns -type d chmod 755 {} \;
+chmod 700 /var/lib/dyndns
 find /var/lib/ndyndns chown root.root {} \;
 chown dyndns.dyndns /var/lib/dyndns
-chmod 700 /var/lib/dyndns
 
 Then all that remains is to invoke ndyndns:
 
