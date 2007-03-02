@@ -1,4 +1,4 @@
-/* chroot.c - chroots ncron jobs
+/* chroot.c - chroots ndyndns jobs
    
    (C) 2003 Nicholas J. Kain <njk@aerifal.cx>
 
