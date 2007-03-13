@@ -1,6 +1,6 @@
 /* chroot.c - chroots ndyndns jobs
-   
-   (C) 2003 Nicholas J. Kain <njk@aerifal.cx>
+
+   (C) 2003-2007 Nicholas J. Kain <njk@aerifal.cx>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@
 #include "log.h"
 #include "nstrl.h"
 
-char chrootd[MAX_PATH_LENGTH] = "\0";
+static char chrootd[MAX_PATH_LENGTH] = "\0";
 static int chroot_modified;
 
 void update_chroot(char *path)
