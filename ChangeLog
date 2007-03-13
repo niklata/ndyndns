@@ -1,0 +1,71 @@
+changeset:   9:b87e5fb0c2a2
+tag:         tip
+user:        njk@darksword.kain.us
+date:        Tue Feb 27 15:17:13 2007 -0500
+summary:     Update makefile to link -lnss_dns.  This simplifies chroot construction
+
+changeset:   8:79bb8ae9cebc
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 18:57:41 2007 -0500
+summary:     Stripped out dead timestamps.
+
+changeset:   7:59ce1feda957
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 18:47:23 2007 -0500
+summary:     minor documentation fix
+
+changeset:   6:2a0f3363dede
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 18:43:24 2007 -0500
+summary:     Remove dead code.  Turn on -pedantic, fix minor useless warnings.
+
+changeset:   5:4934ded5d65e
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 16:24:24 2007 -0500
+summary:     Cleaned up error messages.
+
+changeset:   4:e9e43d5fbbb3
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 16:11:30 2007 -0500
+summary:     Documentation fixes.
+
+changeset:   3:28a283c6357b
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 15:58:24 2007 -0500
+summary:     Update documentation and version.
+
+changeset:   2:5b6aacda471b
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 15:44:13 2007 -0500
+summary:     Add man pages, update documentation and makefile.
+
+changeset:   1:f222e243e342
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 15:00:01 2007 -0500
+summary:     Fix makefile, update documentation
+
+changeset:   0:7dd62273cea6
+user:        njk@darksword.kain.us
+date:        Mon Feb 26 14:41:42 2007 -0500
+summary:     Initial commit.
+
+20060802
+Fixed a possible NULL dereference on an interface that lacks an IP.
+
+20050721
+Minor code clarity fix.  Documentation updated to explain requirements
+for a proper chroot a bit more lucidly.
+
+20050701
+Replaced all malloc() with xmalloc().  Minor code rearrangement for
+readability purposes (no functional change).
+
+20050629
+Fixed minor memory leak.  Handle http/https errors intelligently.
+
+20050628
+First released version.
+
+20050627
+Development started.
+
