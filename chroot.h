@@ -1,6 +1,6 @@
 /* chroot.h - include file for chroot.c
-   
-   (C) 2003 Nicholas J. Kain <njk@aerifal.cx>
+
+   (C) 2003-2007 Nicholas J. Kain <njk@aerifal.cx>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -22,4 +22,6 @@ char *get_chroot(void);
 int chroot_exists(void);
 void wipe_chroot(void);
 void imprison(char *path);
+void drop_root(uid_t uid, gid_t gid);
 #endif
+

@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "defines.h"
 #include "log.h"
@@ -64,5 +66,18 @@ void imprison(char *path)
 		log_line("Failed to chroot(%s).  Not invoking job.", path);
 		exit(EXIT_FAILURE);
 	}
+}
+
+void drop_root(uid_t uid, gid_t gid)
+{
+    if (uid == 0 || gid == 0) {
+        log_line("FATAL - drop_root: attempt to drop root to root?\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (setregid(gid, gid) == -1 || setreuid(uid, uid) == -1) {
+        log_line("FATAL - drop_root: failed to drop root!\n");
+        exit(EXIT_FAILURE);
+    }
 }
 

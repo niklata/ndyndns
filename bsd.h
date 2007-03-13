@@ -20,6 +20,5 @@
 #ifndef __NJK_IFCHD_BSD_H_
 #define __NJK_IFCHD_BSD_H_ 1
 char *get_interface_ip(char *ifname);
-void drop_root(uid_t uid, gid_t gid);
 #endif
 

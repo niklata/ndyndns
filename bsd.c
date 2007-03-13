@@ -24,8 +24,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <ifaddrs.h>
-#include <pwd.h>
-#include <grp.h>
 #include <errno.h>
 
 #include "defines.h"
@@ -71,19 +69,5 @@ char *get_interface_ip(char *ifname)
 	freeifaddrs(ifp);
 out:
 	return ret;
-}
-
-
-void drop_root(uid_t uid, gid_t gid)
-{
-    if (uid == 0 || gid == 0) {
-        log_line("FATAL - drop_root: attempt to drop root to root?\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (setregid(gid, gid) == -1 || setreuid(uid, uid) == -1) {
-        log_line("FATAL - drop_root: failed to drop root!\n");
-        exit(EXIT_FAILURE);
-    }
 }
 
