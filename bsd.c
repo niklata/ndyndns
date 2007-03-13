@@ -51,7 +51,7 @@ char *get_interface_ip(char *ifname)
 	/* find proper interface structure */
 	p = ifp;
 	while (p) {
-		if (strcmp(ifname, p->ifa_name) == 0) {
+		if (p->ifa_name && (strcmp(ifname, p->ifa_name) == 0)) {
 			found = 1;
 			break;
 		}
