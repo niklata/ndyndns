@@ -1,5 +1,10 @@
-changeset:   18:7ecb781b3341
+changeset:   19:253a2ffb13d5
 tag:         tip
+user:        njk@darksword.kain.us
+date:        Tue Mar 13 22:45:15 2007 -0400
+summary:     Add autoconf support and also add bsd.[ch] for BSD support.
+
+changeset:   18:7ecb781b3341
 user:        njk@darksword.kain.us
 date:        Tue Mar 13 19:01:34 2007 -0400
 summary:     Documenation error fix
