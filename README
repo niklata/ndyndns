@@ -6,16 +6,17 @@ Licensed under GPL2.
 REQUIREMENTS
 ============
 
-Linux-based system (2.6.x tested)
+Linux-based system (2.6.x/glibc 2.[345].x tested)
+BSD-based system (untested)
+
 gcc (3.3.5-4.1.2 tested), curl+libcurl (7.14.0+ tested)
 
-Note that it is quite possible to add support for non-Linux systems.  However,
-I don't have any such systems here, so patches would be welcome.  Please
-refer to linux.c and linux.h and duplicate the platform-specific functions
-defined there for your operating system.
+Note that it is quite possible to add support for unsupported systems.  Please
+refer to bsd.c or linux.c and duplicate the platform-specific functions defined
+there for your operating system.
 
-It will also be necessary to update the Makefile to reflect the requirements
-for your libc to resolve dns names.
+It will also be necessary to update the configure system to reflect the
+requirements for your libc to resolve dns names.
 
 
 INSTALLING

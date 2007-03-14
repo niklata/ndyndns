@@ -1,5 +1,5 @@
 /* log.c - simple logging support
-   
+
    (C) 2005 Nicholas J. Kain
 
    This library is free software; you can redistribute it and/or

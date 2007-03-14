@@ -1,5 +1,50 @@
-changeset:   9:b87e5fb0c2a2
+changeset:   18:7ecb781b3341
 tag:         tip
+user:        njk@darksword.kain.us
+date:        Tue Mar 13 19:01:34 2007 -0400
+summary:     Documenation error fix
+
+changeset:   17:92e4a117f3c9
+user:        njk@darksword.kain.us
+date:        Tue Mar 13 18:59:10 2007 -0400
+summary:     Guard against ifa_addr == NULL for paranoia's sake.
+
+changeset:   16:359fe36d8af9
+user:        njk@darksword.kain.us
+date:        Tue Mar 13 18:55:42 2007 -0400
+summary:     Move drop_root into chroot.c; it's POSIX.2001 compliant, so that's fine.
+
+changeset:   15:5f8aacfacd89
+user:        njk@darksword.kain.us
+date:        Tue Mar 13 18:52:47 2007 -0400
+summary:     Make chrootd static.
+
+changeset:   14:9291c3253f30
+user:        njk@darksword.kain.us
+date:        Tue Mar 13 18:51:54 2007 -0400
+summary:     Add BSD-specific code.
+
+changeset:   13:f8f67d17dc0b
+user:        njk@darksword.kain.us
+date:        Thu Mar 01 21:42:38 2007 -0500
+summary:     ndyndns is not ncron.  fix man page and chroot.c header
+
+changeset:   12:ed446bce4ae9
+user:        njk@darksword.kain.us
+date:        Tue Feb 27 19:23:03 2007 -0500
+summary:     Fix directions slightly
+
+changeset:   11:7fad9fd86a71
+user:        njk@darksword.kain.us
+date:        Tue Feb 27 15:41:38 2007 -0500
+summary:     Remove ChangeLog from VC
+
+changeset:   10:aab2277f1f68
+user:        njk@darksword.kain.us
+date:        Tue Feb 27 15:41:23 2007 -0500
+summary:     Remove raw_copy().  Unused, useless, and redundant.
+
+changeset:   9:b87e5fb0c2a2
 user:        njk@darksword.kain.us
 date:        Tue Feb 27 15:17:13 2007 -0500
 summary:     Update makefile to link -lnss_dns.  This simplifies chroot construction
@@ -48,24 +93,4 @@ changeset:   0:7dd62273cea6
 user:        njk@darksword.kain.us
 date:        Mon Feb 26 14:41:42 2007 -0500
 summary:     Initial commit.
-
-20060802
-Fixed a possible NULL dereference on an interface that lacks an IP.
-
-20050721
-Minor code clarity fix.  Documentation updated to explain requirements
-for a proper chroot a bit more lucidly.
-
-20050701
-Replaced all malloc() with xmalloc().  Minor code rearrangement for
-readability purposes (no functional change).
-
-20050629
-Fixed minor memory leak.  Handle http/https errors intelligently.
-
-20050628
-First released version.
-
-20050627
-Development started.
 

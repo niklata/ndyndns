@@ -1,5 +1,5 @@
 /* ndyndns.c - dynamic dns update daemon
- *  
+ *
  * (C) 2005-2007 Nicholas J. Kain <njk@aerifal.cx>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *
  */
 
 #include <unistd.h>
@@ -44,7 +44,7 @@
 #include <curl/curl.h>
 
 #include "defines.h"
-#include "config.h"
+#include "cfg.h"
 #include "log.h"
 #include "chroot.h"
 #include "pidfile.h"
@@ -105,7 +105,7 @@ static void fix_signals(void) {
   disable_signal(SIGTTIN);
   disable_signal(SIGCHLD);
   disable_signal(SIGHUP);
-  
+
   hook_signal(SIGINT, sighandler, 0);
   hook_signal(SIGTERM, sighandler, 0);
 }
@@ -301,7 +301,7 @@ static void decompose_buf_to_list(char *buf)
 		while (*point != '\0' && isspace(*point))
 			point++;
 		memset(tok, '\0', sizeof tok);
-	
+
 		/* fetch one token */
 		i = 0;
 		while (*point != '\0' && !isspace(*point))
@@ -501,7 +501,7 @@ static void update_ip(char *curip)
 		len = strlcat(url, t->str, sizeof url);
 		update_ip_buf_error(len, sizeof url);
 	}
-	
+
 	len = strlcat(url, "&myip=", sizeof url);
 	update_ip_buf_error(len, sizeof url);
 	len = strlcat(url, curip, sizeof url);
@@ -585,7 +585,7 @@ static void update_ip(char *curip)
 
 	log_line("update url: [%s]\n", url);
 	h = curl_easy_init();
-	curl_easy_setopt(h, CURLOPT_URL, url);	
+	curl_easy_setopt(h, CURLOPT_URL, url);
 	curl_easy_setopt(h, CURLOPT_USERPWD, unpwd);
 	curl_easy_setopt(h, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
@@ -644,7 +644,7 @@ static void update_ip(char *curip)
 	}
 
 	decompose_buf_to_list(data.buf);
-	if (get_strlist_arity(update_list) != 
+	if (get_strlist_arity(update_list) !=
 		get_return_code_list_arity(return_list)) {
 		log_line("list arity doesn't match, updates may be suspect\n");
 	}
@@ -782,7 +782,7 @@ int main(int argc, char** argv) {
 "  -c, --chroot                path where ndyndns should chroot\n"
 "  -f, --file                  configuration file\n"
 "  -p, --pidfile               pidfile path\n");
-            printf(            
+            printf(
 "  -u, --user                  user name that ndyndns should run as\n"
 "  -g, --group                 group name that ndyndns should run as\n"
 "  -i, --interface             interface ip to check (default: ppp0)\n"
@@ -801,7 +801,7 @@ int main(int argc, char** argv) {
             break;
 
         case 'd':
-            gflags_detach = 1; 
+            gflags_detach = 1;
             break;
 
         case 'n':
@@ -815,7 +815,7 @@ int main(int argc, char** argv) {
         case 'c':
             update_chroot(optarg);
             break;
-            
+
         case 'f':
             strlcpy(conffile, optarg, sizeof conffile);
             break;
@@ -833,7 +833,7 @@ int main(int argc, char** argv) {
                     if (!gid)
                         gid = (int)pws->pw_gid;
                 } else suicide("FATAL - Invalid uid specified.\n");
-            } else 
+            } else
                 uid = t;
             break;
 
@@ -856,7 +856,7 @@ int main(int argc, char** argv) {
 
   if (getuid())
       suicide("FATAL - I need root for chroot!\n");
-  
+
   if (gflags_detach)
 	if (daemon(0,0))
 		suicide("FATAL - detaching fork failed\n");
@@ -867,13 +867,13 @@ int main(int argc, char** argv) {
   umask(077);
   fix_signals();
 
-  if (!chroot_exists()) 
+  if (!chroot_exists())
       suicide("FATAL - No chroot path specified.  Refusing to run.\n");
 
   init_dyndns_conf(&dyndns_conf);
   t = parse_config(conffile, &dyndns_conf);
   if (t)
-  	suicide("FATAL - bad configuration file, exiting.\n");
+	suicide("FATAL - bad configuration file, exiting.\n");
 
   /* Note that failure cases are handled by called fns. */
   imprison(get_chroot());
@@ -886,7 +886,7 @@ int main(int argc, char** argv) {
 
   curl_global_init(CURL_GLOBAL_ALL);
   use_ssl = check_ssl();
- 
+
   do_work();
 
   exit(EXIT_SUCCESS);

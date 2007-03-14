@@ -5,9 +5,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
- 
+
 #include "defines.h"
-#include "config.h"
+#include "cfg.h"
 #include "util.h"
 #include "log.h"
 #include "nstrl.h"
@@ -43,7 +43,7 @@ static char *get_dnserr(char *host)
 	FILE *f;
 	char buf[MAX_BUF], *file, *ret = NULL;
 	int len;
-	
+
 	if (!host)
 		suicide("FATAL - get_dnserr: host is NULL\n");
 
@@ -68,7 +68,7 @@ static char *get_dnserr(char *host)
 		strlcpy(ret, "unknown", sizeof "unknown" + 1);
 		goto outfd;
 	}
-	
+
 	len = strlen(buf) + 1;
 	ret = xmalloc(len);
 	strlcpy(ret, buf, len);
@@ -86,7 +86,7 @@ static void add_to_host_data_list(host_data_t **list, char *host, char *ip,
 	host_data_t *item, *t;
 	char *elem, *err = NULL;
 	size_t len;
-	
+
 	if (!list || !host) return;
 
 	err = get_dnserr(host);
@@ -186,7 +186,7 @@ static time_t get_dnsdate(char *host)
 	char buf[MAX_BUF], *file;
 	size_t len;
 	time_t ret = 0;
-	
+
 	if (!host)
 		suicide("FATAL - get_dnsdate: host is NULL\n");
 
@@ -210,7 +210,7 @@ static time_t get_dnsdate(char *host)
 		log_line("%s-dnsdate is empty.  Assuming date == 0.\n", host);
 		goto outfd;
 	}
-	
+
 	ret = (time_t)atol(buf);
 	if (ret < 0)
 		ret = 0;
@@ -251,7 +251,7 @@ static char *lookup_dns(char *name) {
 			break;
 		}
 		goto out;
-	}	
+	}
 
 	t = inet_ntoa(*((struct in_addr *)hent->h_addr));
 	log_line("lookup_dns: returned [%s]\n", t);
@@ -270,7 +270,7 @@ static char *get_dnsip(char *host)
 	char buf[MAX_BUF], *file, *ret = NULL;
 	int len;
 	struct in_addr inr;
-	
+
 	if (!host)
 		suicide("FATAL - get_dnsip: host is NULL\n");
 
@@ -297,7 +297,7 @@ static char *get_dnsip(char *host)
 		ret = lookup_dns(host);
 		goto outfd;
 	}
-	
+
 	if (inet_aton(buf, &inr) == 0) {
 		log_line("%s-dnsip is corrupt.  Querying DNS.\n", host);
 		ret = lookup_dns(host);

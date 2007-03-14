@@ -23,6 +23,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <errno.h>
 
@@ -35,7 +37,7 @@
 char *get_interface_ip(char *ifname)
 {
 	struct ifaddrs *ifp = NULL, *p = NULL;
-	char *ret = NULL;
+	char *ret = NULL, *ip;
 	size_t len;
 	int r, found = 0;
 
@@ -44,7 +46,7 @@ char *get_interface_ip(char *ifname)
 
 	r = getifaddrs(&ifp);
 	if (r) {
-		log_line("Failed to interface address info.\n", ifname);
+		log_line("Failed to interface address info.\n");
 		goto out;
 	}
 
@@ -58,14 +60,24 @@ char *get_interface_ip(char *ifname)
 		p = p->ifa_next;
 	}
 
-	if (found) {
-		len = strlen(p->ifa_addr) + 1;
-		ret = xmalloc(len);
-		strlcpy(ret, p->ifa_addr, len);
-	} else {
-		log_line("Could not find an IP for interface [%s]\n", ifname);
+	/* No matching interface structure found.  Free and exit. */
+	if (!found) {
+		log_line("Could not find interface information for [%s].\n", ifname);
+		goto out2;
 	}
 
+	/* Fail if the interface has no IP. */
+	if (!p->ifa_addr) {
+		log_line("Could not find an IP for interface [%s]\n", ifname);
+		goto out2;
+	}
+
+	ip = inet_ntoa(((struct sockaddr_in *)p->ifa_addr)->sin_addr);
+	len = strlen(ip) + 1;
+	ret = xmalloc(len);
+	strlcpy(ret, ip, len);
+
+out2:
 	freeifaddrs(ifp);
 out:
 	return ret;
