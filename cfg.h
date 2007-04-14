@@ -13,6 +13,9 @@ offline (default: NO)
 
 #ifndef __NJK_CONFIG_H_
 #define __NJK_CONFIG_H_ 1
+
+#include <time.h>
+
 typedef enum {
 	WC_NOCHANGE,
 	WC_YES,
