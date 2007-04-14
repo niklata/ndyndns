@@ -1,15 +1,17 @@
 #CC = gcc -Wall -Wpointer-arith -Wstrict-prototypes -pedantic
 CC = @CC@
-VERSION = @VERSION@
-CFLAGS = @CFLAGS@ -Wall -Wpointer-arith -Wstrict-prototypes -pedantic
-PLATFORM = @PLATFORM@
-dnsinc = -lnss_dns
+dnslib = -lnss_dns
 objects = log.o nstrl.o util.o chroot.o pidfile.o signals.o strlist.o $(PLATFORM).o cfg.o ndyndns.o
+CURLINC = -I$(shell curl-config --prefix)/include
+CURLLIB = $(shell curl-config --libs)
+VERSION = @VERSION@
+CFLAGS = @CFLAGS@ -Wall -Wpointer-arith -Wstrict-prototypes -pedantic $(CURLINC)
+PLATFORM = @PLATFORM@
 
 all: ndyndns
 
 ndyndns : $(objects)
-	$(CC) $(LDFLAGS) $(dnsinc) `curl-config --libs --cflags` -o ndyndns $(objects)
+	$(CC) $(LDFLAGS) $(dnslib) $(CURLLIB) -o ndyndns $(objects)
 
 ndyndns.o : log.h nstrl.h util.h chroot.h pidfile.h signals.h strlist.h $(PLATFORM).h cfg.h
 	$(CC) $(CFLAGS) -c -o $@ ndyndns.c
