@@ -35,6 +35,7 @@ chroot and configuration much easier.
 Building:
 --------
 
+./configure
 make
 make install
 groupadd -g dyndns
