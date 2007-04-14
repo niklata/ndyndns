@@ -101,6 +101,11 @@ becomes outdated, corrupt, or whatever, just delete the files there.  However,
 it's not a good idea to unnecessarily remove these files, since they are
 what allow ndyndns to avoid frivolous updates between restarts and reboots.
 
+THANKS
+======
+
+Matthew Horsfall for very patiently reviewing the program and reporting
+a great many robustness and build fixes, particularly on BSD.
 
 CONTACT
 =======
