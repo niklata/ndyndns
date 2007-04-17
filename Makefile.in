@@ -2,8 +2,8 @@
 CC = @CC@
 dnslib = -lnss_dns
 objects = log.o nstrl.o util.o chroot.o pidfile.o signals.o strlist.o $(PLATFORM).o cfg.o ndyndns.o
-CURLINC = -I$(shell curl-config --prefix)/include
-CURLLIB = $(shell curl-config --libs)
+CURLINC = @CURLINC@
+CURLLIB = @CURLLIB@
 VERSION = @VERSION@
 CFLAGS = @CFLAGS@ -Wall -Wpointer-arith -Wstrict-prototypes -pedantic $(CURLINC)
 PLATFORM = @PLATFORM@

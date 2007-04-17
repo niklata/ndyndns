@@ -21,6 +21,11 @@ else
 fi
 AC_SUBST(PLATFORM)
 
+CURLINC=-I`curl-config --prefix`/include
+AC_SUBST(CURLINC)
+CURLLIB=`curl-config --libs`
+AC_SUBST(CURLLIB)
+
 VERSION="1.02"
 AC_SUBST(VERSION)
 
