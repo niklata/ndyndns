@@ -1,0 +1,45 @@
+#CC = gcc -Wall -Wpointer-arith -Wstrict-prototypes -pedantic
+CC = @CC@
+dnslib = -lnss_dns
+objects = log.o nstrl.o util.o chroot.o pidfile.o signals.o strlist.o $(PLATFORM).o cfg.o ndyndns.o
+CURLINC = @CURLINC@
+CURLLIB = @CURLLIB@
+VERSION = @VERSION@
+CFLAGS = @CFLAGS@ -Wall -Wpointer-arith -Wstrict-prototypes -pedantic $(CURLINC)
+PLATFORM = @PLATFORM@
+prefix = @prefix@
+sbindir = @sbindir@
+mandir = @mandir@
+datarootdir = @datarootdir@
+
+all: ndyndns
+
+ndyndns : $(objects)
+	$(CC) $(LDFLAGS) $(dnslib) $(CURLLIB) -o ndyndns $(objects)
+
+ndyndns.o : log.h nstrl.h util.h chroot.h pidfile.h signals.h strlist.h $(PLATFORM).h cfg.h
+	$(CC) $(CFLAGS) -c -o $@ ndyndns.c
+
+linux.o: log.h
+bsd.o: log.h
+cfg.o: log.h util.h
+chroot.o: log.h
+pidfile.o: log.h
+signals.o: log.h
+strlist.o:
+nstrl.o:
+log.o :
+
+install: ndyndns
+	-install -s -m 755 ndyndns $(sbindir)/ndyndns
+	-install -m 644 ndyndns.1.gz $(mandir)/man1/ndyndns.1.gz
+	-install -m 644 ndyndns.conf.5.gz $(mandir)/man5/ndyndns.conf.5.gz
+tags:
+	-ctags -f tags *.[ch]
+	-cscope -b
+clean:
+	-rm -f *.o ndyndns
+distclean:
+	-rm -f *.o ndyndns tags cscope.out config.h config.log config.status Makefile
+	-rm -Rf autom4te.cache
+
