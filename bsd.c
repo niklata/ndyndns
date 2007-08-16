@@ -53,7 +53,8 @@ char *get_interface_ip(char *ifname)
 	/* find proper interface structure */
 	p = ifp;
 	while (p) {
-		if (p->ifa_name && (strcmp(ifname, p->ifa_name) == 0)) {
+		if (p->ifa_name && (strcmp(ifname, p->ifa_name) == 0) &&
+		    p->ifa_addr && (p->ifa_addr->sa_family == AF_INET)) {
 			found = 1;
 			break;
 		}

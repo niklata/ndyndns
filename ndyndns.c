@@ -743,7 +743,7 @@ static int check_ssl(void)
 int main(int argc, char** argv) {
   int c, t, uid = 0, gid = 0;
   char pidfile[MAX_PATH_LENGTH] = PID_FILE_DEFAULT;
-  char conffile[MAX_PATH_LENGTH] = "";
+  char conffile[MAX_PATH_LENGTH] = CONF_FILE_DEFAULT;
   char *p;
   struct passwd *pws;
   struct group *grp;
