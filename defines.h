@@ -1,7 +1,7 @@
 #define MAX_PATH_LENGTH 1024
 #define PID_FILE_DEFAULT "/var/run/ndyndns.pid"
 #define CONF_FILE_DEFAULT "/etc/ndyndns.conf"
-#define NDYNDNS_VERSION "1.03"
+#define NDYNDNS_VERSION "1.04"
 
 #define MAX_BUF 1024
 #define MAXLINE 1024

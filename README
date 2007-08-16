@@ -1,11 +1,120 @@
-If anyone whines about my use of "goto" in this library, know that it is used
-so that error handling can be easily audited as being correct, so that error
-handling does not unnecessarily clutter the main codepath, and so that it is
-easy to properly unwind multiple function side effects cleanly.  The use of
-goto in this library is little more than a hand-crafted duplication of the
-exception mechanisms present in more powerful languages (cf. ML).
+ndyndns, Copyright (c) 2005-2007
+Nicholas J. Kain < njkain <at> gmail <dot> com >
+Licensed under GPL2.
 
-Anyone who emails me to complain about the use of "goto" because their
-undergrad CS professor decried its use in class will have their email
-ignored, and will likely have found a quick path into my killfile.
+
+REQUIREMENTS
+============
+
+Linux-based system (2.6.x/glibc 2.[345].x tested)
+BSD-based system (OpenBSD 3.8 tested)
+
+gcc (3.3.5-4.1.2 tested), curl+libcurl (7.14.0+ tested)
+
+Note that it is quite possible to add support for unsupported systems.  Please
+refer to bsd.c or linux.c and duplicate the platform-specific functions defined
+there for your operating system.
+
+It will also be necessary to update the configure system to reflect the
+requirements for your libc to resolve dns names.
+
+
+INSTALLING
+==========
+
+It is much easier to install ndyndns from a distro-provided package, since
+they will almost certainly set up a correct chroot enviromnent for you.  The
+following instructions are for performing a generic install that is relatively
+distro-agnostic.  Using vendor packages is highly reccomended if they are
+available, since it will spare you the pain of setting up a working chroot.
+
+If you have problems, I suggest running ndyndns in -n mode so that you can
+see errors printed at the command prompt.  It will make debugging your
+chroot and configuration much easier.
+
+Building:
+--------
+
+./configure
+make
+make install
+groupadd -g dyndns
+useradd -g dyndns dyndns
+mkdir /var/lib/ndyndns
+chown dyndns.dyndns /var/lib/ndyndns
+vim /etc/ndyndns.conf
+
+-----------------
+example config
+-----------------
+
+username=test
+password=test
+hostname=test.dyndns.org,test.ath.cx,test.dnsalias.net,test.dnsalias.org
+wildcard
+
+-----------------
+
+
+Constructing the chroot:
+-----------------------
+
+The following files and devices should be created in your chroot directory
+(by default, /var/lib/ndyndns).  Either copies or hardlinks will work fine;
+avoid softlinks, since they won't resolve from within the chroot.
+
+.:
+dev  etc
+
+./dev:
+null  random  urandom
+
+./etc:
+hosts  nsswitch.conf  resolv.conf
+
+If you are using default paths (/var/lib/ndyndns) and user/group
+(dyndns/dyndns), then the following commands will set up correct permissions.
+
+find /var/lib/ndyndns chmod 644 {} \;
+find /var/lib/ndyndns -type d chmod 755 {} \;
+chmod 700 /var/lib/dyndns
+find /var/lib/ndyndns chown root.root {} \;
+chown dyndns.dyndns /var/lib/dyndns
+
+Then all that remains is to invoke ndyndns:
+
+ndyndns -n -c /var/lib/ndyndns -f /etc/ndyndns.conf -i eth0 -u dyndns -g dyndns
+
+
+TROUBLESHOOTING
+===============
+
+Note that for certain classes of error, ndyndns will refuse to update a
+given hostname.  This condition will only affect one hostname if multiple
+hosts are present.  The error can be found by looking at
+<CHROOTDIR>/<HOST>-dnserr.  Once the problem has been corrected, it is
+only necessary to remove the corresponding <CHROOTDIR>/<HOST>-dnserr file
+to resume updates.
+
+ndyndns atomically keeps state information in the <CHROOTDIR>.  If it
+becomes outdated, corrupt, or whatever, just delete the files there.  However,
+it's not a good idea to unnecessarily remove these files, since they are
+what allow ndyndns to avoid frivolous updates between restarts and reboots.
+
+THANKS
+======
+
+Matthew Horsfall for very patiently reviewing the program and reporting
+a great many robustness and build fixes, particularly on BSD.
+
+Junji Takagi for providing some necessary fixes for BSD platforms, as
+well as some documentation and consistency fixes.
+
+CONTACT
+=======
+
+ndyndns is completely compliant with dyndns.org's protocol specs and client
+recommendations, at least as far as I can tell.  If you find any problems,
+don't hesitate to contact me.
+
 
