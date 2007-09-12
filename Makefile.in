@@ -8,9 +8,10 @@ VERSION = @VERSION@
 CFLAGS = @CFLAGS@ -Wall -Wpointer-arith -Wstrict-prototypes -pedantic $(CURLINC)
 PLATFORM = @PLATFORM@
 prefix = @prefix@
+exec_prefix = @exec_prefix@
 sbindir = @sbindir@
-mandir = @mandir@
 datarootdir = @datarootdir@
+mandir = @mandir@
 
 all: ndyndns
 
