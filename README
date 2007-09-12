@@ -77,13 +77,17 @@ If you are using default paths (/var/lib/ndyndns) and user/group
 
 find /var/lib/ndyndns chmod 644 {} \;
 find /var/lib/ndyndns -type d chmod 755 {} \;
-chmod 700 /var/lib/dyndns
+chmod 700 /var/lib/ndyndns
 find /var/lib/ndyndns chown root.root {} \;
-chown dyndns.dyndns /var/lib/dyndns
+chown dyndns.dyndns /var/lib/ndyndns
 
-Then all that remains is to invoke ndyndns:
+Then all that remains is to invoke ndyndns.  Make certain to replace "eth0"
+with the name of the network interface associated with the IP that you wish
+to be updated to your dyndns records (eg, for a PPPoE interface on Linux,
+it is probably correct to replace eth0 with ppp0).
 
 ndyndns -n -c /var/lib/ndyndns -f /etc/ndyndns.conf -i eth0 -u dyndns -g dyndns
+
 
 
 TROUBLESHOOTING
