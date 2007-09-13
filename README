@@ -18,6 +18,13 @@ there for your operating system.
 It will also be necessary to update the configure system to reflect the
 requirements for your libc to resolve dns names.
 
+DOWNLOADING
+===========
+
+If you need to update ndyndns, the latest version can be found at:
+
+http://ndyndns.googlecode.com
+
 
 INSTALLING
 ==========
@@ -88,7 +95,12 @@ it is probably correct to replace eth0 with ppp0).
 
 ndyndns -n -c /var/lib/ndyndns -f /etc/ndyndns.conf -i eth0 -u dyndns -g dyndns
 
-
+If the system running ndyndns is not your border device (eg, it is behind a
+router or firewall, and its IP address is not internet-routable), you should
+add the -r switch to ndyndns.  The -r switch will instruct ndyndns to use
+the IP returned by checkip.dyndns.org.  Note that -r should only be used
+if necessary: as is required by dyndns.org policies, checkip.dyndns.org will
+not be queried more than once every ten minutes.
 
 TROUBLESHOOTING
 ===============

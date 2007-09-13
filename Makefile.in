@@ -23,6 +23,7 @@ ndyndns.o : log.h nstrl.h util.h chroot.h pidfile.h signals.h strlist.h checkip.
 
 linux.o: log.h
 bsd.o: log.h
+sun.o: log.h
 checkip.o: log.h
 cfg.o: log.h util.h
 chroot.o: log.h

@@ -1,5 +1,15 @@
-changeset:   32:13866220d4ec
+changeset:   34:bf94060c1e6b
 tag:         tip
+user:        njk@darksword.kain.us
+date:        Thu Sep 13 01:35:08 2007 -0400
+summary:     Make parsing a bit more robust vs whitespace variance.
+
+changeset:   33:20d5e768ef6a
+user:        njk@darksword.kain.us
+date:        Thu Sep 13 01:19:27 2007 -0400
+summary:     Add and document support for checkip.dyndns.org.
+
+changeset:   32:13866220d4ec
 user:        njk@darksword.kain.us
 date:        Wed Sep 12 13:21:12 2007 -0400
 summary:     Fix makefile 'make install' to handle sbin and man properly.

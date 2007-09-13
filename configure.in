@@ -1,4 +1,4 @@
-AC_INIT(ndyndns, 1.1)
+AC_INIT(ndyndns, 1.11)
 AC_CONFIG_HEADER(config.h)
 
 AC_PROG_CC
@@ -18,6 +18,9 @@ if test x"$UNAME" = xLinux; then
     PLATFORM=linux
 else
     AC_CHECK_HEADER(ifaddrs.h,PLATFORM=bsd)
+    if test x"$UNAME" = xSolaris; then
+	PLATFORM=sun
+    fi
 fi
 AC_SUBST(PLATFORM)
 
@@ -26,7 +29,7 @@ AC_SUBST(CURLINC)
 CURLLIB=`curl-config --libs`
 AC_SUBST(CURLLIB)
 
-VERSION="1.1"
+VERSION="1.11"
 AC_SUBST(VERSION)
 
 AC_OUTPUT(Makefile)
