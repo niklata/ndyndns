@@ -1,5 +1,70 @@
-changeset:   19:253a2ffb13d5
+changeset:   32:13866220d4ec
 tag:         tip
+user:        njk@darksword.kain.us
+date:        Wed Sep 12 13:21:12 2007 -0400
+summary:     Fix makefile 'make install' to handle sbin and man properly.
+
+changeset:   31:d3fe26151cee
+user:        njk@darksword.kain.us
+date:        Wed Sep 12 13:09:01 2007 -0400
+summary:     Fix typos in README documentation.
+
+changeset:   30:1dbf8ba3a568
+user:        njk@darksword.kain.us
+date:        Thu Aug 16 16:12:43 2007 -0400
+summary:     Bump version number.
+
+changeset:   29:00899a3226d4
+user:        njk@darksword.kain.us
+date:        Thu Aug 16 15:59:18 2007 -0400
+summary:     'make distclean' won't remove configure; this was intended, but is annoying.
+
+changeset:   28:bc3c21756589
+user:        njk@darksword.kain.us
+date:        Thu Aug 16 15:55:13 2007 -0400
+summary:     Make configure honor prefix (fixes defect reported by Vincent Caron)
+
+changeset:   27:e70dfb326a6d
+user:        njk@darksword.kain.us
+date:        Thu Aug 16 15:04:27 2007 -0400
+summary:     Incorporated fixes from Junji Takagi:
+
+changeset:   26:ee38e8fecd55
+user:        njk@darksword.kain.us
+date:        Tue Apr 17 12:04:58 2007 -0400
+summary:     Move curl-config stuff into autoconf to help deal with non-GNU makes.
+
+changeset:   25:2a5ef2f5f768
+user:        njk@darksword.kain.us
+date:        Fri Apr 13 22:50:12 2007 -0400
+summary:     Update to 1.02
+
+changeset:   24:8a0d65293e3c
+user:        njk@darksword.kain.us
+date:        Fri Apr 13 22:35:16 2007 -0400
+summary:     add a THANKS section to the readme
+
+changeset:   23:c6139cf07e76
+user:        njk@darksword.kain.us
+date:        Fri Apr 13 22:31:24 2007 -0400
+summary:     Fixed curl-config to work properly in the Makefile.
+
+changeset:   22:fd21c99544fb
+user:        njk@darksword.kain.us
+date:        Fri Apr 13 22:21:21 2007 -0400
+summary:     Explicitly include <time.h> in cfg.h to allow compilation on BSD.
+
+changeset:   21:97eafe79cdf1
+user:        njk@darksword.kain.us
+date:        Fri Apr 13 22:17:14 2007 -0400
+summary:     Remove spurious #define LINUX 1 from defines.h.  It does nothing.
+
+changeset:   20:96b056e4dd4c
+user:        njk@darksword.kain.us
+date:        Wed Mar 14 06:37:33 2007 -0400
+summary:     Actually make the program use autoconf data... braindead mistake fix.
+
+changeset:   19:253a2ffb13d5
 user:        njk@darksword.kain.us
 date:        Tue Mar 13 22:45:15 2007 -0400
 summary:     Add autoconf support and also add bsd.[ch] for BSD support.

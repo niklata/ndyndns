@@ -1,7 +1,7 @@
 #CC = gcc -Wall -Wpointer-arith -Wstrict-prototypes -pedantic
 CC = @CC@
 dnslib = -lnss_dns
-objects = log.o nstrl.o util.o chroot.o pidfile.o signals.o strlist.o $(PLATFORM).o cfg.o ndyndns.o
+objects = log.o nstrl.o util.o chroot.o pidfile.o signals.o strlist.o checkip.o $(PLATFORM).o cfg.o ndyndns.o
 CURLINC = @CURLINC@
 CURLLIB = @CURLLIB@
 VERSION = @VERSION@
@@ -18,11 +18,12 @@ all: ndyndns
 ndyndns : $(objects)
 	$(CC) $(LDFLAGS) $(dnslib) $(CURLLIB) -o ndyndns $(objects)
 
-ndyndns.o : log.h nstrl.h util.h chroot.h pidfile.h signals.h strlist.h $(PLATFORM).h cfg.h
+ndyndns.o : log.h nstrl.h util.h chroot.h pidfile.h signals.h strlist.h checkip.h $(PLATFORM).h cfg.h
 	$(CC) $(CFLAGS) -c -o $@ ndyndns.c
 
 linux.o: log.h
 bsd.o: log.h
+checkip.o: log.h
 cfg.o: log.h util.h
 chroot.o: log.h
 pidfile.o: log.h

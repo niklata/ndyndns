@@ -1,4 +1,4 @@
-AC_INIT(ndyndns, 1.05)
+AC_INIT(ndyndns, 1.1)
 AC_CONFIG_HEADER(config.h)
 
 AC_PROG_CC
@@ -26,7 +26,7 @@ AC_SUBST(CURLINC)
 CURLLIB=`curl-config --libs`
 AC_SUBST(CURLLIB)
 
-VERSION="1.05"
+VERSION="1.1"
 AC_SUBST(VERSION)
 
 AC_OUTPUT(Makefile)

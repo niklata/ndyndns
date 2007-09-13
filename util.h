@@ -1,6 +1,5 @@
 /* util.h
-   
-   (C) 2005 Nicholas J. Kain <njk@aerifal.cx>
+   (C) 2005-2007 Nicholas J. Kain <njk@aerifal.cx>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -17,8 +16,14 @@
 
 #ifndef __NJK_UTIL_H_
 #define __NJK_UTIL_H_ 1
+typedef struct {
+	char *buf;
+	size_t buflen;
+	size_t idx;
+} conn_data_t;
 
 void *xmalloc(size_t size);
 void null_crlf(char *data);
+size_t write_response(char *buf, size_t size, size_t nmemb, void *dat);
 #endif
 

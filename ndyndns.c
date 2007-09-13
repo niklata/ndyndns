@@ -51,6 +51,7 @@
 #include "signals.h"
 #include "nstrl.h"
 #include "linux.h"
+#include "checkip.h"
 #include "util.h"
 #include "strlist.h"
 
@@ -59,12 +60,7 @@ static dyndns_conf_t dyndns_conf;
 static char ifname[IFNAMSIZ] = "ppp0";
 
 static int use_ssl = 1;
-
-typedef struct {
-	char *buf;
-	size_t buflen;
-	size_t idx;
-} conn_data_t;
+static int update_from_remote = 0;
 
 typedef enum {
 	RET_DO_NOTHING,
@@ -216,19 +212,6 @@ static void write_dnserr(char *host, return_codes code)
 
 	write_dnsfile(file, buf);
 	free(file);
-}
-
-size_t write_response(char *buf, size_t size, size_t nmemb, void *dat)
-{
-	conn_data_t *data = (conn_data_t *)dat;
-	size_t j;
-
-	for (j=0; data->idx < data->buflen - 1 && j < size*nmemb;
-			 ++data->idx, ++j)
-		data->buf[data->idx] = buf[j];
-	data->buf[data->idx + 1] = '\0';
-
-	return j;
 }
 
 static void add_to_return_code_list(return_codes name,
@@ -687,7 +670,11 @@ static void do_work(void)
 		if (pending_exit)
 			exit(EXIT_SUCCESS);
 
-		curip = get_interface_ip(ifname);
+		if (update_from_remote == 0) {
+			curip = get_interface_ip(ifname);
+		} else {
+			curip = query_curip();
+		}
 
 		if (!curip)
 			goto sleep;
@@ -761,6 +748,7 @@ int main(int argc, char** argv) {
       {"user", 1, 0, 'u'},
       {"group", 1, 0, 'g'},
       {"interface", 1, 0, 'i'},
+      {"remote", 0, 0, 'r'},
       {"help", 0, 0, 'h'},
       {"version", 0, 0, 'v'},
       {0, 0, 0, 0}
@@ -786,6 +774,7 @@ int main(int argc, char** argv) {
 "  -u, --user                  user name that ndyndns should run as\n"
 "  -g, --group                 group name that ndyndns should run as\n"
 "  -i, --interface             interface ip to check (default: ppp0)\n"
+"  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
 "  -h, --help                  print this help and exit\n"
 "  -v, --version               print version information and exit\n");
             exit(EXIT_FAILURE);
@@ -799,6 +788,10 @@ int main(int argc, char** argv) {
 "WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
             exit(EXIT_FAILURE);
             break;
+
+	case 'r':
+	    update_from_remote = 1;
+	    break;
 
         case 'd':
             gflags_detach = 1;
