@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <curl/curl.h>
@@ -72,12 +73,13 @@ char *query_curip(void)
 		goto out;
 	}
 
-	ip = strstr(data.buf, "Current IP Address: ");
+	ip = strstr(data.buf, "Current IP Address:");
 	if (!ip)
 	    goto out;
-	ip += strlen("Current IP Address: ");
+	ip += strlen("Current IP Address:");
+	for (; isspace(*ip); ++ip);
 
-	for (p = ip, len = 0; *p != '\0' && *p != '<'; ++p, ++len);
+	for (p = ip, len = 0; *p == '.' || isdigit(*p); ++p, ++len);
 	if (!len)
 	    goto out;
 	++len;
