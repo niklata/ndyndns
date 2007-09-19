@@ -1,5 +1,10 @@
-changeset:   34:bf94060c1e6b
+changeset:   35:d6fbd99547e1
 tag:         tip
+user:        njk@darksword.kain.us
+date:        Thu Sep 13 14:06:07 2007 -0400
+summary:     Add untested Solaris support.  Update documentation.  Bump to 1.11.
+
+changeset:   34:bf94060c1e6b
 user:        njk@darksword.kain.us
 date:        Thu Sep 13 01:35:08 2007 -0400
 summary:     Make parsing a bit more robust vs whitespace variance.
