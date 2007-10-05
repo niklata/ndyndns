@@ -1,5 +1,10 @@
-changeset:   35:d6fbd99547e1
+changeset:   36:57b4361f36ce
 tag:         tip
+user:        njk@darksword.kain.us
+date:        Wed Sep 19 03:04:35 2007 -0400
+summary:     Make -r work; before only --remote worked.
+
+changeset:   35:d6fbd99547e1
 user:        njk@darksword.kain.us
 date:        Thu Sep 13 14:06:07 2007 -0400
 summary:     Add untested Solaris support.  Update documentation.  Bump to 1.11.

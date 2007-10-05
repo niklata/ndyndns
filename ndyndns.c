@@ -90,6 +90,7 @@ static return_code_list_t *return_list = NULL;
 static volatile sig_atomic_t pending_exit;
 
 static void sighandler(int sig) {
+    sig = sig; /* silence warning */
     pending_exit = 1;
 }
 
@@ -422,7 +423,7 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
 	return ret;
 }
 
-static void update_ip_buf_error(int len, size_t size)
+static void update_ip_buf_error(size_t len, size_t size)
 {
 	if (len > size)
 		suicide("FATAL - config file would overflow a fixed buffer\n");
