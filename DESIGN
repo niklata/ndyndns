@@ -19,7 +19,7 @@ querydns()             --- wrap gethostbyname()
 get_interface_ip()     --- wrap ioctl() SIOCGIFADDR
 
 REFRESH_INTERVAL = 28 days + error
-UPDATE_INTERVAL = 2m default
+DEFAULT_UPDATE_INTERVAL = 2m default, 10m for web based detection
 
 
 We must track dnsdate and dnsip per-hostname.  This means that we need

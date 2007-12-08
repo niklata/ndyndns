@@ -59,6 +59,7 @@ static dyndns_conf_t dyndns_conf;
 
 static char ifname[IFNAMSIZ] = "ppp0";
 
+static int update_interval = DEFAULT_UPDATE_INTERVAL;
 static int use_ssl = 1;
 static int update_from_remote = 0;
 
@@ -708,7 +709,7 @@ static void do_work(void)
 		if (update_list)
 			update_ip(curip);
 sleep:
-		sleep(UPDATE_INTERVAL);
+		sleep(update_interval);
 	}
 }
 
@@ -792,6 +793,7 @@ int main(int argc, char** argv) {
 
 	case 'r':
 	    update_from_remote = 1;
+	    update_interval = 600;
 	    break;
 
         case 'd':
