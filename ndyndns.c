@@ -1,6 +1,6 @@
 /* ndyndns.c - dynamic dns update daemon
  *
- * (C) 2005-2007 Nicholas J. Kain <njk@aerifal.cx>
+ * (C) 2005-2007 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -10,11 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
  */
 
 #include <unistd.h>
@@ -151,7 +146,7 @@ static void write_dnsdate(char *host, time_t date)
 	file = xmalloc(len);
 	strlcpy(file, host, len);
 	strlcat(file, "-dnsdate", len);
-	buf[MAX_BUF] = '\0';
+	buf[MAX_BUF - 1] = '\0';
 	snprintf(buf, sizeof buf - 1, "%u", (unsigned int)date);
 
 	write_dnsfile(file, buf);

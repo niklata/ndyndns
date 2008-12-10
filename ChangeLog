@@ -1,5 +1,15 @@
-changeset:   36:57b4361f36ce
+changeset:   38:0a31e68943ba
 tag:         tip
+user:        njk@darksword.kain.us
+date:        Sat Dec 08 09:23:17 2007 -0500
+summary:     When using web update script, update interval should be 10m, not 2m
+
+changeset:   37:9779fc46ac55
+user:        njk@darksword.kain.us
+date:        Fri Oct 05 05:24:27 2007 -0400
+summary:     Use -Wextra.  Remove specific -W.
+
+changeset:   36:57b4361f36ce
 user:        njk@darksword.kain.us
 date:        Wed Sep 19 03:04:35 2007 -0400
 summary:     Make -r work; before only --remote worked.
