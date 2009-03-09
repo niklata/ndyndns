@@ -118,6 +118,12 @@ becomes outdated, corrupt, or whatever, just delete the files there.  However,
 it's not a good idea to unnecessarily remove these files, since they are
 what allow ndyndns to avoid frivolous updates between restarts and reboots.
 
+If the system running ndyndns does not have a network interface that has your
+external IP address (ie, the one you wish your dyndns records to contain), then
+try running ndyndns with the --remote (-r) switch.  It will query
+checkip.dyndns.org for your external IP address rather than polling the IP
+address of your network interface.
+
 THANKS
 ======
 
