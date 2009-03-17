@@ -1,4 +1,4 @@
-ndyndns, Copyright (c) 2005-2008
+ndyndns, Copyright (c) 2005-2009
 Nicholas J. Kain < njkain <at> gmail <dot> com >
 Licensed under GPL2.
 
@@ -10,7 +10,7 @@ Linux-based system (2.6.x/glibc 2.[345].x tested)
 BSD-based system (OpenBSD 3.8 tested)
 MacOS (10.5 tested)
 
-gcc (3.3.5-4.3.2 tested), curl+libcurl (7.14.0+ tested)
+gcc (3.3.5-4.3.3 tested), curl+libcurl (7.14.0+ tested)
 
 Note that it is quite possible to add support for unsupported systems.  Please
 refer to bsd.c or linux.c and duplicate the platform-specific functions defined
@@ -96,12 +96,24 @@ it is probably correct to replace eth0 with ppp0).
 
 ndyndns -n -c /var/lib/ndyndns -f /etc/ndyndns.conf -i eth0 -u dyndns -g dyndns
 
+ADDITIONAL NOTES
+================
+
 If the system running ndyndns is not your border device (eg, it is behind a
 router or firewall, and its IP address is not internet-routable), you should
 add the -r switch to ndyndns.  The -r switch will instruct ndyndns to use
 the IP returned by checkip.dyndns.org.  Note that -r should only be used
 if necessary: as is required by dyndns.org policies, checkip.dyndns.org will
 not be queried more than once every ten minutes.
+
+If chroot is not an option for your system, then you may use the -x or
+--disable-chroot switch to skip the actual call to chroot().  Note
+that you must still construct the environment that would be used for a
+chroot as described above (although the etc and dev trees may be
+omitted): it is the location where your state files will be stored.
+The -c (--chroot) path will indicate the location of these files as
+usual and must be specified.  Running without chroot() is not
+recommended unless your environment cannot support it.
 
 TROUBLESHOOTING
 ===============
