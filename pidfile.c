@@ -23,6 +23,7 @@
 
 void write_pid(char *file) {
     FILE *f;
+    size_t written, len;
     char buf[MAXLINE];
 
     f = fopen(file, "w");
@@ -32,7 +33,10 @@ void write_pid(char *file) {
     }
 
     snprintf(buf, sizeof buf - 1, "%i", (unsigned int)getpid());
-    fwrite(buf, sizeof (char), strlen(buf), f);
+    len = strlen(buf);
+    written = 0;
+    while (written < len)
+        written = fwrite(buf + written, sizeof (char), len - written, f);
 
     if (fclose(f) != 0) {
         log_line("FATAL - failed to close pid file \"%s\"!\n", file);
