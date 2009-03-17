@@ -15,6 +15,7 @@
 #ifndef __NJK_CHROOT_H_
 #define __NJK_CHROOT_H_ 1
 void disable_chroot(void);
+int chroot_enabled(void);
 void update_chroot(char *path);
 char *get_chroot(void);
 int chroot_exists(void);
