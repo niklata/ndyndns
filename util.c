@@ -33,7 +33,7 @@ void null_crlf(char *data) {
 	char *p = data;
 
 	while (*p != '\0') {
-		if (isalnum(*p) || ispunct(*p)) {
+		if (*p != '\r' && *p != '\n') {
 			++p;
 			continue;
 		}
