@@ -1,6 +1,6 @@
 /* strlist.c - string list functions
  *
- * (C) 2005-2007 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2005-2009 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

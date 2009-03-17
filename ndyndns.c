@@ -1,6 +1,6 @@
 /* ndyndns.c - dynamic dns update daemon
  *
- * (C) 2005-2007 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2005-2009 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -760,7 +760,7 @@ int main(int argc, char** argv) {
         case 'h':
             printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", NDYNDNS_VERSION);
             printf(
-"Copyright (C) 2005-2007 Nicholas J. Kain\n"
+"Copyright (C) 2005-2009 Nicholas J. Kain\n"
 "Usage: ndyndns [OPTIONS]\n"
 "  -d, --detach                detach from TTY and daemonize\n"
 "  -n, --nodetach              stay attached to TTY\n"
