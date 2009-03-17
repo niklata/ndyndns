@@ -741,6 +741,7 @@ int main(int argc, char** argv) {
       {"pidfile", 1, 0, 'p'},
       {"quiet", 0, 0, 'q'},
       {"chroot", 1, 0, 'c'},
+      {"disable-chroot", 0, 0, 'x'},
       {"file", 1, 0, 'f'},
       {"user", 1, 0, 'u'},
       {"group", 1, 0, 'g'},
@@ -751,7 +752,7 @@ int main(int argc, char** argv) {
       {0, 0, 0, 0}
     };
 
-    c = getopt_long (argc, argv, "rdnp:qc:f:u:g:i:hv", long_options, &option_index);
+    c = getopt_long (argc, argv, "rdnp:qc:xf:u:g:i:hv", long_options, &option_index);
     if (c == -1) break;
 
     switch (c) {
@@ -765,6 +766,7 @@ int main(int argc, char** argv) {
 "  -n, --nodetach              stay attached to TTY\n"
 "  -q, --quiet                 don't print to std(out|err) or log\n"
 "  -c, --chroot                path where ndyndns should chroot\n"
+"  -x, --disable-chroot        do not actually chroot (not recomended)\n"
 "  -f, --file                  configuration file\n"
 "  -p, --pidfile               pidfile path\n");
             printf(
@@ -786,10 +788,10 @@ int main(int argc, char** argv) {
             exit(EXIT_FAILURE);
             break;
 
-	case 'r':
-	    update_from_remote = 1;
-	    update_interval = 600;
-	    break;
+        case 'r':
+            update_from_remote = 1;
+            update_interval = 600;
+            break;
 
         case 'd':
             gflags_detach = 1;
@@ -801,6 +803,10 @@ int main(int argc, char** argv) {
 
         case 'q':
             gflags_quiet = 1;
+            break;
+
+        case 'x':
+            disable_chroot();
             break;
 
         case 'c':
@@ -845,7 +851,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  if (getuid())
+  if (chroot_enabled() && getuid())
       suicide("FATAL - I need root for chroot!\n");
 
   if (gflags_detach)
