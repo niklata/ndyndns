@@ -1,16 +1,16 @@
-ndyndns, Copyright (c) 2005-2009
+ndyndns, Copyright (c) 2005-2010
 Nicholas J. Kain < njkain <at> gmail <dot> com >
-Licensed under GPL2.
+Licensed under GPL v3.
 
 
 REQUIREMENTS
 ============
 
-Linux-based system (2.6.x/glibc 2.[345].x tested)
+Linux-based system (2.6.x/glibc 2.x tested)
 BSD-based system (OpenBSD 3.8 tested)
 MacOS (10.5 tested)
 
-gcc (3.3.5-4.3.3 tested), curl+libcurl (7.14.0+ tested)
+gcc (3.3.5+ tested), curl+libcurl (7.14.0+ tested)
 
 Note that it is quite possible to add support for unsupported systems.  Please
 refer to bsd.c or linux.c and duplicate the platform-specific functions defined
@@ -145,7 +145,9 @@ a great many robustness and build fixes, particularly on BSD.
 Junji Takagi for providing some necessary fixes for BSD platforms, as
 well as some documentation and consistency fixes.
 
-Taylor R. Campbell for spotting a bug in the signal handling code.
+Taylor R. Campbell for spotting a bug in the signal handling code, and
+suggesting the implementation of a facility to read configuration files
+from standard input.
 
 CONTACT
 =======

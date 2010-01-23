@@ -1,15 +1,19 @@
 /* ndyndns.c - dynamic dns update daemon
  *
- * (C) 2005-2009 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <unistd.h>
@@ -777,7 +781,7 @@ int main(int argc, char** argv) {
 "  -i, --interface             interface ip to check (default: ppp0)\n"
 "  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
 "  -h, --help                  print this help and exit\n"
-"  -v, --version               print version information and exit\n");
+"  -v, --version               print version and license info and exit\n");
             exit(EXIT_FAILURE);
             break;
 
@@ -785,8 +789,18 @@ int main(int argc, char** argv) {
             printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", NDYNDNS_VERSION);
             printf(
 "Copyright (C) 2005-2010 Nicholas J. Kain\n"
-"This is free software; see the source for copying conditions.  There is NO\n"
-"WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, either version 3 of the License, or\n"
+"(at your option) any later version.\n"
+
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n");
             exit(EXIT_FAILURE);
             break;
 
