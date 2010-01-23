@@ -851,6 +851,11 @@ int main(int argc, char** argv) {
     }
   }
 
+  init_dyndns_conf(&dyndns_conf);
+  t = parse_config(conffile, &dyndns_conf);
+  if (t)
+	suicide("FATAL - bad configuration file, exiting.\n");
+
   if (chroot_enabled() && getuid())
       suicide("FATAL - I need root for chroot!\n");
 
@@ -866,11 +871,6 @@ int main(int argc, char** argv) {
 
   if (!chroot_exists())
       suicide("FATAL - No chroot path specified.  Refusing to run.\n");
-
-  init_dyndns_conf(&dyndns_conf);
-  t = parse_config(conffile, &dyndns_conf);
-  if (t)
-	suicide("FATAL - bad configuration file, exiting.\n");
 
   /* Note that failure cases are handled by called fns. */
   imprison(get_chroot());
