@@ -439,6 +439,7 @@ static int assign_string(char **to, char *from)
 	return ret;
 }
 
+/* if file is NULL, then read stdin */
 int parse_config(char *file, dyndns_conf_t *dc)
 {
 	FILE *f;
@@ -446,14 +447,21 @@ int parse_config(char *file, dyndns_conf_t *dc)
 	int ret = -1;
 	char *tmp;
 
-	if (!file) goto out;
-
-	f = fopen(file, "r");
-	if (!f) {
-		log_line("FATAL: parse_config: failed to open [%s] for \
-			 read\n", file);
-		exit(EXIT_FAILURE);
-	}
+	if (file) {
+            f = fopen(file, "r");
+            if (!f) {
+                    log_line("FATAL: parse_config: failed to open [%s] for \
+                             read\n", file);
+                    exit(EXIT_FAILURE);
+            }
+        } else {
+            f = fdopen(0, "r");
+            if (!f) {
+                    log_line("FATAL: parse_config: failed to open stdin for \
+                             read\n");
+                    exit(EXIT_FAILURE);
+            }
+        }
 
 	while (!feof(f)) {
 		if (!fgets(buf, sizeof buf, f))

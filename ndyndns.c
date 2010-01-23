@@ -725,7 +725,7 @@ static int check_ssl(void)
 }
 
 int main(int argc, char** argv) {
-  int c, t, uid = 0, gid = 0;
+  int c, t, uid = 0, gid = 0, cfgstdin = 0;
   char pidfile[MAX_PATH_LENGTH] = PID_FILE_DEFAULT;
   char conffile[MAX_PATH_LENGTH] = CONF_FILE_DEFAULT;
   char *p;
@@ -743,6 +743,7 @@ int main(int argc, char** argv) {
       {"chroot", 1, 0, 'c'},
       {"disable-chroot", 0, 0, 'x'},
       {"file", 1, 0, 'f'},
+      {"cfg-stdin", 0, 0, 'F'},
       {"user", 1, 0, 'u'},
       {"group", 1, 0, 'g'},
       {"interface", 1, 0, 'i'},
@@ -752,7 +753,7 @@ int main(int argc, char** argv) {
       {0, 0, 0, 0}
     };
 
-    c = getopt_long (argc, argv, "rdnp:qc:xf:u:g:i:hv", long_options, &option_index);
+    c = getopt_long(argc, argv, "rdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
     if (c == -1) break;
 
     switch (c) {
@@ -760,7 +761,7 @@ int main(int argc, char** argv) {
         case 'h':
             printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", NDYNDNS_VERSION);
             printf(
-"Copyright (C) 2005-2009 Nicholas J. Kain\n"
+"Copyright (C) 2005-2010 Nicholas J. Kain\n"
 "Usage: ndyndns [OPTIONS]\n"
 "  -d, --detach                detach from TTY and daemonize\n"
 "  -n, --nodetach              stay attached to TTY\n"
@@ -768,6 +769,7 @@ int main(int argc, char** argv) {
 "  -c, --chroot                path where ndyndns should chroot\n"
 "  -x, --disable-chroot        do not actually chroot (not recomended)\n"
 "  -f, --file                  configuration file\n"
+"  -F, --cfg-stdin             read configuration file from standard input\n"
 "  -p, --pidfile               pidfile path\n");
             printf(
 "  -u, --user                  user name that ndyndns should run as\n"
@@ -782,7 +784,7 @@ int main(int argc, char** argv) {
         case 'v':
             printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", NDYNDNS_VERSION);
             printf(
-"Copyright (C) 2005-2007 Nicholas J. Kain\n"
+"Copyright (C) 2005-2010 Nicholas J. Kain\n"
 "This is free software; see the source for copying conditions.  There is NO\n"
 "WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
             exit(EXIT_FAILURE);
@@ -815,6 +817,10 @@ int main(int argc, char** argv) {
 
         case 'f':
             strlcpy(conffile, optarg, sizeof conffile);
+            break;
+
+        case 'F':
+            cfgstdin = 1;
             break;
 
         case 'p':
@@ -852,7 +858,7 @@ int main(int argc, char** argv) {
   }
 
   init_dyndns_conf(&dyndns_conf);
-  t = parse_config(conffile, &dyndns_conf);
+  t = parse_config(cfgstdin ? NULL : conffile, &dyndns_conf);
   if (t)
 	suicide("FATAL - bad configuration file, exiting.\n");
 
