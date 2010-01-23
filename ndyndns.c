@@ -771,7 +771,7 @@ int main(int argc, char** argv) {
 "  -n, --nodetach              stay attached to TTY\n"
 "  -q, --quiet                 don't print to std(out|err) or log\n"
 "  -c, --chroot                path where ndyndns should chroot\n"
-"  -x, --disable-chroot        do not actually chroot (not recomended)\n"
+"  -x, --disable-chroot        do not actually chroot (not recommended)\n"
 "  -f, --file                  configuration file\n"
 "  -F, --cfg-stdin             read configuration file from standard input\n"
 "  -p, --pidfile               pidfile path\n");
