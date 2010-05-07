@@ -435,46 +435,46 @@ void init_namecheap_conf(namecheap_conf_t *t)
     t->hostlist = NULL;
 }
 
-/* returns 0 for valid config, negative for invalid */
+/* returns 1 for valid config, 0 for invalid */
 static int validate_dyndns_conf(dyndns_conf_t *t)
 {
     if ((!!t->username == !!t->password) != t->hostlist) {
         if (t->username == NULL) {
             log_line("config file invalid: no username provided\n");
-            return -1;
+            return 0;
         }
         if (t->password == NULL) {
             log_line("config file invalid: no password provided\n");
-            return -1;
+            return 0;
         }
         if (t->hostlist == NULL) {
             log_line("config file invalid: no hostnames provided\n");
-            return -1;
+            return 0;
         }
     }
     if (t->username)
-        return 0;
+        return 1;
     else
-        return -1;
+        return 0;
 }
 
-/* returns 0 for valid config, negative for invalid */
+/* returns 1 for valid config, 0 for invalid */
 static int validate_nc_conf(namecheap_conf_t *t)
 {
     if (!!t->password != !!t->hostlist) {
         if (t->password == NULL) {
             log_line("config file invalid: no password provided\n");
-            return -1;
+            return 0;
         }
         if (t->hostlist == NULL) {
             log_line("config file invalid: no hostnames provided\n");
-            return -1;
+            return 0;
         }
     }
     if (t->password)
-        return 0;
+        return 1;
     else
-        return -1;
+        return 0;
 }
 
 static char *parse_line_string(char *line, char *key)
@@ -601,7 +601,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
         log_line("parse_config: failed to close [%s]\n", file);
         exit(EXIT_FAILURE);
     }
-    ret = validate_dyndns_conf(dc);
+    ret = validate_dyndns_conf(dc) | validate_nc_conf(nc);
     return ret;
 }
 
