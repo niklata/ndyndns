@@ -17,44 +17,44 @@ offline (default: NO)
 #include <time.h>
 
 typedef enum {
-	WC_NOCHANGE,
-	WC_YES,
-	WC_NO
+    WC_NOCHANGE,
+    WC_YES,
+    WC_NO
 } wc_state;
 
 typedef enum {
-	BMX_NOCHANGE,
-	BMX_YES,
-	BMX_NO
+    BMX_NOCHANGE,
+    BMX_YES,
+    BMX_NO
 } backmx_state;
 
 typedef enum {
-	OFFLINE_NO,
-	OFFLINE_YES
+    OFFLINE_NO,
+    OFFLINE_YES
 } offline_state;
 
 typedef enum {
-	SYSTEM_DYNDNS,
-	SYSTEM_STATDNS,
-	SYSTEM_CUSTOMDNS
+    SYSTEM_DYNDNS,
+    SYSTEM_STATDNS,
+    SYSTEM_CUSTOMDNS
 } dyndns_system;
 
 typedef struct {
-	char *host;
-	char *ip;
-	time_t date;
-	void *next;
+    char *host;
+    char *ip;
+    time_t date;
+    void *next;
 } host_data_t;
 
 typedef struct {
-	char *username;
-	char *password;
-	host_data_t *hostlist;
-	char *mx;
-	wc_state wildcard;
-	backmx_state backmx;
-	offline_state offline;
-	dyndns_system system;
+    char *username;
+    char *password;
+    host_data_t *hostlist;
+    char *mx;
+    wc_state wildcard;
+    backmx_state backmx;
+    offline_state offline;
+    dyndns_system system;
 } dyndns_conf_t;
 
 void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host);
