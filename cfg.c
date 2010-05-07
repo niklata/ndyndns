@@ -541,6 +541,17 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
         if (!fgets(buf, sizeof buf, f))
             break;
 
+        /* Caveat: parse_line_string uses strstr, so order matters here! */
+        if (assign_string(&nc->password,
+                          parse_line_string(buf, "nc_password")))
+            continue;
+        tmp = parse_line_string(buf, "nc_hostname");
+        if (tmp) {
+            populate_hostlist(&nc->hostlist, tmp);
+            free(tmp);
+            continue;
+        }
+
         if (assign_string(&dc->username,
              parse_line_string(buf, "username")))
             continue;
@@ -550,16 +561,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
         tmp = parse_line_string(buf, "hostname");
         if (tmp) {
             populate_hostlist(&dc->hostlist, tmp);
-            free(tmp);
-            continue;
-        }
-
-        if (assign_string(&nc->password,
-                          parse_line_string(buf, "nc_password")))
-            continue;
-        tmp = parse_line_string(buf, "nc_hostname");
-        if (tmp) {
-            populate_hostlist(&nc->hostlist, tmp);
             free(tmp);
             continue;
         }
