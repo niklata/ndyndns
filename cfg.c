@@ -438,7 +438,7 @@ void init_namecheap_conf(namecheap_conf_t *t)
 /* returns 1 for valid config, 0 for invalid */
 static int validate_dyndns_conf(dyndns_conf_t *t)
 {
-    if ((!!t->username == !!t->password) != t->hostlist) {
+    if ((!!t->username == !!t->password) != !!t->hostlist) {
         if (t->username == NULL) {
             log_line("config file invalid: no username provided\n");
             return 0;
