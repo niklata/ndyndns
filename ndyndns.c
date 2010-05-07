@@ -383,7 +383,7 @@ static void nc_update_host(char *host, char *curip)
 
     len = strlcat(url, "&password=", sizeof url);
     update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, dyndns_conf.password, sizeof url);
+    len = strlcat(url, namecheap_conf.password, sizeof url);
     update_ip_buf_error(len, sizeof url);
 
     len = strlcat(url, "&ip=", sizeof url);
