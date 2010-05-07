@@ -389,6 +389,12 @@ void init_dyndns_conf(dyndns_conf_t *t)
     t->system = SYSTEM_DYNDNS;
 }
 
+void init_namecheap_conf(namecheap_conf_t *t)
+{
+    t->password = NULL;
+    t->hostlist = NULL;
+}
+
 /* returns 0 for valid config, -1 for invalid */
 static int validate_dyndns_conf(dyndns_conf_t *t)
 {
@@ -444,7 +450,7 @@ static int assign_string(char **to, char *from)
 }
 
 /* if file is NULL, then read stdin */
-int parse_config(char *file, dyndns_conf_t *dc)
+int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
 {
     FILE *f;
     char buf[MAXLINE];
@@ -483,6 +489,17 @@ int parse_config(char *file, dyndns_conf_t *dc)
             free(tmp);
             continue;
         }
+
+        if (assign_string(&nc->password,
+                          parse_line_string(buf, "nc_password")))
+            continue;
+        tmp = parse_line_string(buf, "nc_hostname");
+        if (tmp) {
+            populate_hostlist(&nc->hostlist, tmp);
+            free(tmp);
+            continue;
+        }
+
         if (assign_string(&dc->mx,
              parse_line_string(buf, "mx")))
             continue;

@@ -55,6 +55,7 @@
 #include "strlist.h"
 
 static dyndns_conf_t dyndns_conf;
+static namecheap_conf_t namecheap_conf;
 
 static char ifname[IFNAMSIZ] = "ppp0";
 
@@ -84,8 +85,8 @@ typedef struct {
     void *next;
 } return_code_list_t;
 
-static strlist_t *update_list = NULL;
-static return_code_list_t *return_list = NULL;
+static strlist_t *dd_update_list = NULL;
+static return_code_list_t *dd_return_list = NULL;
 
 static volatile sig_atomic_t pending_exit;
 
@@ -329,7 +330,7 @@ static void namecheap_update_ip(char *host, char *domain, char *curip)
     return_codes ret2;
     conn_data_t data;
 
-    if (!update_list || !host || !domain || !curip)
+    if (!dd_update_list || !host || !domain || !curip)
         return;
 
     /* set up the authentication url */
@@ -394,12 +395,12 @@ static void namecheap_update_ip(char *host, char *domain, char *curip)
     log_line("data returned: [%s]\n", data.buf);
 
     decompose_buf_to_list(data.buf);
-    if (get_strlist_arity(update_list) !=
-        get_return_code_list_arity(return_list)) {
+    if (get_strlist_arity(dd_update_list) !=
+        get_return_code_list_arity(dd_return_list)) {
         log_line("list arity doesn't match, updates may be suspect\n");
     }
 
-    for (t = update_list, u = return_list;
+    for (t = dd_update_list, u = dd_return_list;
          t != NULL && u != NULL; t = t->next, u = u->next) {
 
         ret2 = postprocess_update(t->str, curip, u->code);
@@ -436,9 +437,8 @@ static void decompose_buf_to_list(char *buf)
     char tok[MAX_BUF], *point = buf;
     int i;
 
-    free_return_code_list(return_list);
-    return_list = NULL;
-
+    free_return_code_list(dd_return_list);
+    dd_return_list = NULL;
 
     while (*point != '\0') {
         while (*point != '\0' && isspace(*point))
@@ -451,55 +451,55 @@ static void decompose_buf_to_list(char *buf)
             tok[i++] = *(point++);
 
         if (strstr(tok, "badsys")) {
-            add_to_return_code_list(RET_BADSYS, &return_list);
+            add_to_return_code_list(RET_BADSYS, &dd_return_list);
             continue;
         }
         if (strstr(tok, "badagent")) {
-            add_to_return_code_list(RET_BADAGENT, &return_list);
+            add_to_return_code_list(RET_BADAGENT, &dd_return_list);
             continue;
         }
         if (strstr(tok, "badauth")) {
-            add_to_return_code_list(RET_BADAUTH, &return_list);
+            add_to_return_code_list(RET_BADAUTH, &dd_return_list);
             continue;
         }
         if (strstr(tok, "!donator")) {
-            add_to_return_code_list(RET_NOTDONATOR, &return_list);
+            add_to_return_code_list(RET_NOTDONATOR, &dd_return_list);
             continue;
         }
         if (strstr(tok, "good")) {
-            add_to_return_code_list(RET_GOOD, &return_list);
+            add_to_return_code_list(RET_GOOD, &dd_return_list);
             continue;
         }
         if (strstr(tok, "nochg")) {
-            add_to_return_code_list(RET_NOCHG, &return_list);
+            add_to_return_code_list(RET_NOCHG, &dd_return_list);
             continue;
         }
         if (strstr(tok, "notfqdn")) {
-            add_to_return_code_list(RET_NOTFQDN, &return_list);
+            add_to_return_code_list(RET_NOTFQDN, &dd_return_list);
             continue;
         }
         if (strstr(tok, "nohost")) {
-            add_to_return_code_list(RET_NOHOST, &return_list);
+            add_to_return_code_list(RET_NOHOST, &dd_return_list);
             continue;
         }
         if (strstr(tok, "!yours")) {
-            add_to_return_code_list(RET_NOTYOURS, &return_list);
+            add_to_return_code_list(RET_NOTYOURS, &dd_return_list);
             continue;
         }
         if (strstr(tok, "abuse")) {
-            add_to_return_code_list(RET_ABUSE, &return_list);
+            add_to_return_code_list(RET_ABUSE, &dd_return_list);
             continue;
         }
         if (strstr(tok, "numhost")) {
-            add_to_return_code_list(RET_NUMHOST, &return_list);
+            add_to_return_code_list(RET_NUMHOST, &dd_return_list);
             continue;
         }
         if (strstr(tok, "dnserr")) {
-            add_to_return_code_list(RET_DNSERR, &return_list);
+            add_to_return_code_list(RET_DNSERR, &dd_return_list);
             continue;
         }
         if (strstr(tok, "911")) {
-            add_to_return_code_list(RET_911, &return_list);
+            add_to_return_code_list(RET_911, &dd_return_list);
             continue;
         }
     }
@@ -603,7 +603,7 @@ static void dyndns_update_ip(char *curip)
     return_codes ret2;
     conn_data_t data;
 
-    if (!update_list || !curip)
+    if (!dd_update_list || !curip)
         return;
 
     /* set up the authentication url */
@@ -635,7 +635,7 @@ static void dyndns_update_ip(char *curip)
 
     len = strlcat(url, "&hostname=", sizeof url);
     update_ip_buf_error(len, sizeof url);
-    for (t = update_list, runonce = 0; t != NULL; t = t->next) {
+    for (t = dd_update_list, runonce = 0; t != NULL; t = t->next) {
         if (runonce) {
             len = strlcat(url, ",", sizeof url);
             update_ip_buf_error(len, sizeof url);
@@ -744,12 +744,12 @@ static void dyndns_update_ip(char *curip)
         goto out;
 
     decompose_buf_to_list(data.buf);
-    if (get_strlist_arity(update_list) !=
-        get_return_code_list_arity(return_list)) {
+    if (get_strlist_arity(dd_update_list) !=
+        get_return_code_list_arity(dd_return_list)) {
         log_line("list arity doesn't match, updates may be suspect\n");
     }
 
-    for (t = update_list, u = return_list;
+    for (t = dd_update_list, u = dd_return_list;
         t != NULL && u != NULL; t = t->next, u = u->next) {
 
         ret2 = postprocess_update(t->str, curip, u->code);
@@ -803,25 +803,25 @@ static void do_work(void)
             goto sleep;
         }
 
-        free_strlist(update_list);
-        free_return_code_list(return_list);
-        update_list = NULL;
-        return_list = NULL;
+        free_strlist(dd_update_list);
+        free_return_code_list(dd_return_list);
+        dd_update_list = NULL;
+        dd_return_list = NULL;
 
         for (t = dyndns_conf.hostlist; t != NULL; t = t->next) {
             if (strcmp(curip, t->ip)) {
                 log_line("adding for update [%s]\n", t->host);
-                add_to_strlist(t->host, &update_list);
+                add_to_strlist(t->host, &dd_update_list);
                 continue;
             }
             if (dyndns_conf.system == SYSTEM_DYNDNS &&
                 time(0) - t->date > REFRESH_INTERVAL) {
                 log_line("adding for refresh [%s]\n", t->host);
-                add_to_strlist(t->host, &update_list);
+                add_to_strlist(t->host, &dd_update_list);
             }
         }
 
-        if (update_list)
+        if (dd_update_list)
             dyndns_update_ip(curip);
 sleep:
         sleep(update_interval);
@@ -988,7 +988,8 @@ int main(int argc, char** argv) {
   }
 
   init_dyndns_conf(&dyndns_conf);
-  t = parse_config(cfgstdin ? NULL : conffile, &dyndns_conf);
+  init_namecheap_conf(&namecheap_conf);
+  t = parse_config(cfgstdin ? NULL : conffile, &dyndns_conf, &namecheap_conf);
   if (t)
     suicide("FATAL - bad configuration file, exiting.\n");
 

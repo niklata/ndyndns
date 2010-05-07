@@ -57,10 +57,16 @@ typedef struct {
     dyndns_system system;
 } dyndns_conf_t;
 
+typedef struct {
+    char *password;
+    host_data_t *hostlist;
+} namecheap_conf_t;
+
 void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host);
 void modify_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip);
 void modify_hostdate_in_list(dyndns_conf_t *conf, char *host, time_t time);
 void init_dyndns_conf(dyndns_conf_t *t);
-int parse_config(char *file, dyndns_conf_t *dc);
+void init_namecheap_conf(namecheap_conf_t *t);
+int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc);
 #endif
 
