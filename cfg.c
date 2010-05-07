@@ -435,22 +435,46 @@ void init_namecheap_conf(namecheap_conf_t *t)
     t->hostlist = NULL;
 }
 
-/* returns 0 for valid config, -1 for invalid */
+/* returns 0 for valid config, negative for invalid */
 static int validate_dyndns_conf(dyndns_conf_t *t)
 {
-    if (t->username == NULL) {
-        log_line("config file invalid: no username provided\n");
-        return -1;
+    if ((!!t->username == !!t->password) != t->hostlist) {
+        if (t->username == NULL) {
+            log_line("config file invalid: no username provided\n");
+            return -1;
+        }
+        if (t->password == NULL) {
+            log_line("config file invalid: no password provided\n");
+            return -1;
+        }
+        if (t->hostlist == NULL) {
+            log_line("config file invalid: no hostnames provided\n");
+            return -1;
+        }
     }
-    if (t->password == NULL) {
-        log_line("config file invalid: no password provided\n");
+    if (t->username)
+        return 0;
+    else
         return -1;
+}
+
+/* returns 0 for valid config, negative for invalid */
+static int validate_nc_conf(namecheap_conf_t *t)
+{
+    if (!!t->password != !!t->hostlist) {
+        if (t->password == NULL) {
+            log_line("config file invalid: no password provided\n");
+            return -1;
+        }
+        if (t->hostlist == NULL) {
+            log_line("config file invalid: no hostnames provided\n");
+            return -1;
+        }
     }
-    if (t->hostlist == NULL) {
-        log_line("config file invalid: no hostnames provided\n");
+    if (t->password)
+        return 0;
+    else
         return -1;
-    }
-    return 0;
 }
 
 static char *parse_line_string(char *line, char *key)

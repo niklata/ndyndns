@@ -434,11 +434,12 @@ static void nc_update_host(char *host, char *curip)
     free(data.buf);
 }
 
-/* Pass hostnames to be updated to above fn */
 static void nc_update_ip(char *curip)
 {
-    printf("unimplemented %s", curip);
-    return;
+    strlist_t *t;
+
+    for (t = nc_update_list; t != NULL; t = t->next)
+        nc_update_host(t->str, curip);
 }
 
 /* not really well documented, so here:
@@ -834,6 +835,9 @@ static void do_work(void)
         if (dd_update_list)
             dyndns_update_ip(curip);
 
+        free_strlist(nc_update_list);
+        nc_update_list = NULL;
+
         for (t = namecheap_conf.hostlist; t != NULL; t = t->next) {
             if (strcmp(curip, t->ip)) {
                 log_line("adding for update [%s]\n", t->host);
@@ -1011,7 +1015,7 @@ int main(int argc, char** argv) {
   init_dyndns_conf(&dyndns_conf);
   init_namecheap_conf(&namecheap_conf);
   t = parse_config(cfgstdin ? NULL : conffile, &dyndns_conf, &namecheap_conf);
-  if (t)
+  if (!t)
     suicide("FATAL - bad configuration file, exiting.\n");
 
   if (chroot_enabled() && getuid())
