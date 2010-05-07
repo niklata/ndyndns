@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <alloca.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/time.h>
@@ -87,6 +88,7 @@ typedef struct {
 
 static strlist_t *dd_update_list = NULL;
 static return_code_list_t *dd_return_list = NULL;
+static strlist_t *nc_update_list = NULL;
 
 static volatile sig_atomic_t pending_exit;
 
@@ -266,7 +268,7 @@ int get_return_code_list_arity(return_code_list_t *list)
 }
 
 /* Returns 0 on success, 1 on temporary error, terminates program on fatal */
-static int update_ip_curl_errcheck(int val)
+static int update_ip_curl_errcheck(int val, char *cerr)
 {
     switch (val) {
         case CURLE_OK:
@@ -291,13 +293,13 @@ static int update_ip_curl_errcheck(int val)
         case CURLE_BAD_CONTENT_ENCODING:
         case CURLE_SSL_ENGINE_INITFAILED:
         case CURLE_LOGIN_DENIED:
-            suicide("Update failed.  cURL returned a fatal error: [%s].  Exiting.\n", curlerror);
+            suicide("Update failed.  cURL returned a fatal error: [%s].  Exiting.\n", cerr);
             break;
         case CURLE_OUT_OF_MEMORY:
         case CURLE_READ_ERROR:
         case CURLE_TOO_MANY_REDIRECTS:
         case CURLE_RECV_ERROR:
-            suicide("Update status unknown.  cURL returned a fatal error: [%s].  Exiting.\n", curlerror);
+            suicide("Update status unknown.  cURL returned a fatal error: [%s].  Exiting.\n", cerr);
             break;
         case CURLE_COULDNT_RESOLVE_PROXY:
         case CURLE_COULDNT_RESOLVE_HOST:
@@ -306,31 +308,56 @@ static int update_ip_curl_errcheck(int val)
         case CURLE_HTTP_PORT_FAILED:
         case CURLE_GOT_NOTHING:
         case CURLE_SEND_ERROR:
-            log_line("Temporary error connecting to host: [%s].  Queuing for retry.\n", curlerror);
+            log_line("Temporary error connecting to host: [%s].  Queuing for retry.\n", cerr);
             return 1;
         default:
-            log_line("cURL returned nonfatal error: [%s]\n", curlerror);
+            log_line("cURL returned nonfatal error: [%s]\n", cerr);
             return 0;
     }
+    return -1;
 }
 
-// XXX: wrong, needs another list of hosts + domains
-static void namecheap_update_ip(char *host, char *domain, char *curip)
+static void update_ip_buf_error(size_t len, size_t size)
+{
+    if (len > size)
+        suicide("FATAL - config file would overflow a fixed buffer\n");
+}
+
+static void nc_update_host(char *host, char *curip)
 {
     CURL *h;
     CURLcode ret;
-    int len, runonce = 0;
+    int len, hostname_size = 0, domain_size = 0;
     char url[MAX_BUF];
-    char tbuf[32];
-    char unpwd[256];
     char useragent[64];
     char curlerror[CURL_ERROR_SIZE];
-    strlist_t *t;
-    return_code_list_t *u;
-    return_codes ret2;
+    char *hostname = NULL, *domain = NULL, *p;
     conn_data_t data;
 
-    if (!dd_update_list || !host || !domain || !curip)
+    if (!dd_update_list || !host || !curip)
+        return;
+
+    p = strrchr(host, '.');
+    if (!p)
+        return;
+    p = strrchr(host, '.');
+    if (!p) {
+        domain_size = strlen(host) + 1;
+        hostname_size = 2;
+        hostname = alloca(hostname_size);
+        hostname[0] = '@';
+        hostname[1] = '\0';
+        domain = host;
+    } else {
+        hostname_size = p - host + 1;
+        domain_size = hostname + strlen(host) - p;
+        hostname = alloca(hostname_size);
+        domain = alloca(hostname_size);
+        strlcpy(hostname, host, hostname_size);
+        strlcpy(domain, p+1, domain_size);
+    }
+
+    if (!hostname || !domain)
         return;
 
     /* set up the authentication url */
@@ -346,7 +373,7 @@ static void namecheap_update_ip(char *host, char *domain, char *curip)
 
     len = strlcat(url, "host=", sizeof url);
     update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, host, sizeof url);
+    len = strlcat(url, hostname, sizeof url);
     update_ip_buf_error(len, sizeof url);
 
     len = strlcat(url, "&domain=", sizeof url);
@@ -387,41 +414,31 @@ static void namecheap_update_ip(char *host, char *domain, char *curip)
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
 
-    if (update_ip_curl_errcheck(ret) == 1)
+    if (update_ip_curl_errcheck(ret, curlerror) == 1)
         goto out;
 
-    /* XXX: handle return value -- successful grep for string '<ErrCount>0'
-       implies success */
-    log_line("data returned: [%s]\n", data.buf);
+    log_line("DEBUG - data returned: [%s]\n", data.buf);
 
-    decompose_buf_to_list(data.buf);
-    if (get_strlist_arity(dd_update_list) !=
-        get_return_code_list_arity(dd_return_list)) {
-        log_line("list arity doesn't match, updates may be suspect\n");
+    if (strstr(data.buf, "<ErrCount>0")) {
+        log_line(
+            "%s: [good] - Update successful.\n", host);
+        write_dnsip(host, curip);
+        write_dnsdate(host, time(0));
+        modify_nc_hostdate_in_list(&namecheap_conf, host, time(0));
+        modify_nc_hostip_in_list(&namecheap_conf, host, curip);
+    } else {
+        log_line("%s: [fail] - Failed to update.\n", host);
     }
 
-    for (t = dd_update_list, u = dd_return_list;
-         t != NULL && u != NULL; t = t->next, u = u->next) {
-
-        ret2 = postprocess_update(t->str, curip, u->code);
-        switch (ret2) {
-            case -1:
-            default:
-                exit(EXIT_FAILURE);
-                break;
-            case -2:
-                log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.\n", t->str, t->str);
-                write_dnserr(t->str, ret2);
-                remove_host_from_host_data_list(&dyndns_conf, t->str);
-                break;
-            case 0:
-                modify_hostdate_in_list(&dyndns_conf, t->str, time(0));
-                modify_hostip_in_list(&dyndns_conf, t->str, curip);
-                break;
-        }
-    }
   out:
     free(data.buf);
+}
+
+/* Pass hostnames to be updated to above fn */
+static void nc_update_ip(char *curip)
+{
+    printf("unimplemented %s", curip);
+    return;
 }
 
 /* not really well documented, so here:
@@ -582,12 +599,6 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
     return ret;
 }
 
-static void update_ip_buf_error(size_t len, size_t size)
-{
-    if (len > size)
-        suicide("FATAL - config file would overflow a fixed buffer\n");
-}
-
 static void dyndns_update_ip(char *curip)
 {
     CURL *h;
@@ -740,7 +751,7 @@ static void dyndns_update_ip(char *curip)
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
 
-    if (update_ip_curl_errcheck(ret) == 1)
+    if (update_ip_curl_errcheck(ret, curlerror) == 1)
         goto out;
 
     decompose_buf_to_list(data.buf);
@@ -820,10 +831,20 @@ static void do_work(void)
                 add_to_strlist(t->host, &dd_update_list);
             }
         }
-
         if (dd_update_list)
             dyndns_update_ip(curip);
-sleep:
+
+        for (t = namecheap_conf.hostlist; t != NULL; t = t->next) {
+            if (strcmp(curip, t->ip)) {
+                log_line("adding for update [%s]\n", t->host);
+                add_to_strlist(t->host, &nc_update_list);
+                continue;
+            }
+        }
+        if (nc_update_list)
+            nc_update_ip(curip);
+
+      sleep:
         sleep(update_interval);
     }
 }
@@ -885,7 +906,8 @@ int main(int argc, char** argv) {
 "Usage: ndyndns [OPTIONS]\n"
 "  -d, --detach                detach from TTY and daemonize\n"
 "  -n, --nodetach              stay attached to TTY\n"
-"  -q, --quiet                 don't print to std(out|err) or log\n"
+"  -q, --quiet                 don't print to std(out|err) or log\n");
+            printf(
 "  -c, --chroot                path where ndyndns should chroot\n"
 "  -x, --disable-chroot        do not actually chroot (not recommended)\n"
 "  -f, --file                  configuration file\n"
@@ -907,16 +929,15 @@ int main(int argc, char** argv) {
 "This program is free software: you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
 "the Free Software Foundation, either version 3 of the License, or\n"
-"(at your option) any later version.\n\n"
-
+"(at your option) any later version.\n\n", NDYNDNS_VERSION);
+            printf(
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
 "GNU General Public License for more details.\n\n"
 
 "You should have received a copy of the GNU General Public License\n"
-"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n",
-            NDYNDNS_VERSION);
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n");
             exit(EXIT_FAILURE);
             break;
 

@@ -198,6 +198,46 @@ void modify_hostdate_in_list(dyndns_conf_t *conf, char *host, time_t time)
     t->date = time;
 }
 
+void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host, char *ip)
+{
+    host_data_t *t;
+    size_t len;
+    char *buf;
+
+    if (!conf || !host || !conf->hostlist)
+        return;
+
+    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    free(t->ip);
+    if (!ip) {
+        t->ip = ip;
+        return;
+    }
+    len = strlen(ip) + 1;
+    buf = xmalloc(len);
+    strlcpy(buf, ip, len);
+    t->ip = buf;
+}
+
+void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host, time_t time)
+{
+    host_data_t *t;
+
+    if (!conf || !host || !conf->hostlist)
+        return;
+
+    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    t->date = time;
+}
+
 static time_t get_dnsdate(char *host)
 {
     FILE *f;
@@ -538,7 +578,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
         exit(EXIT_FAILURE);
     }
     ret = validate_dyndns_conf(dc);
-out:
     return ret;
 }
 
