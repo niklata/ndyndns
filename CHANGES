@@ -4,6 +4,7 @@
 * Add support for Namecheap DNS service.
 * Allow most options previously requiring command line switches to be specified
   in the configuration file.
+* Be much more flexible about whitespace in the configuration file.
 
 1.16:
 
