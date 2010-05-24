@@ -568,25 +568,20 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
             break;
         ++lnum;
 
-        log_line("parse line: [%s]\n", buf);
-
         point = buf;
         while (*point == ' ' || *point == '\t')
             ++point;
 
         if (!strncmp(PRS_CONFIG_STR, point, sizeof PRS_CONFIG_STR - 1)) {
             prs = PRS_CONFIG;
-            log_line("line %d: section is now CONFIG", lnum);
             continue;
         }
         if (!strncmp(PRS_DYNDNS_STR, point, sizeof PRS_DYNDNS_STR - 1)) {
             prs = PRS_DYNDNS;
-            log_line("line %d: section is now DYNDNS", lnum);
             continue;
         }
         if (!strncmp(PRS_NAMECHEAP_STR, point, sizeof PRS_NAMECHEAP_STR - 1)) {
             prs = PRS_NAMECHEAP;
-            log_line("line %d: section is now NAMECHEAP", lnum);
             continue;
         }
 
@@ -598,11 +593,9 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     break;
                 case PRS_DYNDNS:
                     assign_string(&dc->password, tmp);
-                    log_line("config line %d: read dc password [%s]", lnum, tmp);
                     break;
                 case PRS_NAMECHEAP:
                     assign_string(&nc->password, tmp);
-                    log_line("config line %d: read nc password [%s]", lnum, tmp);
                     break;
             }
             free(tmp);
@@ -617,11 +610,9 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     break;
                 case PRS_DYNDNS:
                     populate_hostlist(&dc->hostlist, tmp);
-                    log_line("config line %d: read dc hosts [%s]", lnum, tmp);
                     break;
                 case PRS_NAMECHEAP:
                     populate_hostlist(&nc->hostlist, tmp);
-                    log_line("config line %d: read nc hosts [%s]", lnum, tmp);
                     break;
             }
             free(tmp);
@@ -636,7 +627,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     break;
                 case PRS_DYNDNS:
                     assign_string(&dc->username, tmp);
-                    log_line("config line %d: read dc username [%s]", lnum, tmp);
                     break;
             }
             free(tmp);
@@ -651,7 +641,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     break;
                 case PRS_DYNDNS:
                     assign_string(&dc->mx, tmp);
-                    log_line("config line %d: read dc mx [%s]", lnum, tmp);
                     break;
             }
             free(tmp);
@@ -664,7 +653,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     parse_warn(lnum, "nowildcard");
                     break;
                 case PRS_DYNDNS:
-                    log_line("config line %d: read dc nowildcard", lnum);
                     dc->wildcard = WC_NO;
                     break;
             }
@@ -676,7 +664,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     parse_warn(lnum, "wildcard");
                     break;
                 case PRS_DYNDNS:
-                    log_line("config line %d: read dc wildcard", lnum);
                     dc->wildcard = WC_YES;
                     break;
             }
@@ -688,7 +675,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     parse_warn(lnum, "primarymx");
                     break;
                 case PRS_DYNDNS:
-                    log_line("config line %d: read dc primarymx", lnum);
                     dc->backmx = BMX_NO;
                     break;
             }
@@ -700,7 +686,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     parse_warn(lnum, "backupmx");
                     break;
                 case PRS_DYNDNS:
-                    log_line("config line %d: read dc backupmx", lnum);
                     dc->backmx = BMX_YES;
                     break;
             }
@@ -712,7 +697,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     parse_warn(lnum, "offline");
                     break;
                 case PRS_DYNDNS:
-                    log_line("config line %d: read dc offline", lnum);
                     dc->offline = OFFLINE_YES;
                     break;
             }
@@ -724,7 +708,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     parse_warn(lnum, "dyndns");
                     break;
                 case PRS_DYNDNS:
-                    log_line("config line %d: read dc dyndns", lnum);
                     dc->system = SYSTEM_DYNDNS;
                     break;
             }
@@ -736,7 +719,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     parse_warn(lnum, "customdns");
                     break;
                 case PRS_DYNDNS:
-                    log_line("config line %d: read dc customdns", lnum);
                     dc->system = SYSTEM_CUSTOMDNS;
                     break;
             }
@@ -748,7 +730,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     parse_warn(lnum, "staticdns");
                     break;
                 case PRS_DYNDNS:
-                    log_line("config line %d: read dc staticdns", lnum);
                     dc->system = SYSTEM_STATDNS;
                     break;
             }

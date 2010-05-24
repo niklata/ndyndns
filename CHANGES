@@ -1,0 +1,12 @@
+2.0:
+
+* Change configuration file format.
+* Add support for Namecheap DNS service.
+* Allow most options previously requiring command line switches to be specified
+  in the configuration file.
+
+1.16:
+
+* Support parsing of configuration files passed in through standard input.
+* Parse configuration files before forking into the background as a daemon.
+* Change license to GPL3.

@@ -1,0 +1,13 @@
+If you are upgrading from ndyndns 1.x to 2.x, then it will be necessary
+to update your configuration file.
+
+At the minimum, add a line to the top of your config file:
+
+[dyndns]
+
+Then, replace any "hostname=" lines with "hosts=".
+
+That is sufficient for a minimal conversion.  The new format is quite a
+bit more flexible, and may allow you to no longer rely on command line
+switches if you so wish; I encourage you to read the documentation to
+see the new changes.
