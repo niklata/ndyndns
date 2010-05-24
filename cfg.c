@@ -372,9 +372,14 @@ out:
     return ret;
 }
 
-static void do_populate(host_data_t **list, char *host)
+static void do_populate(host_data_t **list, char *host_in)
 {
-    char *ip;
+    char *ip, *host, *host_orig;
+
+    host = strdup(host_in);
+    host_orig = host;
+    while (*host == ' ' || *host == '\t')
+        ++host;
 
     if (strlen(host)) {
         ip = get_dnsip(host);
@@ -386,25 +391,30 @@ static void do_populate(host_data_t **list, char *host)
         }
         free(ip);
     }
+    free(host_orig);
 }
 
 static void populate_hostlist(host_data_t **list, char *hostname)
 {
-    char *left = hostname, *right = (char *)1, *t = NULL;
+    char *left = hostname, *right = (char *)1, *t = NULL, *p;
     size_t len;
 
     if (!list || !left)
         suicide("NULL passed to populate_hostlist()\n");
     if (strlen(left) == 0) {
-        suicide("No hostnames were provided for updates.  Exiting.");
+        suicide("No hosts were provided for updates.  Exiting.");
     }
 
-    log_line("hostname: [%s]\n", left);
+    log_line("hosts: [%s]\n", left);
 
     do {
         right = strchr(left, ',');
         if (right != NULL && left < right) {
-            len = right - left + 1;
+            for (p = left; p < right; ++p) {
+                if (*p == ' ' || *p == '\t')
+                    break;
+            }
+            len = p - left + 1;
             t = xmalloc(len);
             memset(t, '\0', len);
             memcpy(t, left, len - 1);
@@ -481,7 +491,7 @@ static int validate_nc_conf(namecheap_conf_t *t)
 static char *parse_line_string(char *line, char *key)
 {
     char *point = NULL, *ret = NULL;
-    int len;
+    int len, foundeq = 0;
 
     null_crlf(line);
     point = line;
@@ -489,12 +499,33 @@ static char *parse_line_string(char *line, char *key)
         goto out;
 
     point += strlen(key);
-    if (*point != '=')
+    while (1) {
+        if (*point == ' ' || *point == '\t') {
+            ++point;
+        } else if (*point == '=') {
+            foundeq = 1;
+            ++point;
+        } else {
+            break;
+        }
+    }
+    if (!foundeq)
         goto out;
-    ++point;
-    len = strlen(point) + 1;
-    ret = xmalloc(len);
-    strlcpy(ret, point, len);
+    len = strlen(point);
+    while (1) {
+        if (*(point+len-1) == ' ' || *(point+len-1) == '\t') {
+            if (len - 1 >= 0)
+                *(point+len-1) = '\0';
+            if (len > 0)
+                --len;
+            else
+                break;
+        }
+        else
+            break;
+    }
+    ret = xmalloc(len + 1);
+    strlcpy(ret, point, len + 1);
 out:
     return ret;
 }
@@ -862,7 +893,6 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
             }
             continue;
         }
-        
     }
 
     if (fclose(f)) {
