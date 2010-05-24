@@ -483,8 +483,8 @@ static char *parse_line_string(char *line, char *key)
     int len;
 
     null_crlf(line);
-    point = strstr(line, key);
-    if (point == NULL)
+    point = line;
+    if (strncmp(point, key, strlen(key)))
         goto out;
 
     point += strlen(key);
@@ -513,92 +513,248 @@ static int assign_string(char **to, char *from)
     return ret;
 }
 
+enum prs_state {
+    PRS_NONE,
+    PRS_CONFIG,
+    PRS_DYNDNS,
+    PRS_NAMECHEAP
+};
+
+#define PRS_CONFIG_STR "[config]"
+#define PRS_DYNDNS_STR "[dyndns]"
+#define PRS_NAMECHEAP_STR "[namecheap]"
+#define NOWILDCARD_STR "nowildcard"
+#define WILDCARD_STR "wildcard"
+#define PRIMARYMX_STR "primarymx"
+#define BACKUPMX_STR "backupmx"
+#define OFFLINE_STR "offline"
+#define DYNDNS_STR "dyndns"
+#define CUSTOMDNS_STR "customdns"
+#define STATICDNS_STR "staticdns"
+
+void parse_warn(unsigned int lnum, char *name)
+{
+    log_line("WARNING: config line %d: %s statement not valid in section\n", lnum, name);
+}
+
 /* if file is NULL, then read stdin */
 int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
 {
     FILE *f;
     char buf[MAXLINE];
     int ret = -1;
-    char *tmp;
+    unsigned int lnum = 0;
+    char *point, *tmp;
+    enum prs_state prs = PRS_NONE;
 
     if (file) {
-            f = fopen(file, "r");
-            if (!f) {
-                    log_line("FATAL: parse_config: failed to open [%s] for \
+        f = fopen(file, "r");
+        if (!f) {
+            log_line("FATAL: parse_config: failed to open [%s] for \
                              read\n", file);
-                    exit(EXIT_FAILURE);
-            }
-        } else {
-            f = fdopen(0, "r");
-            if (!f) {
-                    log_line("FATAL: parse_config: failed to open stdin for \
-                             read\n");
-                    exit(EXIT_FAILURE);
-            }
+            exit(EXIT_FAILURE);
         }
+    } else {
+        f = fdopen(0, "r");
+        if (!f) {
+            log_line("FATAL: parse_config: failed to open stdin for \
+                             read\n");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     while (!feof(f)) {
         if (!fgets(buf, sizeof buf, f))
             break;
+        ++lnum;
 
-        /* Caveat: parse_line_string uses strstr, so order matters here! */
-        if (assign_string(&nc->password,
-                          parse_line_string(buf, "nc_password"))) {
+        log_line("parse line: [%s]\n", buf);
+
+        point = buf;
+        while (*point == ' ' || *point == '\t')
+            ++point;
+
+        if (!strncmp(PRS_CONFIG_STR, point, sizeof PRS_CONFIG_STR - 1)) {
+            prs = PRS_CONFIG;
+            log_line("line %d: section is now CONFIG", lnum);
             continue;
         }
-        tmp = parse_line_string(buf, "nc_hostname");
+        if (!strncmp(PRS_DYNDNS_STR, point, sizeof PRS_DYNDNS_STR - 1)) {
+            prs = PRS_DYNDNS;
+            log_line("line %d: section is now DYNDNS", lnum);
+            continue;
+        }
+        if (!strncmp(PRS_NAMECHEAP_STR, point, sizeof PRS_NAMECHEAP_STR - 1)) {
+            prs = PRS_NAMECHEAP;
+            log_line("line %d: section is now NAMECHEAP", lnum);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "password");
         if (tmp) {
-            populate_hostlist(&nc->hostlist, tmp);
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "password");
+                    break;
+                case PRS_DYNDNS:
+                    assign_string(&dc->password, tmp);
+                    log_line("config line %d: read dc password [%s]", lnum, tmp);
+                    break;
+                case PRS_NAMECHEAP:
+                    assign_string(&nc->password, tmp);
+                    log_line("config line %d: read nc password [%s]", lnum, tmp);
+                    break;
+            }
             free(tmp);
             continue;
         }
 
-        if (assign_string(&dc->username,
-                          parse_line_string(buf, "username"))) {
-            continue;
-        }
-        if (assign_string(&dc->password,
-                          parse_line_string(buf, "password"))) {
-            continue;
-        }
-        tmp = parse_line_string(buf, "hostname");
+        tmp = parse_line_string(point, "hosts");
         if (tmp) {
-            populate_hostlist(&dc->hostlist, tmp);
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "hosts");
+                    break;
+                case PRS_DYNDNS:
+                    populate_hostlist(&dc->hostlist, tmp);
+                    log_line("config line %d: read dc hosts [%s]", lnum, tmp);
+                    break;
+                case PRS_NAMECHEAP:
+                    populate_hostlist(&nc->hostlist, tmp);
+                    log_line("config line %d: read nc hosts [%s]", lnum, tmp);
+                    break;
+            }
             free(tmp);
             continue;
         }
 
-        if (assign_string(&dc->mx, parse_line_string(buf, "mx"))) {
+        tmp = parse_line_string(point, "username");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "username");
+                    break;
+                case PRS_DYNDNS:
+                    assign_string(&dc->username, tmp);
+                    log_line("config line %d: read dc username [%s]", lnum, tmp);
+                    break;
+            }
+            free(tmp);
             continue;
         }
-        if (strstr(buf, "nowildcard")) {
-            dc->wildcard = WC_NO;
+
+        tmp = parse_line_string(point, "mx");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "mx");
+                    break;
+                case PRS_DYNDNS:
+                    assign_string(&dc->mx, tmp);
+                    log_line("config line %d: read dc mx [%s]", lnum, tmp);
+                    break;
+            }
+            free(tmp);
             continue;
         }
-        if (strstr(buf, "wildcard")) {
-            dc->wildcard = WC_YES;
+
+        if (!strncmp(NOWILDCARD_STR, point, sizeof NOWILDCARD_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "nowildcard");
+                    break;
+                case PRS_DYNDNS:
+                    log_line("config line %d: read dc nowildcard", lnum);
+                    dc->wildcard = WC_NO;
+                    break;
+            }
             continue;
         }
-        if (strstr(buf, "primarymx")) {
-            dc->backmx = BMX_NO;
+        if (!strncmp(WILDCARD_STR, point, sizeof WILDCARD_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "wildcard");
+                    break;
+                case PRS_DYNDNS:
+                    log_line("config line %d: read dc wildcard", lnum);
+                    dc->wildcard = WC_YES;
+                    break;
+            }
             continue;
         }
-        if (strstr(buf, "backupmx")) {
-            dc->backmx = BMX_YES;
+        if (!strncmp(PRIMARYMX_STR, point, sizeof PRIMARYMX_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "primarymx");
+                    break;
+                case PRS_DYNDNS:
+                    log_line("config line %d: read dc primarymx", lnum);
+                    dc->backmx = BMX_NO;
+                    break;
+            }
             continue;
         }
-        if (strstr(buf, "offline")) {
-            dc->offline = OFFLINE_YES;
+        if (!strncmp(BACKUPMX_STR, point, sizeof BACKUPMX_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "backupmx");
+                    break;
+                case PRS_DYNDNS:
+                    log_line("config line %d: read dc backupmx", lnum);
+                    dc->backmx = BMX_YES;
+                    break;
+            }
+            continue;
         }
-        if (strstr(buf, "dyndns")) {
-            dc->system = SYSTEM_DYNDNS;
+        if (!strncmp(OFFLINE_STR, point, sizeof OFFLINE_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "offline");
+                    break;
+                case PRS_DYNDNS:
+                    log_line("config line %d: read dc offline", lnum);
+                    dc->offline = OFFLINE_YES;
+                    break;
+            }
+            continue;
         }
-        if (strstr(buf, "customdns")) {
-            dc->system = SYSTEM_CUSTOMDNS;
+        if (!strncmp(DYNDNS_STR, point, sizeof DYNDNS_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "dyndns");
+                    break;
+                case PRS_DYNDNS:
+                    log_line("config line %d: read dc dyndns", lnum);
+                    dc->system = SYSTEM_DYNDNS;
+                    break;
+            }
+            continue;
         }
-        if (strstr(buf, "staticdns")) {
-            dc->system = SYSTEM_STATDNS;
+        if (!strncmp(CUSTOMDNS_STR, point, sizeof CUSTOMDNS_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "customdns");
+                    break;
+                case PRS_DYNDNS:
+                    log_line("config line %d: read dc customdns", lnum);
+                    dc->system = SYSTEM_CUSTOMDNS;
+                    break;
+            }
+            continue;
         }
+        if (!strncmp(STATICDNS_STR, point, sizeof STATICDNS_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "staticdns");
+                    break;
+                case PRS_DYNDNS:
+                    log_line("config line %d: read dc staticdns", lnum);
+                    dc->system = SYSTEM_STATDNS;
+                    break;
+            }
+            continue;
+        }
+
     }
 
     if (fclose(f)) {
@@ -608,4 +764,3 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
     ret = validate_dyndns_conf(dc) | validate_nc_conf(nc);
     return ret;
 }
-
