@@ -56,9 +56,16 @@ vim /etc/ndyndns.conf
 example config
 -----------------
 
-username=test
-password=test
-hostname=test.dyndns.org,test.ath.cx,test.dnsalias.net,test.dnsalias.org
+[config]
+chroot = /var/lib/ndyndns
+user = dyndns
+group = dyndns
+interface = eth0
+
+[dyndns]
+username = test
+password = test
+hostname = test.dyndns.org, test.ath.cx, test.dnsalias.net, test.dnsalias.org
 wildcard
 
 -----------------
@@ -94,7 +101,7 @@ with the name of the network interface associated with the IP that you wish
 to be updated to your dyndns records (eg, for a PPPoE interface on Linux,
 it is probably correct to replace eth0 with ppp0).
 
-ndyndns -n -c /var/lib/ndyndns -f /etc/ndyndns.conf -i eth0 -u dyndns -g dyndns
+ndyndns -n -f /etc/ndyndns.conf
 
 ADDITIONAL NOTES
 ================
