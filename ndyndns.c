@@ -101,16 +101,16 @@ static void sighandler(int sig) {
 }
 
 static void fix_signals(void) {
-  disable_signal(SIGPIPE);
-  disable_signal(SIGUSR1);
-  disable_signal(SIGUSR2);
-  disable_signal(SIGTSTP);
-  disable_signal(SIGTTIN);
-  disable_signal(SIGCHLD);
-  disable_signal(SIGHUP);
+    disable_signal(SIGPIPE);
+    disable_signal(SIGUSR1);
+    disable_signal(SIGUSR2);
+    disable_signal(SIGTSTP);
+    disable_signal(SIGTTIN);
+    disable_signal(SIGCHLD);
+    disable_signal(SIGHUP);
 
-  hook_signal(SIGINT, sighandler, 0);
-  hook_signal(SIGTERM, sighandler, 0);
+    hook_signal(SIGINT, sighandler, 0);
+    hook_signal(SIGTERM, sighandler, 0);
 }
 
 static void write_dnsfile(char *fn, char *cnts)
@@ -199,21 +199,21 @@ static void write_dnserr(char *host, return_codes code)
     strlcat(file, "-dnserr", len);
 
     switch (code) {
-    case RET_NOTFQDN:
-        error = "notfqdn";
-        break;
-    case RET_NOHOST:
-        error = "nohost";
-        break;
-    case RET_NOTYOURS:
-        error = "!yours";
-        break;
-    case RET_ABUSE:
-        error = "abuse";
-        break;
-    default:
-        error = "unknown";
-        break;
+        case RET_NOTFQDN:
+            error = "notfqdn";
+            break;
+        case RET_NOHOST:
+            error = "nohost";
+            break;
+        case RET_NOTYOURS:
+            error = "!yours";
+            break;
+        case RET_ABUSE:
+            error = "abuse";
+            break;
+        default:
+            error = "unknown";
+            break;
     }
     strlcpy(buf, error, sizeof buf);
 
@@ -222,7 +222,7 @@ static void write_dnserr(char *host, return_codes code)
 }
 
 static void add_to_return_code_list(return_codes name,
-                     return_code_list_t **list)
+                                    return_code_list_t **list)
 {
     return_code_list_t *item, *t;
 
@@ -447,11 +447,11 @@ static void nc_update_ip(char *curip)
 /* not really well documented, so here:
  * return from the server will be stored in a buffer
  * buffer will look like:
-    good 1.12.123.9
-    nochg 1.12.123.9
-    nochg 1.12.123.9
-    nochg 1.12.123.9
- */
+ good 1.12.123.9
+ nochg 1.12.123.9
+ nochg 1.12.123.9
+ nochg 1.12.123.9
+*/
 static void decompose_buf_to_list(char *buf)
 {
     char tok[MAX_BUF], *point = buf;
@@ -531,73 +531,73 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
     int ret = -1;
 
     switch (retcode) {
-    default:
-        log_line(
-        "%s: FATAL: postprocess_update() has invalid state\n", host);
-        break;
-    case RET_BADSYS:
-        log_line(
-        "%s: [badsys] - FATAL: Should never happen!\n", host);
-        break;
-    case RET_BADAGENT:
-        log_line(
-        "%s: [badagent] - FATAL: Client program is banned!\n", host);
-        break;
-    case RET_BADAUTH:
-        log_line(
-        "%s: [badauth] - FATAL: Invalid username or password.\n", host);
-        break;
-    case RET_NOTDONATOR:
-        log_line(
-        "%s: [!donator] - FATAL: Option requested that is only allowed to donating users (such as 'offline').\n", host);
-        break;
-    case RET_NOTFQDN:
-        log_line(
-        "%s: [notfqdn] - FATAL: Hostname isn't a fully-qualified domain name (such as 'hostname.dyndns.org')'.\n", host);
-        ret = -2;
-        break;
-    case RET_NOHOST:
-        log_line(
-        "%s: [nohost] - FATAL: Hostname doesn't exist or wrong service type specified (dyndns, static, custom).\n", host);
-        ret = -2;
-        break;
-    case RET_NOTYOURS:
-        log_line(
-        "%s: [!yours] - FATAL: Hostname exists, but doesn't belong to your account.\n", host);
-        ret = -2;
-        break;
-    case RET_ABUSE:
-        log_line(
-        "%s: [abuse] - FATAL: Hostname is banned for abuse.\n", host);
-        ret = -2;
-        break;
-    case RET_NUMHOST:
-        log_line(
-        "%s: [numhost] - FATAL: Too many or too few hosts found.\n", host);
-        break;
-    case RET_DNSERR:
-        log_line(
-        "%s: [dnserr] - FATAL: DNS error encountered by server.\n", host);
-        break;
-    case RET_911:
-        log_line(
-        "%s: [911] - FATAL: Critical error on dyndns.org's hardware.  Check http://www.dyndns.org/news/status/ for details.\n", host);
-        break;
-    /* Don't hardfail, 'success' */
-    case RET_GOOD:
-        log_line(
-        "%s: [good] - Update successful.\n", host);
-        write_dnsip(host, curip);
-        write_dnsdate(host, time(0));
-        ret = 0;
-        break;
-    case RET_NOCHG:
-        log_line(
-        "%s: [nochg] - Unnecessary update; further updates will be considered abusive.\n", host);
-        write_dnsip(host, curip);
-        write_dnsdate(host, time(0));
-        ret = 0;
-        break;
+        default:
+            log_line(
+                "%s: FATAL: postprocess_update() has invalid state\n", host);
+            break;
+        case RET_BADSYS:
+            log_line(
+                "%s: [badsys] - FATAL: Should never happen!\n", host);
+            break;
+        case RET_BADAGENT:
+            log_line(
+                "%s: [badagent] - FATAL: Client program is banned!\n", host);
+            break;
+        case RET_BADAUTH:
+            log_line(
+                "%s: [badauth] - FATAL: Invalid username or password.\n", host);
+            break;
+        case RET_NOTDONATOR:
+            log_line(
+                "%s: [!donator] - FATAL: Option requested that is only allowed to donating users (such as 'offline').\n", host);
+            break;
+        case RET_NOTFQDN:
+            log_line(
+                "%s: [notfqdn] - FATAL: Hostname isn't a fully-qualified domain name (such as 'hostname.dyndns.org')'.\n", host);
+            ret = -2;
+            break;
+        case RET_NOHOST:
+            log_line(
+                "%s: [nohost] - FATAL: Hostname doesn't exist or wrong service type specified (dyndns, static, custom).\n", host);
+            ret = -2;
+            break;
+        case RET_NOTYOURS:
+            log_line(
+                "%s: [!yours] - FATAL: Hostname exists, but doesn't belong to your account.\n", host);
+            ret = -2;
+            break;
+        case RET_ABUSE:
+            log_line(
+                "%s: [abuse] - FATAL: Hostname is banned for abuse.\n", host);
+            ret = -2;
+            break;
+        case RET_NUMHOST:
+            log_line(
+                "%s: [numhost] - FATAL: Too many or too few hosts found.\n", host);
+            break;
+        case RET_DNSERR:
+            log_line(
+                "%s: [dnserr] - FATAL: DNS error encountered by server.\n", host);
+            break;
+        case RET_911:
+            log_line(
+                "%s: [911] - FATAL: Critical error on dyndns.org's hardware.  Check http://www.dyndns.org/news/status/ for details.\n", host);
+            break;
+            /* Don't hardfail, 'success' */
+        case RET_GOOD:
+            log_line(
+                "%s: [good] - Update successful.\n", host);
+            write_dnsip(host, curip);
+            write_dnsdate(host, time(0));
+            ret = 0;
+            break;
+        case RET_NOCHG:
+            log_line(
+                "%s: [nochg] - Unnecessary update; further updates will be considered abusive.\n", host);
+            write_dnsip(host, curip);
+            write_dnsdate(host, time(0));
+            ret = 0;
+            break;
     }
     return ret;
 }
@@ -623,11 +623,11 @@ static void dyndns_update_ip(char *curip)
     /* set up the authentication url */
     if (use_ssl) {
         len = strlcpy(url,
-            "https://members.dyndns.org/nic/update?", sizeof url);
+                      "https://members.dyndns.org/nic/update?", sizeof url);
         update_ip_buf_error(len, sizeof url);
     } else {
         len = strlcpy(url,
-            "http://members.dyndns.org/nic/update?", sizeof url);
+                      "http://members.dyndns.org/nic/update?", sizeof url);
         update_ip_buf_error(len, sizeof url);
     }
 
@@ -750,7 +750,7 @@ static void dyndns_update_ip(char *curip)
     curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
     curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
     if (use_ssl)
-         curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
+        curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
 
@@ -764,26 +764,26 @@ static void dyndns_update_ip(char *curip)
     }
 
     for (t = dd_update_list, u = dd_return_list;
-        t != NULL && u != NULL; t = t->next, u = u->next) {
+         t != NULL && u != NULL; t = t->next, u = u->next) {
 
         ret2 = postprocess_update(t->str, curip, u->code);
         switch (ret2) {
-        case -1:
-        default:
-            exit(EXIT_FAILURE);
-            break;
-        case -2:
-            log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.\n", t->str, t->str);
-            write_dnserr(t->str, ret2);
-            remove_host_from_host_data_list(&dyndns_conf, t->str);
-            break;
-        case 0:
-            modify_hostdate_in_list(&dyndns_conf, t->str, time(0));
-            modify_hostip_in_list(&dyndns_conf, t->str, curip);
-            break;
+            case -1:
+            default:
+                exit(EXIT_FAILURE);
+                break;
+            case -2:
+                log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.\n", t->str, t->str);
+                write_dnserr(t->str, ret2);
+                remove_host_from_host_data_list(&dyndns_conf, t->str);
+                break;
+            case 0:
+                modify_hostdate_in_list(&dyndns_conf, t->str, time(0));
+                modify_hostip_in_list(&dyndns_conf, t->str, curip);
+                break;
         }
     }
-out:
+  out:
     free(data.buf);
 }
 
@@ -812,8 +812,8 @@ static void do_work(void)
 
         if (inet_aton(curip, &inr) == 0) {
             log_line(
-              "%s has ip: [%s], which is invalid.  Sleeping.\n",
-              ifname, curip);
+                "%s has ip: [%s], which is invalid.  Sleeping.\n",
+                ifname, curip);
             goto sleep;
         }
 
@@ -938,174 +938,174 @@ void cfg_set_interface(char *interface)
 
 int main(int argc, char** argv)
 {
-  int c, read_cfg = 0;
+    int c, read_cfg = 0;
 
-  init_dyndns_conf(&dyndns_conf);
-  init_namecheap_conf(&namecheap_conf);
+    init_dyndns_conf(&dyndns_conf);
+    init_namecheap_conf(&namecheap_conf);
 
-  while (1) {
-    int option_index = 0;
-    static struct option long_options[] = {
-      {"detach", 0, 0, 'd'},
-      {"nodetach", 0, 0, 'n'},
-      {"pidfile", 1, 0, 'p'},
-      {"quiet", 0, 0, 'q'},
-      {"chroot", 1, 0, 'c'},
-      {"disable-chroot", 0, 0, 'x'},
-      {"file", 1, 0, 'f'},
-      {"cfg-stdin", 0, 0, 'F'},
-      {"user", 1, 0, 'u'},
-      {"group", 1, 0, 'g'},
-      {"interface", 1, 0, 'i'},
-      {"remote", 0, 0, 'r'},
-      {"help", 0, 0, 'h'},
-      {"version", 0, 0, 'v'},
-      {0, 0, 0, 0}
-    };
+    while (1) {
+        int option_index = 0;
+        static struct option long_options[] = {
+            {"detach", 0, 0, 'd'},
+            {"nodetach", 0, 0, 'n'},
+            {"pidfile", 1, 0, 'p'},
+            {"quiet", 0, 0, 'q'},
+            {"chroot", 1, 0, 'c'},
+            {"disable-chroot", 0, 0, 'x'},
+            {"file", 1, 0, 'f'},
+            {"cfg-stdin", 0, 0, 'F'},
+            {"user", 1, 0, 'u'},
+            {"group", 1, 0, 'g'},
+            {"interface", 1, 0, 'i'},
+            {"remote", 0, 0, 'r'},
+            {"help", 0, 0, 'h'},
+            {"version", 0, 0, 'v'},
+            {0, 0, 0, 0}
+        };
 
-    c = getopt_long(argc, argv, "rdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
-    if (c == -1) break;
+        c = getopt_long(argc, argv, "rdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
+        if (c == -1) break;
 
-    switch (c) {
+        switch (c) {
 
-        case 'h':
-            printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", NDYNDNS_VERSION);
-            printf(
-"Copyright (C) 2005-2010 Nicholas J. Kain\n"
-"Usage: ndyndns [OPTIONS]\n"
-"  -d, --detach                detach from TTY and daemonize\n"
-"  -n, --nodetach              stay attached to TTY\n"
-"  -q, --quiet                 don't print to std(out|err) or log\n");
-            printf(
-"  -c, --chroot                path where ndyndns should chroot\n"
-"  -x, --disable-chroot        do not actually chroot (not recommended)\n"
-"  -f, --file                  configuration file\n"
-"  -F, --cfg-stdin             read configuration file from standard input\n"
-"  -p, --pidfile               pidfile path\n");
-            printf(
-"  -u, --user                  user name that ndyndns should run as\n"
-"  -g, --group                 group name that ndyndns should run as\n"
-"  -i, --interface             interface ip to check (default: ppp0)\n"
-"  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
-"  -h, --help                  print this help and exit\n"
-"  -v, --version               print version and license info and exit\n");
-            exit(EXIT_FAILURE);
-            break;
-
-        case 'v':
-            printf(
-"ndyndns %s Copyright (C) 2005-2010 Nicholas J. Kain\n"
-"This program is free software: you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation, either version 3 of the License, or\n"
-"(at your option) any later version.\n\n", NDYNDNS_VERSION);
-            printf(
-"This program is distributed in the hope that it will be useful,\n"
-"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"GNU General Public License for more details.\n\n"
-
-"You should have received a copy of the GNU General Public License\n"
-"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n");
-            exit(EXIT_FAILURE);
-            break;
-
-        case 'r':
-            cfg_set_remote();
-            break;
-
-        case 'd':
-            cfg_set_detach();
-            break;
-
-        case 'n':
-            cfg_set_nodetach();
-            break;
-
-        case 'q':
-            cfg_set_quiet();
-            break;
-
-        case 'x':
-            disable_chroot();
-            break;
-
-        case 'c':
-            update_chroot(optarg);
-            break;
-
-        case 'f':
-            if (read_cfg) {
-                log_line("FATAL: duplicate configuration file data specified");
+            case 'h':
+                printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", NDYNDNS_VERSION);
+                printf(
+                    "Copyright (C) 2005-2010 Nicholas J. Kain\n"
+                    "Usage: ndyndns [OPTIONS]\n"
+                    "  -d, --detach                detach from TTY and daemonize\n"
+                    "  -n, --nodetach              stay attached to TTY\n"
+                    "  -q, --quiet                 don't print to std(out|err) or log\n");
+                printf(
+                    "  -c, --chroot                path where ndyndns should chroot\n"
+                    "  -x, --disable-chroot        do not actually chroot (not recommended)\n"
+                    "  -f, --file                  configuration file\n"
+                    "  -F, --cfg-stdin             read configuration file from standard input\n"
+                    "  -p, --pidfile               pidfile path\n");
+                printf(
+                    "  -u, --user                  user name that ndyndns should run as\n"
+                    "  -g, --group                 group name that ndyndns should run as\n"
+                    "  -i, --interface             interface ip to check (default: ppp0)\n"
+                    "  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
+                    "  -h, --help                  print this help and exit\n"
+                    "  -v, --version               print version and license info and exit\n");
                 exit(EXIT_FAILURE);
-            } else {
-                read_cfg = 1;
-                if (parse_config(optarg, &dyndns_conf, &namecheap_conf) != 1)
-                    suicide("FATAL: bad configuration data\n");
-            }
-            break;
+                break;
 
-        case 'F':
-            if (read_cfg) {
-                log_line("ERROR: duplicate configuration file data specified");
+            case 'v':
+                printf(
+                    "ndyndns %s Copyright (C) 2005-2010 Nicholas J. Kain\n"
+                    "This program is free software: you can redistribute it and/or modify\n"
+                    "it under the terms of the GNU General Public License as published by\n"
+                    "the Free Software Foundation, either version 3 of the License, or\n"
+                    "(at your option) any later version.\n\n", NDYNDNS_VERSION);
+                printf(
+                    "This program is distributed in the hope that it will be useful,\n"
+                    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+                    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+                    "GNU General Public License for more details.\n\n"
+
+                    "You should have received a copy of the GNU General Public License\n"
+                    "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n");
                 exit(EXIT_FAILURE);
-            } else {
-                read_cfg = 1;
-                if (parse_config(NULL, &dyndns_conf, &namecheap_conf) != 1)
-                    suicide("FATAL: bad configuration data\n");
-            }
-            break;
+                break;
 
-        case 'p':
-            cfg_set_pidfile(optarg);
-            break;
+            case 'r':
+                cfg_set_remote();
+                break;
 
-        case 'u':
-            cfg_set_user(optarg);
-            break;
+            case 'd':
+                cfg_set_detach();
+                break;
 
-        case 'g':
-            cfg_set_group(optarg);
-            break;
+            case 'n':
+                cfg_set_nodetach();
+                break;
 
-        case 'i':
-            cfg_set_interface(optarg);
-            break;
+            case 'q':
+                cfg_set_quiet();
+                break;
+
+            case 'x':
+                disable_chroot();
+                break;
+
+            case 'c':
+                update_chroot(optarg);
+                break;
+
+            case 'f':
+                if (read_cfg) {
+                    log_line("FATAL: duplicate configuration file data specified");
+                    exit(EXIT_FAILURE);
+                } else {
+                    read_cfg = 1;
+                    if (parse_config(optarg, &dyndns_conf, &namecheap_conf) != 1)
+                        suicide("FATAL: bad configuration data\n");
+                }
+                break;
+
+            case 'F':
+                if (read_cfg) {
+                    log_line("ERROR: duplicate configuration file data specified");
+                    exit(EXIT_FAILURE);
+                } else {
+                    read_cfg = 1;
+                    if (parse_config(NULL, &dyndns_conf, &namecheap_conf) != 1)
+                        suicide("FATAL: bad configuration data\n");
+                }
+                break;
+
+            case 'p':
+                cfg_set_pidfile(optarg);
+                break;
+
+            case 'u':
+                cfg_set_user(optarg);
+                break;
+
+            case 'g':
+                cfg_set_group(optarg);
+                break;
+
+            case 'i':
+                cfg_set_interface(optarg);
+                break;
+        }
     }
-  }
 
-  if (!read_cfg)
-    suicide("FATAL - no configuration file, exiting.\n");
+    if (!read_cfg)
+        suicide("FATAL - no configuration file, exiting.\n");
 
-  if (chroot_enabled() && getuid())
-      suicide("FATAL - I need root for chroot!\n");
+    if (chroot_enabled() && getuid())
+        suicide("FATAL - I need root for chroot!\n");
 
-  if (gflags_detach)
-    if (daemon(0,0))
-        suicide("FATAL - detaching fork failed\n");
+    if (gflags_detach)
+        if (daemon(0,0))
+            suicide("FATAL - detaching fork failed\n");
 
-  fail_on_fdne(pidfile, "w");
-  write_pid(pidfile);
+    fail_on_fdne(pidfile, "w");
+    write_pid(pidfile);
 
-  umask(077);
-  fix_signals();
+    umask(077);
+    fix_signals();
 
-  if (!chroot_exists())
-      suicide("FATAL - No chroot path specified.  Refusing to run.\n");
+    if (!chroot_exists())
+        suicide("FATAL - No chroot path specified.  Refusing to run.\n");
 
-  /* Note that failure cases are handled by called fns. */
-  imprison(get_chroot());
-  drop_root(cfg_uid, cfg_gid);
+    /* Note that failure cases are handled by called fns. */
+    imprison(get_chroot());
+    drop_root(cfg_uid, cfg_gid);
 
-  /* Cover our tracks... */
-  wipe_chroot();
-  memset(pidfile, '\0', sizeof pidfile);
+    /* Cover our tracks... */
+    wipe_chroot();
+    memset(pidfile, '\0', sizeof pidfile);
 
-  curl_global_init(CURL_GLOBAL_ALL);
-  use_ssl = check_ssl();
+    curl_global_init(CURL_GLOBAL_ALL);
+    use_ssl = check_ssl();
 
-  do_work();
+    do_work();
 
-  exit(EXIT_SUCCESS);
+    exit(EXIT_SUCCESS);
 }
 
