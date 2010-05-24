@@ -1,4 +1,4 @@
-AC_INIT(ndyndns, 1.17)
+AC_INIT(ndyndns, 2.0)
 AC_CONFIG_HEADER(config.h)
 
 AC_PROG_CC

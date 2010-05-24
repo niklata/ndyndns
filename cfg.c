@@ -30,6 +30,7 @@
 #include "log.h"
 #include "nstrl.h"
 #include "chroot.h"
+#include "ndyndns.h"
 
 void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host)
 {
@@ -531,6 +532,11 @@ enum prs_state {
 #define DYNDNS_STR "dyndns"
 #define CUSTOMDNS_STR "customdns"
 #define STATICDNS_STR "staticdns"
+#define DETACH_STR "detach"
+#define NODETACH_STR "nodetach"
+#define QUIET_STR "quiet"
+#define DISABLE_CHROOT_STR "disable-chroot"
+#define REMOTE_STR "remote"
 
 void parse_warn(unsigned int lnum, char *name)
 {
@@ -736,6 +742,127 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
             continue;
         }
 
+        tmp = parse_line_string(point, "chroot");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "chroot");
+                    break;
+                case PRS_CONFIG:
+                    update_chroot(tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "pidfile");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "pidfile");
+                    break;
+                case PRS_CONFIG:
+                    cfg_set_pidfile(tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "user");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "user");
+                    break;
+                case PRS_CONFIG:
+                    cfg_set_user(tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "group");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "group");
+                    break;
+                case PRS_CONFIG:
+                    cfg_set_group(tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "interface");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "interface");
+                    break;
+                case PRS_CONFIG:
+                    cfg_set_interface(tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        if (!strncmp(DETACH_STR, point, sizeof DETACH_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "detach");
+                    break;
+                case PRS_CONFIG:
+                    break;
+            }
+            continue;
+        }
+        if (!strncmp(NODETACH_STR, point, sizeof NODETACH_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "nodetach");
+                    break;
+                case PRS_CONFIG:
+                    break;
+            }
+            continue;
+        }
+        if (!strncmp(QUIET_STR, point, sizeof QUIET_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "quiet");
+                    break;
+                case PRS_CONFIG:
+                    break;
+            }
+            continue;
+        }
+        if (!strncmp(DISABLE_CHROOT_STR, point, sizeof DISABLE_CHROOT_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "disable-chroot");
+                    break;
+                case PRS_CONFIG:
+                    break;
+            }
+            continue;
+        }
+        if (!strncmp(REMOTE_STR, point, sizeof REMOTE_STR - 1)) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "remote");
+                    break;
+                case PRS_CONFIG:
+                    break;
+            }
+            continue;
+        }
+        
     }
 
     if (fclose(f)) {

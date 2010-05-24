@@ -58,11 +58,14 @@
 static dyndns_conf_t dyndns_conf;
 static namecheap_conf_t namecheap_conf;
 
+
 static char ifname[IFNAMSIZ] = "ppp0";
+static char pidfile[MAX_PATH_LENGTH] = PID_FILE_DEFAULT;
 
 static int update_interval = DEFAULT_UPDATE_INTERVAL;
 static int use_ssl = 1;
 static int update_from_remote = 0;
+static int cfg_uid = 0, cfg_gid = 0;
 
 typedef enum {
     RET_DO_NOTHING,
@@ -868,14 +871,77 @@ static int check_ssl(void)
     return t;
 }
 
-int main(int argc, char** argv) {
-  int c, t, uid = 0, gid = 0, cfgstdin = 0;
-  char pidfile[MAX_PATH_LENGTH] = PID_FILE_DEFAULT;
-  char conffile[MAX_PATH_LENGTH] = CONF_FILE_DEFAULT;
-  char *p;
-  struct passwd *pws;
-  struct group *grp;
+void cfg_set_remote(void)
+{
+    update_from_remote = 1;
+    update_interval = 600;
+}
 
+void cfg_set_detach(void)
+{
+    gflags_detach = 1;
+}
+
+void cfg_set_nodetach(void)
+{
+    gflags_detach = 0;
+}
+
+void cfg_set_quiet(void)
+{
+    gflags_quiet = 1;
+}
+
+void cfg_set_pidfile(char *pidfname)
+{
+    strlcpy(pidfile, pidfname, sizeof pidfile);
+}
+
+void cfg_set_user(char *username)
+{
+    int t;
+    char *p;
+    struct passwd *pws;
+
+    t = (unsigned int) strtol(username, &p, 10);
+    if (*p != '\0') {
+        pws = getpwnam(username);
+        if (pws) {
+            cfg_uid = (int)pws->pw_uid;
+            if (!cfg_gid)
+                cfg_gid = (int)pws->pw_gid;
+        } else suicide("FATAL - Invalid uid specified.\n");
+    } else
+        cfg_uid = t;
+}
+
+void cfg_set_group(char *groupname)
+{
+    int t;
+    char *p;
+    struct group *grp;
+
+    t = (unsigned int) strtol(groupname, &p, 10);
+    if (*p != '\0') {
+        grp = getgrnam(groupname);
+        if (grp) {
+            cfg_gid = (int)grp->gr_gid;
+        } else suicide("FATAL - Invalid gid specified.\n");
+    } else
+        cfg_gid = t;
+}
+
+void cfg_set_interface(char *interface)
+{
+    strlcpy(ifname, interface, sizeof ifname);
+}
+
+int main(int argc, char** argv)
+{
+  int c, read_cfg = 0;
+
+  init_dyndns_conf(&dyndns_conf);
+  init_namecheap_conf(&namecheap_conf);
 
   while (1) {
     int option_index = 0;
@@ -945,20 +1011,19 @@ int main(int argc, char** argv) {
             break;
 
         case 'r':
-            update_from_remote = 1;
-            update_interval = 600;
+            cfg_set_remote();
             break;
 
         case 'd':
-            gflags_detach = 1;
+            cfg_set_detach();
             break;
 
         case 'n':
-            gflags_detach = 0;
+            cfg_set_nodetach();
             break;
 
         case 'q':
-            gflags_quiet = 1;
+            cfg_set_quiet();
             break;
 
         case 'x':
@@ -970,52 +1035,47 @@ int main(int argc, char** argv) {
             break;
 
         case 'f':
-            strlcpy(conffile, optarg, sizeof conffile);
+            if (read_cfg) {
+                log_line("FATAL: duplicate configuration file data specified");
+                exit(EXIT_FAILURE);
+            } else {
+                read_cfg = 1;
+                if (parse_config(optarg, &dyndns_conf, &namecheap_conf) != 1)
+                    suicide("FATAL: bad configuration data\n");
+            }
             break;
 
         case 'F':
-            cfgstdin = 1;
+            if (read_cfg) {
+                log_line("ERROR: duplicate configuration file data specified");
+                exit(EXIT_FAILURE);
+            } else {
+                read_cfg = 1;
+                if (parse_config(NULL, &dyndns_conf, &namecheap_conf) != 1)
+                    suicide("FATAL: bad configuration data\n");
+            }
             break;
 
         case 'p':
-            strlcpy(pidfile, optarg, sizeof pidfile);
+            cfg_set_pidfile(optarg);
             break;
 
         case 'u':
-            t = (unsigned int) strtol(optarg, &p, 10);
-            if (*p != '\0') {
-                pws = getpwnam(optarg);
-                if (pws) {
-                    uid = (int)pws->pw_uid;
-                    if (!gid)
-                        gid = (int)pws->pw_gid;
-                } else suicide("FATAL - Invalid uid specified.\n");
-            } else
-                uid = t;
+            cfg_set_user(optarg);
             break;
 
         case 'g':
-            t = (unsigned int) strtol(optarg, &p, 10);
-            if (*p != '\0') {
-                grp = getgrnam(optarg);
-                if (grp) {
-                    gid = (int)grp->gr_gid;
-                } else suicide("FATAL - Invalid gid specified.\n");
-            } else
-                gid = t;
+            cfg_set_group(optarg);
             break;
 
-    case 'i':
-        strlcpy(ifname, optarg, sizeof ifname);
-        break;
+        case 'i':
+            cfg_set_interface(optarg);
+            break;
     }
   }
 
-  init_dyndns_conf(&dyndns_conf);
-  init_namecheap_conf(&namecheap_conf);
-  t = parse_config(cfgstdin ? NULL : conffile, &dyndns_conf, &namecheap_conf);
-  if (!t)
-    suicide("FATAL - bad configuration file, exiting.\n");
+  if (!read_cfg)
+    suicide("FATAL - no configuration file, exiting.\n");
 
   if (chroot_enabled() && getuid())
       suicide("FATAL - I need root for chroot!\n");
@@ -1035,11 +1095,10 @@ int main(int argc, char** argv) {
 
   /* Note that failure cases are handled by called fns. */
   imprison(get_chroot());
-  drop_root(uid, gid);
+  drop_root(cfg_uid, cfg_gid);
 
   /* Cover our tracks... */
   wipe_chroot();
-  memset(conffile, '\0', sizeof conffile);
   memset(pidfile, '\0', sizeof pidfile);
 
   curl_global_init(CURL_GLOBAL_ALL);
