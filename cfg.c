@@ -543,8 +543,9 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
 
         /* Caveat: parse_line_string uses strstr, so order matters here! */
         if (assign_string(&nc->password,
-                          parse_line_string(buf, "nc_password")))
+                          parse_line_string(buf, "nc_password"))) {
             continue;
+        }
         tmp = parse_line_string(buf, "nc_hostname");
         if (tmp) {
             populate_hostlist(&nc->hostlist, tmp);
@@ -553,11 +554,13 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
         }
 
         if (assign_string(&dc->username,
-             parse_line_string(buf, "username")))
+                          parse_line_string(buf, "username"))) {
             continue;
+        }
         if (assign_string(&dc->password,
-             parse_line_string(buf, "password")))
+                          parse_line_string(buf, "password"))) {
             continue;
+        }
         tmp = parse_line_string(buf, "hostname");
         if (tmp) {
             populate_hostlist(&dc->hostlist, tmp);
@@ -565,9 +568,9 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
             continue;
         }
 
-        if (assign_string(&dc->mx,
-             parse_line_string(buf, "mx")))
+        if (assign_string(&dc->mx, parse_line_string(buf, "mx"))) {
             continue;
+        }
         if (strstr(buf, "nowildcard")) {
             dc->wildcard = WC_NO;
             continue;

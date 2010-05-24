@@ -334,13 +334,13 @@ static void nc_update_host(char *host, char *curip)
     char *hostname = NULL, *domain = NULL, *p;
     conn_data_t data;
 
-    if (!dd_update_list || !host || !curip)
+    if (!nc_update_list || !host || !curip)
         return;
 
     p = strrchr(host, '.');
     if (!p)
         return;
-    p = strrchr(host, '.');
+    p = strrchr(p+1, '.');
     if (!p) {
         domain_size = strlen(host) + 1;
         hostname_size = 2;
@@ -417,8 +417,7 @@ static void nc_update_host(char *host, char *curip)
     if (update_ip_curl_errcheck(ret, curlerror) == 1)
         goto out;
 
-    log_line("DEBUG - data returned: [%s]\n", data.buf);
-
+    log_line("response returned: [%s]\n", data.buf);
     if (strstr(data.buf, "<ErrCount>0")) {
         log_line(
             "%s: [good] - Update successful.\n", host);
