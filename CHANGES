@@ -1,3 +1,9 @@
+2.1:
+
+* Fix a bug in the configuration file parser that could lead to the data
+  structures not being filled correctly in some configurations.
+* Pedantic corrections to more strictly comply with the C standard.
+
 2.0:
 
 * Change configuration file format.
