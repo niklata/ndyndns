@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __NJK_CHECKIP_H_
-#define __NJK_CHECKIP_H_ 1
+#ifndef NJK_CHECKIP_H_
+#define NJK_CHECKIP_H_ 1
 char *query_curip(void);
 #endif
 

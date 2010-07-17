@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _NJK_HAVE_STRL_
-#define _NJK_HAVE_STRL_ 1
+#ifndef NJK_HAVE_STRL_
+#define NJK_HAVE_STRL_ 1
 #include "config.h"
 #ifndef HAVE_STRLCPY
 size_t strlcpy (char *dest, char *src, size_t size);

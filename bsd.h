@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __NJK_IFCHD_BSD_H_
-#define __NJK_IFCHD_BSD_H_ 1
+#ifndef NJK_IFCHD_BSD_H_
+#define NJK_IFCHD_BSD_H_ 1
 char *get_interface_ip(char *ifname);
 #endif
 

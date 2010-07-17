@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __NJK_LOG_H_
-#define __NJK_LOG_H_ 1
+#ifndef NJK_LOG_H_
+#define NJK_LOG_H_ 1
 
 extern int gflags_quiet;
 extern int gflags_detach;

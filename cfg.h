@@ -11,8 +11,8 @@ backmx|nobackmx (default: NOCHG)
 offline (default: NO)
 */
 
-#ifndef __NJK_CONFIG_H_
-#define __NJK_CONFIG_H_ 1
+#ifndef NJK_CONFIG_H_
+#define NJK_CONFIG_H_ 1
 
 #include <time.h>
 

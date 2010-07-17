@@ -530,7 +530,10 @@ out:
     return ret;
 }
 
-/* returns 1 if assignment made, 0 if not */
+/*
+ * Returns 1 if assignment made, 0 if not.
+ * Creates a new copy of @from on success.
+ */
 static int assign_string(char **to, char *from)
 {
     int ret = 0;
@@ -538,7 +541,7 @@ static int assign_string(char **to, char *from)
     if (from) {
         if (*to)
             free(*to);
-        *to = from;
+        *to = strdup(from);
         ret = 1;
     }
 

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __NJK_UTIL_H_
-#define __NJK_UTIL_H_ 1
+#ifndef NJK_UTIL_H_
+#define NJK_UTIL_H_ 1
 typedef struct {
 	char *buf;
 	size_t buflen;

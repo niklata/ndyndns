@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __NJK_STRLIST_H_
-#define __NJK_STRLIST_H_ 1
+#ifndef NJK_STRLIST_H_
+#define NJK_STRLIST_H_ 1
 
 typedef struct {
     char *str;

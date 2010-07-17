@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __NJK_CHROOT_H_
-#define __NJK_CHROOT_H_ 1
+#ifndef NJK_CHROOT_H_
+#define NJK_CHROOT_H_ 1
 void disable_chroot(void);
 int chroot_enabled(void);
 void update_chroot(char *path);

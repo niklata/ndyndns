@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __NJK_SIGNALS_H_
-#define __NJK_SIGNALS_H_ 1
+#ifndef NJK_SIGNALS_H_
+#define NJK_SIGNALS_H_ 1
 void hook_signal(int signum, void (*fn)(int), int flags);
 void disable_signal(int signum);
 #endif
