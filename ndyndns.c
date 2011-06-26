@@ -614,7 +614,7 @@ static void dyndns_update_ip(char *curip)
     char curlerror[CURL_ERROR_SIZE];
     strlist_t *t;
     return_code_list_t *u;
-    return_codes ret2;
+    int ret2;
     conn_data_t data;
 
     if (!dd_update_list || !curip)
@@ -1084,7 +1084,8 @@ int main(int argc, char** argv)
         if (daemon(0,0))
             suicide("FATAL - detaching fork failed\n");
 
-    fail_on_fdne(pidfile, "w");
+    if (file_exists(pidfile, "w") == -1)
+        exit(EXIT_FAILURE);
     write_pid(pidfile);
 
     umask(077);
