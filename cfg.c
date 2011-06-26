@@ -28,7 +28,7 @@
 #include "cfg.h"
 #include "util.h"
 #include "log.h"
-#include "nstrl.h"
+#include "strl.h"
 #include "chroot.h"
 #include "ndyndns.h"
 

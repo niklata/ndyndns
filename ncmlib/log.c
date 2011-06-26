@@ -1,5 +1,5 @@
-/* pidfile.c - process id file functions
- * Time-stamp: <2010-11-01 18:35:14 nk>
+/* log.c - simple logging support
+ * Time-stamp: <2010-11-12 05:19:46 njk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -28,52 +28,60 @@
  */
 
 #include <stdio.h>
+#include <strings.h>
+#include <syslog.h>
+#include <stdarg.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <string.h>
 
-#include "defines.h"
-#include "log.h"
+/* global logging flags */
+int gflags_quiet = 0;
+int gflags_detach = 1;
+char *gflags_log_name = NULL;
 
-void write_pid(char *file) {
-    FILE *f;
-    size_t written, len;
-    char buf[MAXLINE];
+void log_line_l(int level, const char *format, ...)
+{
+  va_list argp;
 
-    f = fopen(file, "w");
-    if (f == NULL) {
-        log_line("FATAL - failed to open pid file \"%s\"!\n", file);
-        exit(EXIT_FAILURE);
-    }
+  if (format == NULL || gflags_quiet)
+	return;
 
-    snprintf(buf, sizeof buf - 1, "%i", (unsigned int)getpid());
-    len = strlen(buf);
-    written = 0;
-    while (written < len)
-        written = fwrite(buf + written, sizeof (char), len - written, f);
-
-    if (fclose(f) != 0) {
-        log_line("FATAL - failed to close pid file \"%s\"!\n", file);
-        exit(EXIT_FAILURE);
-    }
+  if (gflags_detach) {
+    openlog(gflags_log_name, LOG_PID, LOG_DAEMON);
+    va_start(argp, format);
+    vsyslog(level | LOG_DAEMON, format, argp);
+    va_end(argp);
+    closelog();
+  } else {
+    va_start(argp, format);
+    vfprintf(stderr, format, argp);
+    fprintf(stderr, "\n");
+    va_end(argp);
+  }
+  closelog();
 }
 
-/* Return 0 on success, -1 on failure. */
-int file_exists(char *file, char *mode) {
-    FILE *f;
+void suicide(const char *format, ...)
+{
+  va_list argp;
 
-    if (file == NULL || mode == NULL) {
-        log_line("file_exists: FATAL - coding bug: NULL passed\n");
-        return -1;
-    }
+  if (format == NULL || gflags_quiet)
+	goto out;
 
-    f = fopen(file, mode);
-    if (f == NULL) {
-        log_line("file_exists: FATAL - can't open file %s with mode %s!\n",
-                 file, mode);
-        return -1;
-    }
-    fclose(f);
-    return 0;
+  if (gflags_detach) {
+    openlog(gflags_log_name, LOG_PID, LOG_DAEMON);
+    va_start(argp, format);
+    vsyslog(LOG_ERR | LOG_DAEMON, format, argp);
+    va_end(argp);
+    closelog();
+  } else {
+    va_start(argp, format);
+    vfprintf(stderr, format, argp);
+    va_end(argp);
+    fprintf(stderr, "\n");
+    perror(NULL);
+  }
+  closelog();
+out:
+  exit(EXIT_FAILURE);
 }
+

@@ -1,11 +1,12 @@
 #CC = gcc -Wall -Wpointer-arith -Wstrict-prototypes -pedantic
 CC = @CC@
+INCLUDES = -I./ncmlib
 dnslib = -lnss_dns
-objects = log.o nstrl.o util.o chroot.o pidfile.o signals.o strlist.o checkip.o $(PLATFORM).o cfg.o ndyndns.o
+objects = util.o checkip.o $(PLATFORM).o cfg.o ndyndns.o
 CURLINC = @CURLINC@
 CURLLIB = @CURLLIB@
 VERSION = @VERSION@
-CFLAGS = @CFLAGS@ -Wall -Wextra -pedantic $(CURLINC)
+CFLAGS = @CFLAGS@ -std=gnu99 -Wall -Wextra -pedantic $(CURLINC) $(INCLUDES)
 PLATFORM = @PLATFORM@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -13,25 +14,19 @@ sbindir = @sbindir@
 datarootdir = @datarootdir@
 mandir = @mandir@
 
+NCMSRC = ncmlib/log.c ncmlib/strl.c ncmlib/malloc.c ncmlib/chroot.c ncmlib/pidfile.c ncmlib/signals.c ncmlib/strlist.c
+NCMOBJ = $(NCMSRC:.c=.o)
+
 all: ndyndns
 
-ndyndns : $(objects)
-	$(CC) $(LDFLAGS) $(dnslib) $(CURLLIB) -o ndyndns $(objects)
+ndyndns : $(objects) ncmlib
+	$(CC) -o ndyndns $(objects) $(LDFLAGS) -L. -lncm $(dnslib) $(CURLLIB)
 
-ndyndns.o : log.h nstrl.h util.h chroot.h pidfile.h signals.h strlist.h checkip.h $(PLATFORM).h cfg.h
+ndyndns.o : util.h checkip.h $(PLATFORM).h cfg.h
 	$(CC) $(CFLAGS) -c -o $@ ndyndns.c
 
-linux.o: log.h
-bsd.o: log.h
-sun.o: log.h
-checkip.o: log.h
-cfg.o: log.h util.h
-chroot.o: log.h
-pidfile.o: log.h
-signals.o: log.h
-strlist.o:
-nstrl.o:
-log.o :
+ncmlib : $(NCMOBJ)
+	ar rcs libncm.a $(NCMOBJ)
 
 install: ndyndns
 	-install -s -m 755 ndyndns $(sbindir)/ndyndns
@@ -41,8 +36,8 @@ tags:
 	-ctags -f tags *.[ch]
 	-cscope -b
 clean:
-	-rm -f *.o ndyndns
+	-rm -f *.o ncmlib/*.o ndyndns libncm.a
 distclean:
-	-rm -f *.o ndyndns tags cscope.out config.h config.log config.status Makefile
+	-rm -f *.o ncmlib/*.o ndyndns libncm.a tags cscope.out config.h config.log config.status Makefile
 	-rm -Rf autom4te.cache
 

@@ -25,7 +25,7 @@
 
 #include "defines.h"
 #include "log.h"
-#include "nstrl.h"
+#include "strl.h"
 #include "util.h"
 
 /* allocates from heap for return */

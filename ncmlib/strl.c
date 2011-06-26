@@ -1,5 +1,5 @@
-/* pidfile.h - process id file functions
- * Time-stamp: <2010-11-01 18:34:55 nk>
+/* strl.c - strlcpy/strlcat implementation
+ * Time-stamp: <2010-11-03 05:25:02 njk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -27,11 +27,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NCM_PIDFILE_H_
-#define NCM_PIDFILE_H_ 1
+#include <unistd.h>
+#include "strl.h"
 
-void write_pid(char *file);
-int file_exists(char *file, char *mode);
+#ifndef HAVE_STRLCPY
+size_t strlcpy (char *dest, const char *src, size_t size)
+{
+	register unsigned int i = 0;
 
-#endif
+	if (size > 0) {
+		size--;
+		for (i=0; size > 0 && src[i] != '\0'; ++i, size--)
+			dest[i] = src[i];
+
+		dest[i] = '\0';
+	}
+	while (src[i++]);
+
+	return i;
+}
+#endif /* HAVE_STRLCPY */
+
+#ifndef HAVE_STRLCAT
+size_t strlcat (char *dest, const char *src, size_t size)
+{
+	register char *d = dest;
+
+	for (; size > 0 && *d != '\0'; size--, d++);
+	return (d - dest) + strlcpy(d, src, size);
+}
+#endif /* HAVE_STRLCAT */
 

@@ -27,7 +27,7 @@
 
 #include "defines.h"
 #include "log.h"
-#include "nstrl.h"
+#include "strl.h"
 #include "util.h"
 
 static time_t last_time = 0;

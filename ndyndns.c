@@ -49,7 +49,7 @@
 #include "chroot.h"
 #include "pidfile.h"
 #include "signals.h"
-#include "nstrl.h"
+#include "strl.h"
 #include "linux.h"
 #include "checkip.h"
 #include "util.h"
@@ -825,13 +825,13 @@ static void do_work(void)
         for (t = dyndns_conf.hostlist; t != NULL; t = t->next) {
             if (strcmp(curip, t->ip)) {
                 log_line("adding for update [%s]\n", t->host);
-                add_to_strlist(t->host, &dd_update_list);
+                add_to_strlist(&dd_update_list, t->host);
                 continue;
             }
             if (dyndns_conf.system == SYSTEM_DYNDNS &&
                 time(0) - t->date > REFRESH_INTERVAL) {
                 log_line("adding for refresh [%s]\n", t->host);
-                add_to_strlist(t->host, &dd_update_list);
+                add_to_strlist(&dd_update_list, t->host);
             }
         }
         if (dd_update_list)
@@ -843,7 +843,7 @@ static void do_work(void)
         for (t = namecheap_conf.hostlist; t != NULL; t = t->next) {
             if (strcmp(curip, t->ip)) {
                 log_line("adding for update [%s]\n", t->host);
-                add_to_strlist(t->host, &nc_update_list);
+                add_to_strlist(&nc_update_list, t->host);
                 continue;
             }
         }

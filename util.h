@@ -24,7 +24,6 @@ typedef struct {
 	size_t idx;
 } conn_data_t;
 
-void *xmalloc(size_t size);
 void null_crlf(char *data);
 size_t write_response(char *buf, size_t size, size_t nmemb, void *dat);
 #endif
