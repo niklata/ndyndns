@@ -79,7 +79,7 @@ The following files and devices should be created in your chroot directory
 avoid softlinks, since they won't resolve from within the chroot.
 
 .:
-dev  etc
+dev  etc  var
 
 ./dev:
 null  random  urandom
@@ -87,14 +87,16 @@ null  random  urandom
 ./etc:
 hosts  nsswitch.conf  resolv.conf
 
+./var:
+
 If you are using default paths (/var/lib/ndyndns) and user/group
 (dyndns/dyndns), then the following commands will set up correct permissions.
 
-find /var/lib/ndyndns chmod 644 {} \;
-find /var/lib/ndyndns -type d chmod 755 {} \;
-chmod 700 /var/lib/ndyndns
-find /var/lib/ndyndns chown root.root {} \;
-chown dyndns.dyndns /var/lib/ndyndns
+find /var/lib/ndyndns -exec chmod 644 {} \;
+find /var/lib/ndyndns -type d -exec chmod 755 {} \;
+find /var/lib/ndyndns -exec chown root.root {} \;
+chown dyndns.dyndns /var/lib/ndyndns/var
+chmod 700 /var/lib/ndyndns/var
 
 Then all that remains is to invoke ndyndns.  Make certain to replace "eth0"
 with the name of the network interface associated with the IP that you wish

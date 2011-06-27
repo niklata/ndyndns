@@ -69,10 +69,10 @@ static char *get_dnserr(char *host)
 
     memset(buf, '\0', MAX_BUF);
 
-    len = strlen(get_chroot()) + strlen(host) + strlen("-dnserr") + 2;
+    len = strlen(get_chroot()) + strlen(host) + strlen("-dnserr") + 6;
     file = xmalloc(len);
     strlcpy(file, get_chroot(), len);
-    strlcat(file, "/", len);
+    strlcat(file, "/var/", len);
     strlcat(file, host, len);
     strlcat(file, "-dnserr", len);
 
@@ -359,10 +359,10 @@ static time_t get_dnsdate(char *host)
     if (!host)
         suicide("FATAL - get_dnsdate: host is NULL\n");
 
-    len = strlen(get_chroot()) + strlen(host) + strlen("-dnsdate") + 2;
+    len = strlen(get_chroot()) + strlen(host) + strlen("-dnsdate") + 6;
     file = xmalloc(len);
     strlcpy(file, get_chroot(), len);
-    strlcat(file, "/", len);
+    strlcat(file, "/var/", len);
     strlcat(file, host, len);
     strlcat(file, "-dnsdate", len);
 
@@ -445,10 +445,10 @@ static char *get_dnsip(char *host)
 
     memset(buf, '\0', MAX_BUF);
 
-    len = strlen(get_chroot()) + strlen(host) + strlen("-dnsip") + 2;
+    len = strlen(get_chroot()) + strlen(host) + strlen("-dnsip") + 6;
     file = xmalloc(len);
     strlcpy(file, get_chroot(), len);
-    strlcat(file, "/", len);
+    strlcat(file, "/var/", len);
     strlcat(file, host, len);
     strlcat(file, "-dnsip", len);
 

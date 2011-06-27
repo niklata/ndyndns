@@ -154,9 +154,10 @@ static void write_dnsdate(char *host, time_t date)
     if (!host)
         suicide("FATAL - write_dnsdate: host is NULL\n");
 
-    len = strlen(host) + strlen("-dnsdate") + 1;
+    len = strlen(host) + strlen("-dnsdate") + 5;
     file = xmalloc(len);
-    strlcpy(file, host, len);
+    strlcpy(file, "var/", len);
+    strlcat(file, host, len);
     strlcat(file, "-dnsdate", len);
     buf[MAX_BUF - 1] = '\0';
     snprintf(buf, sizeof buf - 1, "%u", (unsigned int)date);
@@ -176,9 +177,10 @@ static void write_dnsip(char *host, char *ip)
     if (!ip)
         suicide("FATAL - write_dnsip: ip is NULL\n");
 
-    len = strlen(host) + strlen("-dnsip") + 1;
+    len = strlen(host) + strlen("-dnsip") + 5;
     file = xmalloc(len);
-    strlcpy(file, host, len);
+    strlcpy(file, "var/", len);
+    strlcat(file, host, len);
     strlcat(file, "-dnsip", len);
     strlcpy(buf, ip, sizeof buf);
 
@@ -195,9 +197,10 @@ static void write_dnserr(char *host, return_codes code)
     if (!host)
         suicide("FATAL - write_dnserr: host is NULL\n");
 
-    len = strlen(host) + strlen("-dnserr") + 1;
+    len = strlen(host) + strlen("-dnserr") + 5;
     file = xmalloc(len);
-    strlcpy(file, host, len);
+    strlcpy(file, "var/", len);
+    strlcat(file, host, len);
     strlcat(file, "-dnserr", len);
 
     switch (code) {
