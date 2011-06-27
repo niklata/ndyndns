@@ -29,6 +29,7 @@
 #include "log.h"
 #include "strl.h"
 #include "util.h"
+#include "malloc.h"
 
 static time_t last_time = 0;
 

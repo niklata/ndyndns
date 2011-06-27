@@ -1,6 +1,6 @@
 /* ndyndns.c - dynamic dns update daemon
  *
- * (C) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2005-2011 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,10 +54,11 @@
 #include "checkip.h"
 #include "util.h"
 #include "strlist.h"
+#include "malloc.h"
 
 static dyndns_conf_t dyndns_conf;
 static namecheap_conf_t namecheap_conf;
-
+static he_conf_t he_conf;
 
 static char ifname[IFNAMSIZ] = "ppp0";
 static char pidfile[MAX_PATH_LENGTH] = PID_FILE_DEFAULT;
@@ -92,6 +93,7 @@ typedef struct {
 static strlist_t *dd_update_list = NULL;
 static return_code_list_t *dd_return_list = NULL;
 static strlist_t *nc_update_list = NULL;
+static strlist_t *he_update_list = NULL;
 
 static volatile sig_atomic_t pending_exit;
 
@@ -355,7 +357,7 @@ static void nc_update_host(char *host, char *curip)
         hostname_size = p - host + 1;
         domain_size = hostname + strlen(host) - p;
         hostname = alloca(hostname_size);
-        domain = alloca(hostname_size);
+        domain = alloca(domain_size);
         strlcpy(hostname, host, hostname_size);
         strlcpy(domain, p+1, domain_size);
     }
@@ -442,6 +444,198 @@ static void nc_update_ip(char *curip)
 
     for (t = nc_update_list; t != NULL; t = t->next)
         nc_update_host(t->str, curip);
+}
+
+static void he_update_tunid(char *tunid, char *curip)
+{
+    CURL *h;
+    CURLcode ret;
+    int len;
+    char url[MAX_BUF];
+    char useragent[64];
+    char curlerror[CURL_ERROR_SIZE];
+    conn_data_t data;
+
+    if (!tunid || !curip)
+        return;
+
+    /* set up the authentication url */
+    if (use_ssl) {
+        len = strlcpy(url, "https", sizeof url);
+        update_ip_buf_error(len, sizeof url);
+    } else {
+        len = strlcpy(url, "http", sizeof url);
+        update_ip_buf_error(len, sizeof url);
+    }
+
+    len = strlcat(url, "://ipv4.tunnelbroker.net/ipv4_end.php?ip=", sizeof url);
+    update_ip_buf_error(len, sizeof url);
+    len = strlcat(url, curip, sizeof url);
+    update_ip_buf_error(len, sizeof url);
+
+    len = strlcat(url, "&pass=", sizeof url);
+    update_ip_buf_error(len, sizeof url);
+    len = strlcat(url, he_conf.passhash, sizeof url);
+    update_ip_buf_error(len, sizeof url);
+
+    len = strlcat(url, "&apikey=", sizeof url);
+    update_ip_buf_error(len, sizeof url);
+    len = strlcat(url, he_conf.userid, sizeof url);
+    update_ip_buf_error(len, sizeof url);
+
+    len = strlcat(url, "&tid=", sizeof url);
+    update_ip_buf_error(len, sizeof url);
+    len = strlcat(url, tunid, sizeof url);
+    update_ip_buf_error(len, sizeof url);
+
+    /* set up useragent */
+    len = strlcpy(useragent, "ndyndns/", sizeof useragent);
+    update_ip_buf_error(len, sizeof useragent);
+    len = strlcat(useragent, NDYNDNS_VERSION, sizeof useragent);
+    update_ip_buf_error(len, sizeof useragent);
+
+    data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
+    memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
+    data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
+    data.idx = 0;
+
+    log_line("update url: [%s]\n", url);
+    h = curl_easy_init();
+    curl_easy_setopt(h, CURLOPT_URL, url);
+    curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
+    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
+    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
+    curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
+    if (use_ssl)
+        curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
+    ret = curl_easy_perform(h);
+    curl_easy_cleanup(h);
+
+    if (update_ip_curl_errcheck(ret, curlerror) == 1)
+        goto out;
+
+    log_line("response returned: [%s]\n", data.buf);
+    if (strstr(data.buf, "<ErrCount>0")) {
+        log_line(
+            "%s: [good] - Update successful.\n", tunid);
+        write_dnsip(tunid, curip);
+        write_dnsdate(tunid, time(0));
+    } else {
+        log_line("%s: [fail] - Failed to update.\n", tunid);
+    }
+
+  out:
+    free(data.buf);
+}
+
+static void he_update_tuns(char *curip)
+{
+    strlist_t *t;
+
+    for (t = he_conf.tunlist; t != NULL; t = t->next)
+        he_update_tunid(t->str, curip);
+}
+
+static void he_update_host(char *host, char *password, char *curip)
+{
+    CURL *h;
+    CURLcode ret;
+    int len;
+    char url[MAX_BUF];
+    char useragent[64];
+    char curlerror[CURL_ERROR_SIZE];
+    conn_data_t data;
+
+    if (!he_update_list || !host || !password || !curip)
+        return;
+
+    // If this is the host name that is associated with our tunnels,
+    // then update all of the tunnels now.
+    if (!strcmp(host, he_conf.hostassoc))
+        he_update_tuns(curip);
+
+    /* set up the authentication url */
+    if (use_ssl) {
+        len = strlcpy(url, "https://", sizeof url);
+        update_ip_buf_error(len, sizeof url);
+    } else {
+        len = strlcpy(url, "http://", sizeof url);
+        update_ip_buf_error(len, sizeof url);
+    }
+
+    len = strlcat(url, host, sizeof url);
+    update_ip_buf_error(len, sizeof url);
+    len = strlcat(url, ":", sizeof url);
+    update_ip_buf_error(len, sizeof url);
+    len = strlcat(url, password, sizeof url);
+    update_ip_buf_error(len, sizeof url);
+
+    len = strlcat(url, "@dyn.dns.he.net/update?hostname=", sizeof url);
+    update_ip_buf_error(len, sizeof url);
+    len = strlcat(url, host, sizeof url);
+    update_ip_buf_error(len, sizeof url);
+
+    len = strlcat(url, "&myip=", sizeof url);
+    update_ip_buf_error(len, sizeof url);
+    len = strlcat(url, curip, sizeof url);
+    update_ip_buf_error(len, sizeof url);
+
+    /* set up useragent */
+    len = strlcpy(useragent, "ndyndns/", sizeof useragent);
+    update_ip_buf_error(len, sizeof useragent);
+    len = strlcat(useragent, NDYNDNS_VERSION, sizeof useragent);
+    update_ip_buf_error(len, sizeof useragent);
+
+    data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
+    memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
+    data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
+    data.idx = 0;
+
+    log_line("update url: [%s]\n", url);
+    h = curl_easy_init();
+    curl_easy_setopt(h, CURLOPT_URL, url);
+    curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
+    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
+    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
+    curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
+    if (use_ssl)
+        curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
+    ret = curl_easy_perform(h);
+    curl_easy_cleanup(h);
+
+    if (update_ip_curl_errcheck(ret, curlerror) == 1)
+        goto out;
+
+    log_line("response returned: [%s]\n", data.buf);
+    if (strstr(data.buf, "<ErrCount>0")) {
+        log_line(
+            "%s: [good] - Update successful.\n", host);
+        write_dnsip(host, curip);
+        write_dnsdate(host, time(0));
+        modify_he_hostdate_in_list(&he_conf, host, time(0));
+        modify_he_hostip_in_list(&he_conf, host, curip);
+    } else {
+        log_line("%s: [fail] - Failed to update.\n", host);
+    }
+
+  out:
+    free(data.buf);
+}
+
+static void he_update_ip(char *curip)
+{
+    strlist_t *t;
+
+    for (t = he_update_list; t != NULL; t = t->next) {
+        char *host = t->str, *pass, *p;
+        p = strchr(host, ':');
+        if (!p)
+            continue;
+        *p = '\0';
+        pass = p + 1;
+        he_update_host(host, pass, curip);
+        *p = ':';
+    }
 }
 
 /* not really well documented, so here:
@@ -792,6 +986,7 @@ static void do_work(void)
     char *curip = NULL;
     struct in_addr inr;
     host_data_t *t;
+    hostpairs_t *tp;
 
     log_line("updating to interface: [%s]\n", ifname);
 
@@ -849,6 +1044,24 @@ static void do_work(void)
         }
         if (nc_update_list)
             nc_update_ip(curip);
+
+        free_strlist(he_update_list);
+        he_update_list = NULL;
+
+        for (tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
+            if (strcmp(curip, tp->ip)) {
+                size_t csiz = strlen(tp->host) + strlen(tp->password) + 1;
+                char *tbuf = alloca(csiz);
+                strlcpy(tbuf, tp->host, csiz);
+                strlcat(tbuf, ":", csiz);
+                strlcat(tbuf, tp->password, csiz);
+                log_line("adding for update [%s]\n", tbuf);
+                add_to_strlist(&he_update_list, tbuf);
+                continue;
+            }
+        }
+        if (he_update_list)
+            he_update_ip(curip);
 
       sleep:
         sleep(update_interval);
@@ -942,6 +1155,7 @@ int main(int argc, char** argv)
 
     init_dyndns_conf(&dyndns_conf);
     init_namecheap_conf(&namecheap_conf);
+    init_he_conf(&he_conf);
 
     while (1) {
         int option_index = 0;
@@ -971,7 +1185,7 @@ int main(int argc, char** argv)
             case 'h':
                 printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", NDYNDNS_VERSION);
                 printf(
-                    "Copyright (C) 2005-2010 Nicholas J. Kain\n"
+                    "Copyright (C) 2005-2011 Nicholas J. Kain\n"
                     "Usage: ndyndns [OPTIONS]\n"
                     "  -d, --detach                detach from TTY and daemonize\n"
                     "  -n, --nodetach              stay attached to TTY\n"
@@ -994,7 +1208,7 @@ int main(int argc, char** argv)
 
             case 'v':
                 printf(
-                    "ndyndns %s Copyright (C) 2005-2010 Nicholas J. Kain\n"
+                    "ndyndns %s Copyright (C) 2005-2011 Nicholas J. Kain\n"
                     "This program is free software: you can redistribute it and/or modify\n"
                     "it under the terms of the GNU General Public License as published by\n"
                     "the Free Software Foundation, either version 3 of the License, or\n"
@@ -1040,7 +1254,8 @@ int main(int argc, char** argv)
                     exit(EXIT_FAILURE);
                 } else {
                     read_cfg = 1;
-                    if (parse_config(optarg, &dyndns_conf, &namecheap_conf) != 1)
+                    if (parse_config(optarg, &dyndns_conf, &namecheap_conf,
+                                     &he_conf) != 1)
                         suicide("FATAL: bad configuration data\n");
                 }
                 break;
@@ -1051,7 +1266,8 @@ int main(int argc, char** argv)
                     exit(EXIT_FAILURE);
                 } else {
                     read_cfg = 1;
-                    if (parse_config(NULL, &dyndns_conf, &namecheap_conf) != 1)
+                    if (parse_config(NULL, &dyndns_conf, &namecheap_conf,
+                                     &he_conf) != 1)
                         suicide("FATAL: bad configuration data\n");
                 }
                 break;

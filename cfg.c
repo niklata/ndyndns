@@ -1,6 +1,6 @@
 /* cfg.c - configuration file functions
  *
- * (C) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2005-2011 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include "log.h"
 #include "strl.h"
 #include "chroot.h"
+#include "malloc.h"
 #include "ndyndns.h"
 
 void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host)
@@ -129,7 +130,7 @@ static void add_to_host_data_list(host_data_t **list, char *host, char *ip,
         if (item->host) {
             log_line("[%s] has no ip address.  No updates will be performed for [%s].", host, host);
         } else {
-            log_line("[%s] has no host name.  Your configuration file has a problem.", ip, ip);
+            log_line("[%s] has no host name.  Your configuration file has a problem.", ip);
         }
         goto out;
     }
@@ -155,6 +156,75 @@ static void add_to_host_data_list(host_data_t **list, char *host, char *ip,
     log_line("add_to_host_data_list: coding error\n");
 out:
     free(item->host);
+    free(item->ip);
+    free(item);
+}
+
+/* allocates memory.  ip may be NULL */
+static void add_to_hostpair_list(hostpairs_t **list, char *host, char *passwd,
+                                 char *ip, time_t time)
+{
+    hostpairs_t *item, *t;
+    char *elem, *err = NULL;
+    size_t len;
+
+    if (!list || !host || !passwd) return;
+
+    err = get_dnserr(host);
+    if (err) {
+        log_line("host:[%s] is locked because of error:[%s].  Correct the problem and remove [%s-dnserr] to allow update.\n", host, err, host);
+        free(err);
+        return;
+    }
+
+    item = xmalloc(sizeof (hostpairs_t));
+    item->date = time;
+    item->next = NULL;
+    item->ip = NULL;
+
+    len = strlen(host) + 1;
+    elem = xmalloc(len);
+    strlcpy(elem, host, len);
+    item->host = elem;
+
+    len = strlen(passwd) + 1;
+    elem = xmalloc(len);
+    strlcpy(elem, passwd, len);
+    item->password = elem;
+
+    len = strlen(ip) + 1;
+    elem = xmalloc(len);
+    strlcpy(elem, ip, len);
+    item->ip = elem;
+
+    if (!ip) {
+        log_line("[%s] has no ip address.  No updates will be performed for [%s].", host, host);
+        goto out;
+    } else if (!item->host) {
+        log_line("[%s] has no host name.  Your configuration file has a problem.", ip);
+        goto out;
+    } else if (!item->password) {
+        log_line("[%s] has no password.  Your configuration file has a problem.", ip);
+        goto out;
+    }
+
+    if (!*list) {
+        *list = item;
+        return;
+    }
+
+    t = *list;
+    while (t) {
+        if (!t->next) {
+            t->next = item;
+            return;
+        }
+        t = t->next;
+    }
+    log_line("add_to_hostpair_list: coding error\n");
+out:
+    free(item->host);
+    free(item->password);
     free(item->ip);
     free(item);
 }
@@ -232,6 +302,46 @@ void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host, time_t time)
         return;
 
     for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    t->date = time;
+}
+
+void modify_he_hostip_in_list(he_conf_t *conf, char *host, char *ip)
+{
+    hostpairs_t *t;
+    size_t len;
+    char *buf;
+
+    if (!conf || !host || !conf->hostpairs)
+        return;
+
+    for (t = conf->hostpairs; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    free(t->ip);
+    if (!ip) {
+        t->ip = ip;
+        return;
+    }
+    len = strlen(ip) + 1;
+    buf = xmalloc(len);
+    strlcpy(buf, ip, len);
+    t->ip = buf;
+}
+
+void modify_he_hostdate_in_list(he_conf_t *conf, char *host, time_t time)
+{
+    hostpairs_t *t;
+
+    if (!conf || !host || !conf->hostpairs)
+        return;
+
+    for (t = conf->hostpairs; t && strcmp(t->host, host); t = t->next);
 
     if (!t)
         return; /* not found */
@@ -394,6 +504,46 @@ static void do_populate(host_data_t **list, char *host_in)
     free(host_orig);
 }
 
+static void do_populate_hp(hostpairs_t **list, char *pair_in)
+{
+    char *ip, *host, *host_orig, *passwd;
+
+    host = strdup(pair_in);
+    host_orig = host;
+    while (*host == ' ' || *host == '\t')
+        ++host;
+    passwd = host;
+    while (*passwd != ':' && *passwd != '\0')
+        ++passwd;
+    if (*passwd == ':') {
+        *passwd = '\0';
+        ++passwd;
+    }
+
+    if (strlen(host) && strlen(passwd)) {
+        ip = get_dnsip(host);
+        if (ip) {
+            log_line("adding: [%s] ip: [%s]\n", host, ip);
+            add_to_hostpair_list(list, host, passwd, ip, get_dnsdate(host));
+        } else {
+            log_line("No ip found for [%s].  No updates will be done.", host);
+        }
+        free(ip);
+    }
+    free(host_orig);
+}
+
+static void do_populate_tunids(strlist_t **list, char *tunid)
+{
+    while (*tunid == ' ' || *tunid == '\t')
+        ++tunid;
+
+    if (strlen(tunid)) {
+            log_line("adding tunid: [%s]\n", tunid);
+            add_to_strlist(list, tunid);
+    }
+}
+
 static void populate_hostlist(host_data_t **list, char *hostname)
 {
     char *left = hostname, *right = (char *)1, *t = NULL, *p;
@@ -428,6 +578,72 @@ static void populate_hostlist(host_data_t **list, char *hostname)
     } while (1);
 }
 
+static void populate_hostpairs(hostpairs_t **list, char *hostpair)
+{
+    char *left = hostpair, *right = (char *)1, *t = NULL, *p;
+    size_t len;
+
+    if (!list || !left)
+        suicide("NULL passed to populate_hostlist()\n");
+    if (strlen(left) == 0) {
+        suicide("No hostpairs were provided for updates.  Exiting.");
+    }
+
+    do {
+        right = strchr(left, ',');
+        if (right != NULL && left < right) {
+            for (p = left; p < right; ++p) {
+                if (*p == ' ' || *p == '\t')
+                    break;
+            }
+            len = p - left + 1;
+            t = xmalloc(len);
+            memset(t, '\0', len);
+            memcpy(t, left, len - 1);
+            do_populate_hp(list, t);
+            free(t);
+            left = right + 1;
+        } else {
+            do_populate_hp(list, left);
+            break;
+        }
+    } while (1);
+}
+
+static void populate_tunlist(strlist_t **list, char *tunid)
+{
+    char *left = tunid, *right = (char *)1, *t = NULL, *p;
+    size_t len;
+
+    if (!list || !left)
+        suicide("NULL passed to populate_tunlist()\n");
+    if (strlen(left) == 0) {
+        suicide("No tunids were provided for updates.  Exiting.");
+    }
+
+    log_line("tunids: [%s]\n", left);
+
+    do {
+        right = strchr(left, ',');
+        if (right != NULL && left < right) {
+            for (p = left; p < right; ++p) {
+                if (*p == ' ' || *p == '\t')
+                    break;
+            }
+            len = p - left + 1;
+            t = xmalloc(len);
+            memset(t, '\0', len);
+            memcpy(t, left, len - 1);
+            do_populate_tunids(list, t);
+            free(t);
+            left = right + 1;
+        } else {
+            do_populate_tunids(list, left);
+            break;
+        }
+    } while (1);
+}
+
 void init_dyndns_conf(dyndns_conf_t *t)
 {
     t->username = NULL;
@@ -446,46 +662,82 @@ void init_namecheap_conf(namecheap_conf_t *t)
     t->hostlist = NULL;
 }
 
+void init_he_conf(he_conf_t *t)
+{
+    t->userid = NULL;
+    t->passhash = NULL;
+    t->hostassoc = NULL;
+    t->hostpairs = NULL;
+    t->tunlist = NULL;
+}
+
 /* returns 1 for valid config, 0 for invalid */
 static int validate_dyndns_conf(dyndns_conf_t *t)
 {
-    if ((!!t->username == !!t->password) != !!t->hostlist) {
+    int r = 1;
+    if (t->username || t->password || t->hostlist) {
         if (t->username == NULL) {
-            log_line("config file invalid: no username provided\n");
-            return 0;
+            r = 0;
+            log_line("dyndns config invalid: no username provided\n");
         }
         if (t->password == NULL) {
-            log_line("config file invalid: no password provided\n");
-            return 0;
+            r = 0;
+            log_line("dyndns config invalid: no password provided\n");
         }
         if (t->hostlist == NULL) {
-            log_line("config file invalid: no hostnames provided\n");
-            return 0;
+            r = 0;
+            log_line("dyndns config invalid: no hostnames provided\n");
         }
     }
-    if (t->username)
-        return 1;
-    else
-        return 0;
+    return r;
 }
 
 /* returns 1 for valid config, 0 for invalid */
 static int validate_nc_conf(namecheap_conf_t *t)
 {
-    if (!!t->password != !!t->hostlist) {
+    int r = 1;
+    if (t->password || t->hostlist) {
         if (t->password == NULL) {
-            log_line("config file invalid: no password provided\n");
-            return 0;
+            r = 0;
+            log_line("namecheap config invalid: no password provided\n");
         }
         if (t->hostlist == NULL) {
-            log_line("config file invalid: no hostnames provided\n");
-            return 0;
+            r = 0;
+            log_line("namecheap config invalid: no hostnames provided\n");
         }
     }
-    if (t->password)
-        return 1;
-    else
-        return 0;
+    return r;
+}
+
+/* returns 1 for valid config, 0 for invalid */
+static int validate_he_conf(he_conf_t *t)
+{
+    int r = 1;
+    if (t->userid || t->passhash || t->tunlist || t->hostpairs) {
+        if (t->userid == NULL) {
+            r = 0;
+            log_line("he config invalid: no userid provided\n");
+        }
+        if (t->passhash == NULL) {
+            r = 0;
+            log_line("he config invalid: no passhash provided\n");
+        }
+        if (t->tunlist || t->hostassoc) {
+            if (t->hostassoc == NULL) {
+                r = 0;
+                log_line("he config invalid: no hostassoc provided\n");
+            }
+            if (t->tunlist == NULL) {
+                r = 0;
+                log_line("he config invalid: no tunnelids provided\n");
+            }
+        }
+        if (t->hostpairs == NULL) {
+            r = 0;
+            log_line("he config invalid: no tunnelids provided\n");
+        }
+    }
+    return r;
 }
 
 static char *parse_line_string(char *line, char *key)
@@ -552,12 +804,14 @@ enum prs_state {
     PRS_NONE,
     PRS_CONFIG,
     PRS_DYNDNS,
-    PRS_NAMECHEAP
+    PRS_NAMECHEAP,
+    PRS_HE,
 };
 
 #define PRS_CONFIG_STR "[config]"
 #define PRS_DYNDNS_STR "[dyndns]"
 #define PRS_NAMECHEAP_STR "[namecheap]"
+#define PRS_HE_STR "[he]"
 #define NOWILDCARD_STR "nowildcard"
 #define WILDCARD_STR "wildcard"
 #define PRIMARYMX_STR "primarymx"
@@ -578,7 +832,8 @@ void parse_warn(unsigned int lnum, char *name)
 }
 
 /* if file is NULL, then read stdin */
-int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
+int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
+                 he_conf_t *hc)
 {
     FILE *f;
     char buf[MAXLINE];
@@ -624,6 +879,10 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
             prs = PRS_NAMECHEAP;
             continue;
         }
+        if (!strncmp(PRS_HE_STR, point, sizeof PRS_HE_STR - 1)) {
+            prs = PRS_HE;
+            continue;
+        }
 
         tmp = parse_line_string(point, "password");
         if (tmp) {
@@ -636,6 +895,20 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     break;
                 case PRS_NAMECHEAP:
                     assign_string(&nc->password, tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "passhash");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "passhash");
+                    break;
+                case PRS_HE:
+                    assign_string(&hc->passhash, tmp);
                     break;
             }
             free(tmp);
@@ -659,6 +932,48 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
             continue;
         }
 
+        tmp = parse_line_string(point, "hostpairs");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "hostpairs");
+                    break;
+                case PRS_HE:
+                    populate_hostpairs(&hc->hostpairs, tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "tunnelids");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "tunnelids");
+                    break;
+                case PRS_HE:
+                    populate_tunlist(&hc->tunlist, tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "hostassoc");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "hostassoc");
+                    break;
+                case PRS_HE:
+                    assign_string(&hc->hostassoc, tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
         tmp = parse_line_string(point, "username");
         if (tmp) {
             switch (prs) {
@@ -667,6 +982,20 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
                     break;
                 case PRS_DYNDNS:
                     assign_string(&dc->username, tmp);
+                    break;
+            }
+            free(tmp);
+            continue;
+        }
+
+        tmp = parse_line_string(point, "userid");
+        if (tmp) {
+            switch (prs) {
+                default:
+                    parse_warn(lnum, "userid");
+                    break;
+                case PRS_HE:
+                    assign_string(&hc->userid, tmp);
                     break;
             }
             free(tmp);
@@ -902,6 +1231,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc)
         log_line("parse_config: failed to close [%s]\n", file);
         exit(EXIT_FAILURE);
     }
-    ret = validate_dyndns_conf(dc) | validate_nc_conf(nc);
+    ret = validate_dyndns_conf(dc) | validate_nc_conf(nc) |
+          validate_he_conf(hc);
     return ret;
 }

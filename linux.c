@@ -33,6 +33,7 @@
 #include "log.h"
 #include "strl.h"
 #include "util.h"
+#include "malloc.h"
 
 /* allocates from heap for return */
 char *get_interface_ip(char *ifname)

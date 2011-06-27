@@ -15,6 +15,7 @@ offline (default: NO)
 #define NJK_CONFIG_H_ 1
 
 #include <time.h>
+#include <strlist.h>
 
 typedef enum {
     WC_NOCHANGE,
@@ -62,13 +63,33 @@ typedef struct {
     host_data_t *hostlist;
 } namecheap_conf_t;
 
+typedef struct {
+    char *host;
+    char *password;
+    char *ip;
+    time_t date;
+    void *next;
+} hostpairs_t;
+
+typedef struct {
+    char *userid;
+    char *passhash;
+    char *hostassoc;
+    hostpairs_t *hostpairs;
+    strlist_t *tunlist;
+} he_conf_t;
+
 void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host);
 void modify_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip);
 void modify_hostdate_in_list(dyndns_conf_t *conf, char *host, time_t time);
 void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host, char *ip);
 void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host, time_t time);
+void modify_he_hostip_in_list(he_conf_t *conf, char *host, char *ip);
+void modify_he_hostdate_in_list(he_conf_t *conf, char *host, time_t time);
 void init_dyndns_conf(dyndns_conf_t *t);
 void init_namecheap_conf(namecheap_conf_t *t);
-int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc);
+void init_he_conf(he_conf_t *t);
+int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
+                 he_conf_t *hc);
 #endif
 
