@@ -517,8 +517,9 @@ static void he_update_tunid(char *tunid, char *curip)
     if (update_ip_curl_errcheck(ret, curlerror) == 1)
         goto out;
 
+    // "+OK: Tunnel endpoint updated to: x.x.x.x" is success
     log_line("response returned: [%s]\n", data.buf);
-    if (strstr(data.buf, "<ErrCount>0")) {
+    if (strstr(data.buf, "+OK")) {
         log_line(
             "%s: [good] - Update successful.\n", tunid);
         write_dnsip(tunid, curip);
@@ -573,7 +574,7 @@ static void he_update_host(char *host, char *password, char *curip)
     len = strlcat(url, password, sizeof url);
     update_ip_buf_error(len, sizeof url);
 
-    len = strlcat(url, "@dyn.dns.he.net/update?hostname=", sizeof url);
+    len = strlcat(url, "@dyn.dns.he.net/nic/update?hostname=", sizeof url);
     update_ip_buf_error(len, sizeof url);
     len = strlcat(url, host, sizeof url);
     update_ip_buf_error(len, sizeof url);
@@ -609,8 +610,9 @@ static void he_update_host(char *host, char *password, char *curip)
     if (update_ip_curl_errcheck(ret, curlerror) == 1)
         goto out;
 
+    // "good x.x.x.x" is success
     log_line("response returned: [%s]\n", data.buf);
-    if (strstr(data.buf, "<ErrCount>0")) {
+    if (strstr(data.buf, "good")) {
         log_line(
             "%s: [good] - Update successful.\n", host);
         write_dnsip(host, curip);
@@ -1053,7 +1055,7 @@ static void do_work(void)
 
         for (tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
             if (strcmp(curip, tp->ip)) {
-                size_t csiz = strlen(tp->host) + strlen(tp->password) + 1;
+                size_t csiz = strlen(tp->host) + strlen(tp->password) + 2;
                 char *tbuf = alloca(csiz);
                 strlcpy(tbuf, tp->host, csiz);
                 strlcat(tbuf, ":", csiz);
