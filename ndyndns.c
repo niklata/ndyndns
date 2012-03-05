@@ -654,7 +654,7 @@ static void he_update_ip(char *curip)
 static void decompose_buf_to_list(char *buf)
 {
     char tok[MAX_BUF], *point = buf;
-    int i;
+    size_t i;
 
     free_return_code_list(dd_return_list);
     dd_return_list = NULL;
@@ -666,7 +666,7 @@ static void decompose_buf_to_list(char *buf)
 
         /* fetch one token */
         i = 0;
-        while (*point != '\0' && !isspace(*point))
+        while (i < sizeof tok && *point != '\0' && !isspace(*point))
             tok[i++] = *(point++);
 
         if (strstr(tok, "badsys")) {

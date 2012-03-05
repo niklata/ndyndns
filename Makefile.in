@@ -1,4 +1,3 @@
-#CC = gcc -Wall -Wpointer-arith -Wstrict-prototypes -pedantic
 CC = @CC@
 INCLUDES = -I./ncmlib
 dnslib = -lnss_dns
@@ -6,7 +5,7 @@ objects = util.o checkip.o $(PLATFORM).o cfg.o ndyndns.o
 CURLINC = @CURLINC@
 CURLLIB = @CURLLIB@
 VERSION = @VERSION@
-CFLAGS = @CFLAGS@ -std=gnu99 -Wall -Wextra -pedantic $(CURLINC) $(INCLUDES)
+CFLAGS = @CFLAGS@ -std=gnu99 -Wall -Wextra -Wno-format-extra-args -Wno-format-zero-length -Wformat-nonliteral -Wformat-security -pedantic $(CURLINC) $(INCLUDES)
 PLATFORM = @PLATFORM@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
