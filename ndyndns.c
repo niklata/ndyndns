@@ -983,12 +983,85 @@ static void dyndns_update_ip(char *curip)
     free(data.buf);
 }
 
+static void dd_work(char *curip)
+{
+    free_strlist(dd_update_list);
+    free_return_code_list(dd_return_list);
+    dd_update_list = NULL;
+    dd_return_list = NULL;
+
+    for (host_data_t *t = dyndns_conf.hostlist; t != NULL; t = t->next) {
+        if (strcmp(curip, t->ip)) {
+            log_line("adding for update [%s]\n", t->host);
+            add_to_strlist(&dd_update_list, t->host);
+            continue;
+        }
+        if (dyndns_conf.system == SYSTEM_DYNDNS &&
+            time(0) - t->date > REFRESH_INTERVAL) {
+            log_line("adding for refresh [%s]\n", t->host);
+            add_to_strlist(&dd_update_list, t->host);
+        }
+    }
+    if (dd_update_list)
+        dyndns_update_ip(curip);
+}
+
+static void nc_work(char *curip)
+{
+    free_strlist(nc_update_list);
+    nc_update_list = NULL;
+
+    for (host_data_t *t = namecheap_conf.hostlist; t != NULL; t = t->next) {
+        if (strcmp(curip, t->ip)) {
+            log_line("adding for update [%s]\n", t->host);
+            add_to_strlist(&nc_update_list, t->host);
+        }
+    }
+    if (nc_update_list)
+        nc_update_ip(curip);
+}
+
+static void he_dns_work(char *curip)
+{
+    free_strlist(he_update_list);
+    he_update_list = NULL;
+
+    for (hostpairs_t *tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
+        if (strcmp(curip, tp->ip)) {
+            size_t csiz = strlen(tp->host) + strlen(tp->password) + 2;
+            char *tbuf = alloca(csiz);
+            strlcpy(tbuf, tp->host, csiz);
+            strlcat(tbuf, ":", csiz);
+            strlcat(tbuf, tp->password, csiz);
+            log_line("adding for update [%s]\n", tbuf);
+            add_to_strlist(&he_update_list, tbuf);
+        }
+    }
+    if (he_update_list)
+        he_update_ip(curip);
+}
+
+static void he_tun_work(char *curip)
+{
+    free_strlist(hetun_update_list);
+    free_return_code_list(hetun_return_list);
+    hetun_update_list = NULL;
+    hetun_return_list = NULL;
+
+    for (host_data_t *t = he_conf.tunlist; t != NULL; t = t->next) {
+        if (strcmp(curip, t->ip)) {
+            log_line("adding for update [%s]\n", t->host);
+            add_to_strlist(&hetun_update_list, t->host);
+        }
+    }
+    if (hetun_update_list)
+        he_update_tuns(curip);
+}
+
 static void do_work(void)
 {
     char *curip = NULL;
     struct in_addr inr;
-    host_data_t *t;
-    hostpairs_t *tp;
 
     log_line("updating to interface: [%s]\n", ifname);
 
@@ -1014,68 +1087,10 @@ static void do_work(void)
             goto sleep;
         }
 
-        free_strlist(dd_update_list);
-        free_return_code_list(dd_return_list);
-        dd_update_list = NULL;
-        dd_return_list = NULL;
-
-        for (t = dyndns_conf.hostlist; t != NULL; t = t->next) {
-            if (strcmp(curip, t->ip)) {
-                log_line("adding for update [%s]\n", t->host);
-                add_to_strlist(&dd_update_list, t->host);
-                continue;
-            }
-            if (dyndns_conf.system == SYSTEM_DYNDNS &&
-                time(0) - t->date > REFRESH_INTERVAL) {
-                log_line("adding for refresh [%s]\n", t->host);
-                add_to_strlist(&dd_update_list, t->host);
-            }
-        }
-        if (dd_update_list)
-            dyndns_update_ip(curip);
-
-        free_strlist(nc_update_list);
-        nc_update_list = NULL;
-
-        for (t = namecheap_conf.hostlist; t != NULL; t = t->next) {
-            if (strcmp(curip, t->ip)) {
-                log_line("adding for update [%s]\n", t->host);
-                add_to_strlist(&nc_update_list, t->host);
-            }
-        }
-        if (nc_update_list)
-            nc_update_ip(curip);
-
-        free_strlist(he_update_list);
-        he_update_list = NULL;
-
-        for (tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
-            if (strcmp(curip, tp->ip)) {
-                size_t csiz = strlen(tp->host) + strlen(tp->password) + 2;
-                char *tbuf = alloca(csiz);
-                strlcpy(tbuf, tp->host, csiz);
-                strlcat(tbuf, ":", csiz);
-                strlcat(tbuf, tp->password, csiz);
-                log_line("adding for update [%s]\n", tbuf);
-                add_to_strlist(&he_update_list, tbuf);
-            }
-        }
-        if (he_update_list)
-            he_update_ip(curip);
-
-        free_strlist(hetun_update_list);
-        free_return_code_list(hetun_return_list);
-        hetun_update_list = NULL;
-        hetun_return_list = NULL;
-
-        for (t = he_conf.tunlist; t != NULL; t = t->next) {
-            if (strcmp(curip, t->ip)) {
-                log_line("adding for update [%s]\n", t->host);
-                add_to_strlist(&hetun_update_list, t->host);
-            }
-        }
-        if (hetun_update_list)
-            he_update_tuns(curip);
+        dd_work(curip);
+        nc_work(curip);
+        he_dns_work(curip);
+        he_tun_work(curip);
 
       sleep:
         sleep(update_interval);
