@@ -33,16 +33,16 @@
 #include "malloc.h"
 #include "ndyndns.h"
 
-void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host)
+void remove_host_from_host_data_list(host_data_t **phl, char *host)
 {
-    host_data_t *cur = conf->hostlist, *after = NULL, *p;
+    host_data_t *cur = *phl, *after = NULL, *p;
 
     if (!strcmp(cur->host, host)) {
         after = cur->next;
         free(cur->host);
         free(cur->ip);
         free(cur);
-        conf->hostlist = after;
+        *phl = after;
     }
     for (; cur->next != NULL; cur = cur->next) {
         p = cur->next;

@@ -78,7 +78,7 @@ typedef struct {
     host_data_t *tunlist;
 } he_conf_t;
 
-void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host);
+void remove_host_from_host_data_list(host_data_t **phl, char *host);
 void modify_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip);
 void modify_hostdate_in_list(dyndns_conf_t *conf, char *host, time_t time);
 void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host, char *ip);

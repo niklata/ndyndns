@@ -514,6 +514,15 @@ static void he_update_tunid(char *tunid, char *curip)
             "%s: [good] - Update successful.\n", tunid);
         write_dnsip(tunid, curip);
         write_dnsdate(tunid, time(0));
+    } else if (strstr(data.buf, "-ERROR: This tunnel is already associated with this IP address.")) {
+        log_line(
+            "%s: [nochg] - Unnecessary update; further updates will be considered abusive.\n" , tunid);
+        write_dnsip(tunid, curip);
+        write_dnsdate(tunid, time(0));
+    } else if (strstr(data.buf, "abuse")) {
+        log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.\n", tunid, tunid);
+        write_dnserr(tunid, -2);
+        remove_host_from_host_data_list(&he_conf.tunlist, tunid);
     } else {
         log_line("%s: [fail] - Failed to update.\n", tunid);
     }
@@ -688,12 +697,13 @@ static void decompose_buf_to_list(char *buf)
 /* -1 indicates hard error, -2 soft error on hostname, 0 success */
 static int postprocess_update(char *host, char *curip, return_codes retcode)
 {
-    int ret = -1;
+    int ret = -2;
 
     switch (retcode) {
         default:
             log_line(
                 "%s: FATAL: postprocess_update() has invalid state\n", host);
+            ret = -1;
             break;
         case RET_BADSYS:
             log_line(
@@ -714,22 +724,18 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
         case RET_NOTFQDN:
             log_line(
                 "%s: [notfqdn] - FATAL: Hostname isn't a fully-qualified domain name (such as 'hostname.dyndns.org')'.\n", host);
-            ret = -2;
             break;
         case RET_NOHOST:
             log_line(
                 "%s: [nohost] - FATAL: Hostname doesn't exist or wrong service type specified (dyndns, static, custom).\n", host);
-            ret = -2;
             break;
         case RET_NOTYOURS:
             log_line(
                 "%s: [!yours] - FATAL: Hostname exists, but doesn't belong to your account.\n", host);
-            ret = -2;
             break;
         case RET_ABUSE:
             log_line(
                 "%s: [abuse] - FATAL: Hostname is banned for abuse.\n", host);
-            ret = -2;
             break;
         case RET_NUMHOST:
             log_line(
@@ -935,7 +941,7 @@ static void dyndns_update_ip(char *curip)
             case -2:
                 log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.\n", t->str, t->str);
                 write_dnserr(t->str, ret2);
-                remove_host_from_host_data_list(&dyndns_conf, t->str);
+                remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
                 break;
             case 0:
                 modify_hostdate_in_list(&dyndns_conf, t->str, time(0));
