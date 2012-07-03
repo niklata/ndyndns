@@ -94,6 +94,8 @@ static strlist_t *dd_update_list = NULL;
 static return_code_list_t *dd_return_list = NULL;
 static strlist_t *nc_update_list = NULL;
 static strlist_t *he_update_list = NULL;
+static strlist_t *hetun_update_list = NULL;
+static return_code_list_t *hetun_return_list = NULL;
 
 static volatile sig_atomic_t pending_exit;
 
@@ -536,7 +538,7 @@ static void he_update_tuns(char *curip)
 {
     strlist_t *t;
 
-    for (t = he_conf.tunlist; t != NULL; t = t->next)
+    for (t = hetun_update_list; t != NULL; t = t->next)
         he_update_tunid(t->str, curip);
 }
 
@@ -552,11 +554,6 @@ static void he_update_host(char *host, char *password, char *curip)
 
     if (!he_update_list || !host || !password || !curip)
         return;
-
-    // If this is the host name that is associated with our tunnels,
-    // then update all of the tunnels now.
-    if (!strcmp(host, he_conf.hostassoc))
-        he_update_tuns(curip);
 
     /* set up the authentication url */
     if (use_ssl) {
@@ -1044,7 +1041,6 @@ static void do_work(void)
             if (strcmp(curip, t->ip)) {
                 log_line("adding for update [%s]\n", t->host);
                 add_to_strlist(&nc_update_list, t->host);
-                continue;
             }
         }
         if (nc_update_list)
@@ -1062,11 +1058,24 @@ static void do_work(void)
                 strlcat(tbuf, tp->password, csiz);
                 log_line("adding for update [%s]\n", tbuf);
                 add_to_strlist(&he_update_list, tbuf);
-                continue;
             }
         }
         if (he_update_list)
             he_update_ip(curip);
+
+        free_strlist(hetun_update_list);
+        free_return_code_list(hetun_return_list);
+        hetun_update_list = NULL;
+        hetun_return_list = NULL;
+
+        for (t = he_conf.tunlist; t != NULL; t = t->next) {
+            if (strcmp(curip, t->ip)) {
+                log_line("adding for update [%s]\n", t->host);
+                add_to_strlist(&hetun_update_list, t->host);
+            }
+        }
+        if (hetun_update_list)
+            he_update_tuns(curip);
 
       sleep:
         sleep(update_interval);

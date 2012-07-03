@@ -533,17 +533,6 @@ static void do_populate_hp(hostpairs_t **list, char *pair_in)
     free(host_orig);
 }
 
-static void do_populate_tunids(strlist_t **list, char *tunid)
-{
-    while (*tunid == ' ' || *tunid == '\t')
-        ++tunid;
-
-    if (strlen(tunid)) {
-            log_line("adding tunid: [%s]\n", tunid);
-            add_to_strlist(list, tunid);
-    }
-}
-
 static void populate_hostlist(host_data_t **list, char *hostname)
 {
     char *left = hostname, *right = (char *)1, *t = NULL, *p;
@@ -610,40 +599,6 @@ static void populate_hostpairs(hostpairs_t **list, char *hostpair)
     } while (1);
 }
 
-static void populate_tunlist(strlist_t **list, char *tunid)
-{
-    char *left = tunid, *right = (char *)1, *t = NULL, *p;
-    size_t len;
-
-    if (!list || !left)
-        suicide("NULL passed to populate_tunlist()\n");
-    if (strlen(left) == 0) {
-        suicide("No tunids were provided for updates.  Exiting.");
-    }
-
-    log_line("tunids: [%s]\n", left);
-
-    do {
-        right = strchr(left, ',');
-        if (right != NULL && left < right) {
-            for (p = left; p < right; ++p) {
-                if (*p == ' ' || *p == '\t')
-                    break;
-            }
-            len = p - left + 1;
-            t = xmalloc(len);
-            memset(t, '\0', len);
-            memcpy(t, left, len - 1);
-            do_populate_tunids(list, t);
-            free(t);
-            left = right + 1;
-        } else {
-            do_populate_tunids(list, left);
-            break;
-        }
-    } while (1);
-}
-
 void init_dyndns_conf(dyndns_conf_t *t)
 {
     t->username = NULL;
@@ -666,7 +621,6 @@ void init_he_conf(he_conf_t *t)
 {
     t->userid = NULL;
     t->passhash = NULL;
-    t->hostassoc = NULL;
     t->hostpairs = NULL;
     t->tunlist = NULL;
 }
@@ -713,7 +667,10 @@ static int validate_nc_conf(namecheap_conf_t *t)
 static int validate_he_conf(he_conf_t *t)
 {
     int r = 1;
-    if (t->userid || t->passhash || t->tunlist || t->hostpairs) {
+    if (t->tunlist == NULL && t->hostpairs == NULL) {
+        r = 0;
+        log_line("he config invalid: no tunnelids or hostpairs provided\n");
+    } else if (t->tunlist) {
         if (t->userid == NULL) {
             r = 0;
             log_line("he config invalid: no userid provided\n");
@@ -721,20 +678,6 @@ static int validate_he_conf(he_conf_t *t)
         if (t->passhash == NULL) {
             r = 0;
             log_line("he config invalid: no passhash provided\n");
-        }
-        if (t->tunlist || t->hostassoc) {
-            if (t->hostassoc == NULL) {
-                r = 0;
-                log_line("he config invalid: no hostassoc provided\n");
-            }
-            if (t->tunlist == NULL) {
-                r = 0;
-                log_line("he config invalid: no tunnelids provided\n");
-            }
-        }
-        if (t->hostpairs == NULL) {
-            r = 0;
-            log_line("he config invalid: no tunnelids provided\n");
         }
     }
     return r;
@@ -953,21 +896,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "tunnelids");
                     break;
                 case PRS_HE:
-                    populate_tunlist(&hc->tunlist, tmp);
-                    break;
-            }
-            free(tmp);
-            continue;
-        }
-
-        tmp = parse_line_string(point, "hostassoc");
-        if (tmp) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "hostassoc");
-                    break;
-                case PRS_HE:
-                    assign_string(&hc->hostassoc, tmp);
+                    populate_hostlist(&hc->tunlist, tmp);
                     break;
             }
             free(tmp);

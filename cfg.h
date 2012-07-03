@@ -74,9 +74,8 @@ typedef struct {
 typedef struct {
     char *userid;
     char *passhash;
-    char *hostassoc;
     hostpairs_t *hostpairs;
-    strlist_t *tunlist;
+    host_data_t *tunlist;
 } he_conf_t;
 
 void remove_host_from_host_data_list(dyndns_conf_t *conf, char *host);
