@@ -92,10 +92,6 @@ typedef struct {
 
 static strlist_t *dd_update_list = NULL;
 static return_code_list_t *dd_return_list = NULL;
-static strlist_t *nc_update_list = NULL;
-static strlist_t *he_update_list = NULL;
-static strlist_t *hetun_update_list = NULL;
-static return_code_list_t *hetun_return_list = NULL;
 
 static volatile sig_atomic_t pending_exit;
 
@@ -344,7 +340,7 @@ static void nc_update_host(char *host, char *curip)
     char *hostname = NULL, *domain = NULL, *p;
     conn_data_t data;
 
-    if (!nc_update_list || !host || !curip)
+    if (!host || !curip)
         return;
 
     p = strrchr(host, '.');
@@ -443,14 +439,6 @@ static void nc_update_host(char *host, char *curip)
     free(data.buf);
 }
 
-static void nc_update_ip(char *curip)
-{
-    strlist_t *t;
-
-    for (t = nc_update_list; t != NULL; t = t->next)
-        nc_update_host(t->str, curip);
-}
-
 static void he_update_tunid(char *tunid, char *curip)
 {
     CURL *h;
@@ -534,14 +522,6 @@ static void he_update_tunid(char *tunid, char *curip)
     free(data.buf);
 }
 
-static void he_update_tuns(char *curip)
-{
-    strlist_t *t;
-
-    for (t = hetun_update_list; t != NULL; t = t->next)
-        he_update_tunid(t->str, curip);
-}
-
 static void he_update_host(char *host, char *password, char *curip)
 {
     CURL *h;
@@ -552,7 +532,7 @@ static void he_update_host(char *host, char *password, char *curip)
     char curlerror[CURL_ERROR_SIZE];
     conn_data_t data;
 
-    if (!he_update_list || !host || !password || !curip)
+    if (!host || !password || !curip)
         return;
 
     /* set up the authentication url */
@@ -622,22 +602,6 @@ static void he_update_host(char *host, char *password, char *curip)
 
   out:
     free(data.buf);
-}
-
-static void he_update_ip(char *curip)
-{
-    strlist_t *t;
-
-    for (t = he_update_list; t != NULL; t = t->next) {
-        char *host = t->str, *pass, *p;
-        p = strchr(host, ':');
-        if (!p)
-            continue;
-        *p = '\0';
-        pass = p + 1;
-        he_update_host(host, pass, curip);
-        *p = ':';
-    }
 }
 
 /* not really well documented, so here:
@@ -1008,54 +972,42 @@ static void dd_work(char *curip)
 
 static void nc_work(char *curip)
 {
-    free_strlist(nc_update_list);
-    nc_update_list = NULL;
-
     for (host_data_t *t = namecheap_conf.hostlist; t != NULL; t = t->next) {
         if (strcmp(curip, t->ip)) {
             log_line("adding for update [%s]\n", t->host);
-            add_to_strlist(&nc_update_list, t->host);
+            nc_update_host(t->host, curip);
         }
     }
-    if (nc_update_list)
-        nc_update_ip(curip);
 }
 
 static void he_dns_work(char *curip)
 {
-    free_strlist(he_update_list);
-    he_update_list = NULL;
-
     for (hostpairs_t *tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
         if (strcmp(curip, tp->ip)) {
             size_t csiz = strlen(tp->host) + strlen(tp->password) + 2;
-            char *tbuf = alloca(csiz);
-            strlcpy(tbuf, tp->host, csiz);
-            strlcat(tbuf, ":", csiz);
-            strlcat(tbuf, tp->password, csiz);
-            log_line("adding for update [%s]\n", tbuf);
-            add_to_strlist(&he_update_list, tbuf);
+            char *host = alloca(csiz), *pass, *p;
+            strlcpy(host, tp->host, csiz);
+            strlcat(host, ":", csiz);
+            strlcat(host, tp->password, csiz);
+            p = strchr(host, ':');
+            if (!p)
+                continue;
+            *p = '\0';
+            pass = p + 1;
+            log_line("adding for update [%s]\n", host);
+            he_update_host(host, pass, curip);
         }
     }
-    if (he_update_list)
-        he_update_ip(curip);
 }
 
 static void he_tun_work(char *curip)
 {
-    free_strlist(hetun_update_list);
-    free_return_code_list(hetun_return_list);
-    hetun_update_list = NULL;
-    hetun_return_list = NULL;
-
     for (host_data_t *t = he_conf.tunlist; t != NULL; t = t->next) {
         if (strcmp(curip, t->ip)) {
             log_line("adding for update [%s]\n", t->host);
-            add_to_strlist(&hetun_update_list, t->host);
+            he_update_tunid(t->host, curip);
         }
     }
-    if (hetun_update_list)
-        he_update_tuns(curip);
 }
 
 static void do_work(void)
