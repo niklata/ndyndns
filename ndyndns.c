@@ -1016,6 +1016,25 @@ static void he_tun_work(char *curip)
     }
 }
 
+static void do_sleep(void)
+{
+    struct timespec req = { update_interval, 0 }, rem;
+retry:
+    if (pending_exit)
+        exit(EXIT_SUCCESS);
+
+    if (nanosleep(&req, &rem)) {
+        switch (errno) {
+        case EINTR:
+            req = rem;
+            goto retry;
+            break;
+        default:
+            suicide("nanosleep failed");
+        }
+    }
+}
+
 static void do_work(void)
 {
     char *curip = NULL;
@@ -1026,9 +1045,6 @@ static void do_work(void)
     while (1) {
         free(curip);
 
-        if (pending_exit)
-            exit(EXIT_SUCCESS);
-
         if (update_from_remote == 0) {
             curip = get_interface_ip(ifname);
         } else {
@@ -1037,7 +1053,6 @@ static void do_work(void)
 
         if (!curip)
             goto sleep;
-
         if (inet_aton(curip, &inr) == 0) {
             log_line(
                 "%s has ip: [%s], which is invalid.  Sleeping.\n",
@@ -1049,9 +1064,8 @@ static void do_work(void)
         nc_work(curip);
         he_dns_work(curip);
         he_tun_work(curip);
-
-      sleep:
-        sleep(update_interval);
+sleep:
+        do_sleep();
     }
 }
 
