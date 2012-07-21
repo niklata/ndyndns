@@ -30,6 +30,59 @@
 
 dyndns_conf_t dyndns_conf;
 
+void init_dyndns_conf()
+{
+    dyndns_conf.username = NULL;
+    dyndns_conf.password = NULL;
+    dyndns_conf.hostlist = NULL;
+    dyndns_conf.mx = NULL;
+    dyndns_conf.wildcard = WC_NOCHANGE;
+    dyndns_conf.backmx = BMX_NOCHANGE;
+    dyndns_conf.offline = OFFLINE_NO;
+    dyndns_conf.system = SYSTEM_DYNDNS;
+}
+
+static void modify_dyn_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip)
+{
+    host_data_t *t;
+    size_t len;
+    char *buf;
+
+    if (!conf || !host || !conf->hostlist)
+        return;
+
+    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    free(t->ip);
+    if (!ip) {
+        t->ip = ip;
+        return;
+    }
+    len = strlen(ip) + 1;
+    buf = xmalloc(len);
+    strlcpy(buf, ip, len);
+    t->ip = buf;
+}
+
+static void modify_dyn_hostdate_in_list(dyndns_conf_t *conf, char *host,
+                                        time_t time)
+{
+    host_data_t *t;
+
+    if (!conf || !host || !conf->hostlist)
+        return;
+
+    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    t->date = time;
+}
+
 typedef struct {
     return_codes code;
     void *next;
@@ -418,8 +471,8 @@ static void dyndns_update_ip(char *curip)
                 remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
                 break;
             case 0:
-                modify_hostdate_in_list(&dyndns_conf, t->str, mono_time());
-                modify_hostip_in_list(&dyndns_conf, t->str, curip);
+                modify_dyn_hostdate_in_list(&dyndns_conf, t->str, mono_time());
+                modify_dyn_hostip_in_list(&dyndns_conf, t->str, curip);
                 break;
         }
     }

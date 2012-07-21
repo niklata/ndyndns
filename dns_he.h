@@ -18,7 +18,16 @@
 
 #include "cfg.h"
 
+typedef struct {
+    char *userid;
+    char *passhash;
+    hostpairs_t *hostpairs;
+    host_data_t *tunlist;
+} he_conf_t;
+
 extern he_conf_t he_conf;
+void init_he_conf();
+
 void he_dns_work(char *curip);
 void he_tun_work(char *curip);
 

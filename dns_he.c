@@ -28,6 +28,54 @@
 
 he_conf_t he_conf;
 
+void init_he_conf()
+{
+    he_conf.userid = NULL;
+    he_conf.passhash = NULL;
+    he_conf.hostpairs = NULL;
+    he_conf.tunlist = NULL;
+}
+
+static void modify_he_hostip_in_list(he_conf_t *conf, char *host, char *ip)
+{
+    hostpairs_t *t;
+    size_t len;
+    char *buf;
+
+    if (!conf || !host || !conf->hostpairs)
+        return;
+
+    for (t = conf->hostpairs; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    free(t->ip);
+    if (!ip) {
+        t->ip = ip;
+        return;
+    }
+    len = strlen(ip) + 1;
+    buf = xmalloc(len);
+    strlcpy(buf, ip, len);
+    t->ip = buf;
+}
+
+static void modify_he_hostdate_in_list(he_conf_t *conf, char *host, time_t time)
+{
+    hostpairs_t *t;
+
+    if (!conf || !host || !conf->hostpairs)
+        return;
+
+    for (t = conf->hostpairs; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    t->date = time;
+}
+
 static void he_update_host(char *host, char *password, char *curip)
 {
     CURL *h;

@@ -28,6 +28,54 @@
 
 namecheap_conf_t namecheap_conf;
 
+void init_namecheap_conf()
+{
+    namecheap_conf.password = NULL;
+    namecheap_conf.hostlist = NULL;
+}
+
+static void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host,
+                                     char *ip)
+{
+    host_data_t *t;
+    size_t len;
+    char *buf;
+
+    if (!conf || !host || !conf->hostlist)
+        return;
+
+    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    free(t->ip);
+    if (!ip) {
+        t->ip = ip;
+        return;
+    }
+    len = strlen(ip) + 1;
+    buf = xmalloc(len);
+    strlcpy(buf, ip, len);
+    t->ip = buf;
+}
+
+static void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host,
+                                       time_t time)
+{
+    host_data_t *t;
+
+    if (!conf || !host || !conf->hostlist)
+        return;
+
+    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
+
+    if (!t)
+        return; /* not found */
+
+    t->date = time;
+}
+
 static void nc_update_host(char *host, char *curip)
 {
     CURL *h;

@@ -33,6 +33,17 @@
 #include "malloc.h"
 #include "ndyndns.h"
 
+#include "dns_dyn.h"
+#include "dns_nc.h"
+#include "dns_he.h"
+
+void init_config()
+{
+    init_dyndns_conf();
+    init_namecheap_conf();
+    init_he_conf();
+}
+
 void remove_host_from_host_data_list(host_data_t **phl, char *host)
 {
     host_data_t *cur = *phl, *after = NULL, *p;
@@ -227,126 +238,6 @@ out:
     free(item->password);
     free(item->ip);
     free(item);
-}
-
-void modify_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip)
-{
-    host_data_t *t;
-    size_t len;
-    char *buf;
-
-    if (!conf || !host || !conf->hostlist)
-        return;
-
-    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
-
-    if (!t)
-        return; /* not found */
-
-    free(t->ip);
-    if (!ip) {
-        t->ip = ip;
-        return;
-    }
-    len = strlen(ip) + 1;
-    buf = xmalloc(len);
-    strlcpy(buf, ip, len);
-    t->ip = buf;
-}
-
-void modify_hostdate_in_list(dyndns_conf_t *conf, char *host, time_t time)
-{
-    host_data_t *t;
-
-    if (!conf || !host || !conf->hostlist)
-        return;
-
-    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
-
-    if (!t)
-        return; /* not found */
-
-    t->date = time;
-}
-
-void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host, char *ip)
-{
-    host_data_t *t;
-    size_t len;
-    char *buf;
-
-    if (!conf || !host || !conf->hostlist)
-        return;
-
-    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
-
-    if (!t)
-        return; /* not found */
-
-    free(t->ip);
-    if (!ip) {
-        t->ip = ip;
-        return;
-    }
-    len = strlen(ip) + 1;
-    buf = xmalloc(len);
-    strlcpy(buf, ip, len);
-    t->ip = buf;
-}
-
-void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host, time_t time)
-{
-    host_data_t *t;
-
-    if (!conf || !host || !conf->hostlist)
-        return;
-
-    for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
-
-    if (!t)
-        return; /* not found */
-
-    t->date = time;
-}
-
-void modify_he_hostip_in_list(he_conf_t *conf, char *host, char *ip)
-{
-    hostpairs_t *t;
-    size_t len;
-    char *buf;
-
-    if (!conf || !host || !conf->hostpairs)
-        return;
-
-    for (t = conf->hostpairs; t && strcmp(t->host, host); t = t->next);
-
-    if (!t)
-        return; /* not found */
-
-    free(t->ip);
-    if (!ip) {
-        t->ip = ip;
-        return;
-    }
-    len = strlen(ip) + 1;
-    buf = xmalloc(len);
-    strlcpy(buf, ip, len);
-    t->ip = buf;
-}
-
-void modify_he_hostdate_in_list(he_conf_t *conf, char *host, time_t time)
-{
-    hostpairs_t *t;
-
-    if (!conf || !host || !conf->hostpairs)
-        return;
-
-    for (t = conf->hostpairs; t && strcmp(t->host, host); t = t->next);
-
-    if (!t)
-        return; /* not found */
-
-    t->date = time;
 }
 
 static time_t get_dnsdate(char *host)
@@ -599,32 +490,6 @@ static void populate_hostpairs(hostpairs_t **list, char *hostpair)
     } while (1);
 }
 
-void init_dyndns_conf(dyndns_conf_t *t)
-{
-    t->username = NULL;
-    t->password = NULL;
-    t->hostlist = NULL;
-    t->mx = NULL;
-    t->wildcard = WC_NOCHANGE;
-    t->backmx = BMX_NOCHANGE;
-    t->offline = OFFLINE_NO;
-    t->system = SYSTEM_DYNDNS;
-}
-
-void init_namecheap_conf(namecheap_conf_t *t)
-{
-    t->password = NULL;
-    t->hostlist = NULL;
-}
-
-void init_he_conf(he_conf_t *t)
-{
-    t->userid = NULL;
-    t->passhash = NULL;
-    t->hostpairs = NULL;
-    t->tunlist = NULL;
-}
-
 /* returns 1 for valid config, 0 for invalid */
 static int validate_dyndns_conf(dyndns_conf_t *t)
 {
@@ -775,8 +640,7 @@ void parse_warn(unsigned int lnum, char *name)
 }
 
 /* if file is NULL, then read stdin */
-int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
-                 he_conf_t *hc)
+int parse_config(char *file)
 {
     FILE *f;
     char buf[MAXLINE];
@@ -834,10 +698,10 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "password");
                     break;
                 case PRS_DYNDNS:
-                    assign_string(&dc->password, tmp);
+                    assign_string(&dyndns_conf.password, tmp);
                     break;
                 case PRS_NAMECHEAP:
-                    assign_string(&nc->password, tmp);
+                    assign_string(&namecheap_conf.password, tmp);
                     break;
             }
             free(tmp);
@@ -851,7 +715,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "passhash");
                     break;
                 case PRS_HE:
-                    assign_string(&hc->passhash, tmp);
+                    assign_string(&he_conf.passhash, tmp);
                     break;
             }
             free(tmp);
@@ -865,10 +729,10 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "hosts");
                     break;
                 case PRS_DYNDNS:
-                    populate_hostlist(&dc->hostlist, tmp);
+                    populate_hostlist(&dyndns_conf.hostlist, tmp);
                     break;
                 case PRS_NAMECHEAP:
-                    populate_hostlist(&nc->hostlist, tmp);
+                    populate_hostlist(&namecheap_conf.hostlist, tmp);
                     break;
             }
             free(tmp);
@@ -882,7 +746,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "hostpairs");
                     break;
                 case PRS_HE:
-                    populate_hostpairs(&hc->hostpairs, tmp);
+                    populate_hostpairs(&he_conf.hostpairs, tmp);
                     break;
             }
             free(tmp);
@@ -896,7 +760,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "tunnelids");
                     break;
                 case PRS_HE:
-                    populate_hostlist(&hc->tunlist, tmp);
+                    populate_hostlist(&he_conf.tunlist, tmp);
                     break;
             }
             free(tmp);
@@ -910,7 +774,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "username");
                     break;
                 case PRS_DYNDNS:
-                    assign_string(&dc->username, tmp);
+                    assign_string(&dyndns_conf.username, tmp);
                     break;
             }
             free(tmp);
@@ -924,7 +788,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "userid");
                     break;
                 case PRS_HE:
-                    assign_string(&hc->userid, tmp);
+                    assign_string(&he_conf.userid, tmp);
                     break;
             }
             free(tmp);
@@ -938,7 +802,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "mx");
                     break;
                 case PRS_DYNDNS:
-                    assign_string(&dc->mx, tmp);
+                    assign_string(&dyndns_conf.mx, tmp);
                     break;
             }
             free(tmp);
@@ -951,7 +815,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "nowildcard");
                     break;
                 case PRS_DYNDNS:
-                    dc->wildcard = WC_NO;
+                    dyndns_conf.wildcard = WC_NO;
                     break;
             }
             continue;
@@ -962,7 +826,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "wildcard");
                     break;
                 case PRS_DYNDNS:
-                    dc->wildcard = WC_YES;
+                    dyndns_conf.wildcard = WC_YES;
                     break;
             }
             continue;
@@ -973,7 +837,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "primarymx");
                     break;
                 case PRS_DYNDNS:
-                    dc->backmx = BMX_NO;
+                    dyndns_conf.backmx = BMX_NO;
                     break;
             }
             continue;
@@ -984,7 +848,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "backupmx");
                     break;
                 case PRS_DYNDNS:
-                    dc->backmx = BMX_YES;
+                    dyndns_conf.backmx = BMX_YES;
                     break;
             }
             continue;
@@ -995,7 +859,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "offline");
                     break;
                 case PRS_DYNDNS:
-                    dc->offline = OFFLINE_YES;
+                    dyndns_conf.offline = OFFLINE_YES;
                     break;
             }
             continue;
@@ -1006,7 +870,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "dyndns");
                     break;
                 case PRS_DYNDNS:
-                    dc->system = SYSTEM_DYNDNS;
+                    dyndns_conf.system = SYSTEM_DYNDNS;
                     break;
             }
             continue;
@@ -1017,7 +881,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "customdns");
                     break;
                 case PRS_DYNDNS:
-                    dc->system = SYSTEM_CUSTOMDNS;
+                    dyndns_conf.system = SYSTEM_CUSTOMDNS;
                     break;
             }
             continue;
@@ -1028,7 +892,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
                     parse_warn(lnum, "staticdns");
                     break;
                 case PRS_DYNDNS:
-                    dc->system = SYSTEM_STATDNS;
+                    dyndns_conf.system = SYSTEM_STATDNS;
                     break;
             }
             continue;
@@ -1160,7 +1024,7 @@ int parse_config(char *file, dyndns_conf_t *dc, namecheap_conf_t *nc,
         log_line("parse_config: failed to close [%s]\n", file);
         exit(EXIT_FAILURE);
     }
-    ret = validate_dyndns_conf(dc) | validate_nc_conf(nc) |
-          validate_he_conf(hc);
+    ret = validate_dyndns_conf(&dyndns_conf) |
+        validate_nc_conf(&namecheap_conf) | validate_he_conf(&he_conf);
     return ret;
 }

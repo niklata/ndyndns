@@ -18,7 +18,14 @@
 
 #include "cfg.h"
 
+typedef struct {
+    char *password;
+    host_data_t *hostlist;
+} namecheap_conf_t;
+
 extern namecheap_conf_t namecheap_conf;
+void init_namecheap_conf();
+
 void nc_work(char *curip);
 
 #endif

@@ -219,9 +219,7 @@ int main(int argc, char** argv)
 {
     int c, read_cfg = 0;
 
-    init_dyndns_conf(&dyndns_conf);
-    init_namecheap_conf(&namecheap_conf);
-    init_he_conf(&he_conf);
+    init_config();
 
     while (1) {
         int option_index = 0;
@@ -320,8 +318,7 @@ int main(int argc, char** argv)
                     exit(EXIT_FAILURE);
                 } else {
                     read_cfg = 1;
-                    if (parse_config(optarg, &dyndns_conf, &namecheap_conf,
-                                     &he_conf) != 1)
+                    if (parse_config(optarg) != 1)
                         suicide("FATAL: bad configuration data\n");
                 }
                 break;
@@ -332,8 +329,7 @@ int main(int argc, char** argv)
                     exit(EXIT_FAILURE);
                 } else {
                     read_cfg = 1;
-                    if (parse_config(NULL, &dyndns_conf, &namecheap_conf,
-                                     &he_conf) != 1)
+                    if (parse_config(NULL) != 1)
                         suicide("FATAL: bad configuration data\n");
                 }
                 break;
