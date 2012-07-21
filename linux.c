@@ -40,36 +40,36 @@
 /* allocates from heap for return */
 char *get_interface_ip(char *ifname)
 {
-	struct ifreq ifr;
-	char *ip = NULL, *ret = NULL;
-	int fd, len;
+    struct ifreq ifr;
+    char *ip = NULL, *ret = NULL;
+    int fd, len;
 
-	if (ifname == NULL)
-		goto out;
+    if (ifname == NULL)
+        goto out;
 
-	fd = socket(PF_INET, SOCK_DGRAM, 0);
-	if (fd == -1) {
-		log_line("%s: (%s) failed to open interface socket: %s",
-				 ifname, __func__, strerror(errno));
-		goto out;
-	}
+    fd = socket(PF_INET, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        log_line("%s: (%s) failed to open interface socket: %s",
+                 ifname, __func__, strerror(errno));
+        goto out;
+    }
 
-	strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
-	ifr.ifr_addr.sa_family = AF_INET;
-	if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
-		log_line("%s: (%s) SIOCGIFADDR failed: %s",
-				 ifname, __func__, strerror(errno));
-		goto outfd;
-	}
+    strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
+    ifr.ifr_addr.sa_family = AF_INET;
+    if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
+        log_line("%s: (%s) SIOCGIFADDR failed: %s",
+                 ifname, __func__, strerror(errno));
+        goto outfd;
+    }
 
-	ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
-	len = strlen(ip) + 1;
-	ret = xmalloc(len);
-	strlcpy(ret, ip, len);
+    ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+    len = strlen(ip) + 1;
+    ret = xmalloc(len);
+    strlcpy(ret, ip, len);
 outfd:
-	close(fd);
+    close(fd);
 out:
-	return ret;
+    return ret;
 }
 
 #ifdef HAVE_LINUX_SECCOMP_H

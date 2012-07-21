@@ -26,36 +26,35 @@
 #include "log.h"
 
 void null_crlf(char *data) {
-	char *p = data;
+    char *p = data;
 
-	while (*p != '\0') {
-		if (*p != '\r' && *p != '\n') {
-			++p;
-			continue;
-		}
-		*p = '\0';
-		++p;
-	}
+    while (*p != '\0') {
+        if (*p != '\r' && *p != '\n') {
+            ++p;
+            continue;
+        }
+        *p = '\0';
+        ++p;
+    }
 }
 
 size_t write_response(char *buf, size_t size, size_t nmemb, void *dat)
 {
-	conn_data_t *data = (conn_data_t *)dat;
-	size_t j;
+    conn_data_t *data = (conn_data_t *)dat;
+    size_t j;
 
-	for (j=0; data->idx < data->buflen - 1 && j < size*nmemb;
-			 ++data->idx, ++j)
-		data->buf[data->idx] = buf[j];
-	data->buf[data->idx + 1] = '\0';
+    for (j=0; data->idx < data->buflen - 1 && j < size*nmemb; ++data->idx, ++j)
+        data->buf[data->idx] = buf[j];
+    data->buf[data->idx + 1] = '\0';
 
-	return j;
+    return j;
 }
 
 time_t mono_time(void)
 {
-	struct timespec ts;
-	if (clock_gettime(CLOCK_MONOTONIC, &ts))
-		suicide("%s: clock_gettime failed: %s", __func__, strerror(errno));
-	return ts.tv_sec;
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts))
+        suicide("%s: clock_gettime failed: %s", __func__, strerror(errno));
+    return ts.tv_sec;
 }
 

@@ -38,56 +38,56 @@ static time_t last_time = 0;
  */
 char *query_curip(void)
 {
-	CURL *h;
-	CURLcode ret;
-	char curlerror[CURL_ERROR_SIZE];
-	conn_data_t data;
-	char *ip = NULL, *retval = NULL, *p = NULL;
-	int len;
-	time_t now;
+    CURL *h;
+    CURLcode ret;
+    char curlerror[CURL_ERROR_SIZE];
+    conn_data_t data;
+    char *ip = NULL, *retval = NULL, *p = NULL;
+    int len;
+    time_t now;
 
-	now = mono_time();
+    now = mono_time();
 
-	/* query no more than once every ten minutes */
-	if (now - last_time < 600)
-	    return retval;
+    /* query no more than once every ten minutes */
+    if (now - last_time < 600)
+        return retval;
 
-	data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
-	memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
-	data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
-	data.idx = 0;
+    data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
+    memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
+    data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
+    data.idx = 0;
 
-	h = curl_easy_init();
-	curl_easy_setopt(h, CURLOPT_URL, "http://checkip.dyndns.com");
-	curl_easy_setopt(h, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-	curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
-	curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
-	curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
-	ret = curl_easy_perform(h);
-	curl_easy_cleanup(h);
+    h = curl_easy_init();
+    curl_easy_setopt(h, CURLOPT_URL, "http://checkip.dyndns.com");
+    curl_easy_setopt(h, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
+    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
+    curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
+    ret = curl_easy_perform(h);
+    curl_easy_cleanup(h);
 
-	last_time = mono_time();
+    last_time = mono_time();
 
-	if (ret != CURLE_OK) {
-		log_line("Failed to get ip from remote: [%s]", curlerror);
-		goto out;
-	}
+    if (ret != CURLE_OK) {
+        log_line("Failed to get ip from remote: [%s]", curlerror);
+        goto out;
+    }
 
-	ip = strstr(data.buf, "Current IP Address:");
-	if (!ip)
-	    goto out;
-	ip += strlen("Current IP Address:");
-	for (; isspace(*ip); ++ip);
+    ip = strstr(data.buf, "Current IP Address:");
+    if (!ip)
+        goto out;
+    ip += strlen("Current IP Address:");
+    for (; isspace(*ip); ++ip);
 
-	for (p = ip, len = 0; *p == '.' || isdigit(*p); ++p, ++len);
-	if (!len)
-	    goto out;
-	++len;
+    for (p = ip, len = 0; *p == '.' || isdigit(*p); ++p, ++len);
+    if (!len)
+        goto out;
+    ++len;
 
-	retval = xmalloc(len);
-	strlcpy(retval, ip, len);
+    retval = xmalloc(len);
+    strlcpy(retval, ip, len);
 out:
-	free(data.buf);
-	return retval;
+    free(data.buf);
+    return retval;
 }
 

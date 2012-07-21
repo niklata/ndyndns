@@ -35,35 +35,35 @@
 /* allocates from heap for return */
 char *get_interface_ip(char *ifname)
 {
-	struct lifreq lif;
-	char *ret = NULL, *ip;
-	size_t len;
-	int r, s;
+    struct lifreq lif;
+    char *ret = NULL, *ip;
+    size_t len;
+    int r, s;
 
-	if (ifname == NULL)
-		goto out;
+    if (ifname == NULL)
+        goto out;
 
-	s = socket(AF_INET, SOCK_DGRAM, 0);
-	if (s < 0) {
-		log_line("Failed to open socket: unable to get NIC ip.");
-		goto out;
-	}
+    s = socket(AF_INET, SOCK_DGRAM, 0);
+    if (s < 0) {
+        log_line("Failed to open socket: unable to get NIC ip.");
+        goto out;
+    }
 
-	strlcpy(lif.lfr_name, ifname, LIFNAMSIZ);
-	r = ioctl(s, SIOCGLIFADDR, &lif);
-	if (r) {
-		log_line("Failed to get interface address info.");
-		goto out2;
-	}
+    strlcpy(lif.lfr_name, ifname, LIFNAMSIZ);
+    r = ioctl(s, SIOCGLIFADDR, &lif);
+    if (r) {
+        log_line("Failed to get interface address info.");
+        goto out2;
+    }
 
-	ip = inet_ntoa(((struct sockaddr_in *)lif.lifr_addr)->sin_addr);
-	len = strlen(ip) + 1;
-	ret = xmalloc(len);
-	strlcpy(ret, ip, len);
+    ip = inet_ntoa(((struct sockaddr_in *)lif.lifr_addr)->sin_addr);
+    len = strlen(ip) + 1;
+    ret = xmalloc(len);
+    strlcpy(ret, ip, len);
 out2:
-	close(s);
+    close(s);
 out:
-	return ret;
+    return ret;
 }
 
 int enforce_seccomp(void)

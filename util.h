@@ -21,9 +21,9 @@
 #include <time.h>
 
 typedef struct {
-	char *buf;
-	size_t buflen;
-	size_t idx;
+    char *buf;
+    size_t buflen;
+    size_t idx;
 } conn_data_t;
 
 void null_crlf(char *data);
