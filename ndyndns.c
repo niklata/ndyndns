@@ -37,6 +37,7 @@
 
 #include <curl/curl.h>
 
+#include "config.h"
 #include "defines.h"
 #include "cfg.h"
 #include "log.h"
@@ -248,9 +249,9 @@ int main(int argc, char** argv)
         switch (c) {
 
             case 'h':
-                printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", NDYNDNS_VERSION);
+                printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", PACKAGE_VERSION);
                 printf(
-                    "Copyright (C) 2005-2011 Nicholas J. Kain\n"
+                    "Copyright (c) 2005-2012 Nicholas J. Kain\n"
                     "Usage: ndyndns [OPTIONS]\n"
                     "  -d, --detach                detach from TTY and daemonize\n"
                     "  -n, --nodetach              stay attached to TTY\n"
@@ -273,11 +274,11 @@ int main(int argc, char** argv)
 
             case 'v':
                 printf(
-                    "ndyndns %s Copyright (C) 2005-2011 Nicholas J. Kain\n"
+                    "ndyndns %s Copyright (c) 2005-2012 Nicholas J. Kain\n"
                     "This program is free software: you can redistribute it and/or modify\n"
                     "it under the terms of the GNU General Public License as published by\n"
                     "the Free Software Foundation, either version 3 of the License, or\n"
-                    "(at your option) any later version.\n\n", NDYNDNS_VERSION);
+                    "(at your option) any later version.\n\n", PACKAGE_VERSION);
                 printf(
                     "This program is distributed in the hope that it will be useful,\n"
                     "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"

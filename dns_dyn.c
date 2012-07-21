@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include <curl/curl.h>
 
+#include "config.h"
 #include "defines.h"
 #include "dns_dyn.h"
 #include "dns_helpers.h"
@@ -411,7 +412,7 @@ static void dyndns_update_ip(char *curip)
     /* set up useragent */
     len = strlcpy(useragent, "ndyndns/", sizeof useragent);
     update_ip_buf_error(len, sizeof useragent);
-    len = strlcat(useragent, NDYNDNS_VERSION, sizeof useragent);
+    len = strlcat(useragent, PACKAGE_VERSION, sizeof useragent);
     update_ip_buf_error(len, sizeof useragent);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
