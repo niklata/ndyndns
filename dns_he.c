@@ -126,7 +126,7 @@ static void he_update_host(char *host, char *password, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    log_line("update url: [%s]\n", url);
+    log_line("update url: [%s]", url);
     h = curl_easy_init();
     curl_easy_setopt(h, CURLOPT_URL, url);
     curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
@@ -142,16 +142,15 @@ static void he_update_host(char *host, char *password, char *curip)
         goto out;
 
     // "good x.x.x.x" is success
-    log_line("response returned: [%s]\n", data.buf);
+    log_line("response returned: [%s]", data.buf);
     if (strstr(data.buf, "good")) {
-        log_line(
-            "%s: [good] - Update successful.\n", host);
+        log_line("%s: [good] - Update successful.", host);
         write_dnsip(host, curip);
         write_dnsdate(host, mono_time());
         modify_he_hostdate_in_list(&he_conf, host, mono_time());
         modify_he_hostip_in_list(&he_conf, host, curip);
     } else {
-        log_line("%s: [fail] - Failed to update.\n", host);
+        log_line("%s: [fail] - Failed to update.", host);
     }
 
   out:
@@ -172,7 +171,7 @@ void he_dns_work(char *curip)
                 continue;
             *p = '\0';
             pass = p + 1;
-            log_line("adding for update [%s]\n", host);
+            log_line("adding for update [%s]", host);
             he_update_host(host, pass, curip);
         }
     }
@@ -231,7 +230,7 @@ static void he_update_tunid(char *tunid, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    log_line("update url: [%s]\n", url);
+    log_line("update url: [%s]", url);
     h = curl_easy_init();
     curl_easy_setopt(h, CURLOPT_URL, url);
     curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
@@ -247,23 +246,21 @@ static void he_update_tunid(char *tunid, char *curip)
         goto out;
 
     // "+OK: Tunnel endpoint updated to: x.x.x.x" is success
-    log_line("response returned: [%s]\n", data.buf);
+    log_line("response returned: [%s]", data.buf);
     if (strstr(data.buf, "+OK")) {
-        log_line(
-            "%s: [good] - Update successful.\n", tunid);
+        log_line("%s: [good] - Update successful.", tunid);
         write_dnsip(tunid, curip);
         write_dnsdate(tunid, mono_time());
     } else if (strstr(data.buf, "-ERROR: This tunnel is already associated with this IP address.")) {
-        log_line(
-            "%s: [nochg] - Unnecessary update; further updates will be considered abusive.\n" , tunid);
+        log_line("%s: [nochg] - Unnecessary update; further updates will be considered abusive." , tunid);
         write_dnsip(tunid, curip);
         write_dnsdate(tunid, mono_time());
     } else if (strstr(data.buf, "abuse")) {
-        log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.\n", tunid, tunid);
+        log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.", tunid, tunid);
         write_dnserr(tunid, -2);
         remove_host_from_host_data_list(&he_conf.tunlist, tunid);
     } else {
-        log_line("%s: [fail] - Failed to update.\n", tunid);
+        log_line("%s: [fail] - Failed to update.", tunid);
     }
 
   out:
@@ -274,7 +271,7 @@ void he_tun_work(char *curip)
 {
     for (host_data_t *t = he_conf.tunlist; t != NULL; t = t->next) {
         if (strcmp(curip, t->ip)) {
-            log_line("adding for update [%s]\n", t->host);
+            log_line("adding for update [%s]", t->host);
             he_update_tunid(t->host, curip);
         }
     }

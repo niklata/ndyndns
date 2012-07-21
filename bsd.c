@@ -41,7 +41,7 @@ char *get_interface_ip(char *ifname)
 
 	r = getifaddrs(&ifp);
 	if (r) {
-		log_line("Failed to interface address info.\n");
+		log_line("Failed to interface address info.");
 		goto out;
 	}
 
@@ -58,7 +58,7 @@ char *get_interface_ip(char *ifname)
 
 	/* No matching interface structure found.  Free and exit. */
 	if (!found) {
-		log_line("Could not find interface information for [%s].\n", ifname);
+		log_line("Could not find interface information for [%s].", ifname);
 		goto out2;
 	}
 

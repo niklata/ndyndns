@@ -105,7 +105,7 @@ static void do_work(void)
     char *curip = NULL;
     struct in_addr inr;
 
-    log_line("updating to interface: [%s]\n", ifname);
+    log_line("updating to interface: [%s]", ifname);
 
     while (1) {
         free(curip);
@@ -119,9 +119,8 @@ static void do_work(void)
         if (!curip)
             goto sleep;
         if (inet_aton(curip, &inr) == 0) {
-            log_line(
-                "%s has ip: [%s], which is invalid.  Sleeping.\n",
-                ifname, curip);
+            log_line("%s has ip: [%s], which is invalid.  Sleeping.",
+                     ifname, curip);
             goto sleep;
         }
 
@@ -143,9 +142,9 @@ static int check_ssl(void)
 
     t = data->features & CURL_VERSION_SSL;
     if (t) {
-        log_line("curl has SSL support, using https.\n");
+        log_line("curl has SSL support, using https.");
     } else {
-        log_line("curl lacks SSL support, using http.\n");
+        log_line("curl lacks SSL support, using http.");
     }
     return t;
 }
@@ -189,7 +188,8 @@ void cfg_set_user(char *username)
             cfg_uid = (int)pws->pw_uid;
             if (!cfg_gid)
                 cfg_gid = (int)pws->pw_gid;
-        } else suicide("FATAL - Invalid uid specified.\n");
+        } else
+            suicide("%s: invalid uid specified.", __func__);
     } else
         cfg_uid = t;
 }
@@ -203,9 +203,10 @@ void cfg_set_group(char *groupname)
     t = (unsigned int) strtol(groupname, &p, 10);
     if (*p != '\0') {
         grp = getgrnam(groupname);
-        if (grp) {
+        if (grp)
             cfg_gid = (int)grp->gr_gid;
-        } else suicide("FATAL - Invalid gid specified.\n");
+        else
+            suicide("%s: invalid gid specified.", __func__);
     } else
         cfg_gid = t;
 }
@@ -314,23 +315,21 @@ int main(int argc, char** argv)
 
             case 'f':
                 if (read_cfg) {
-                    log_line("FATAL: duplicate configuration file data specified");
-                    exit(EXIT_FAILURE);
+                    suicide("FATAL: duplicate configuration file data specified");
                 } else {
                     read_cfg = 1;
                     if (parse_config(optarg) != 1)
-                        suicide("FATAL: bad configuration data\n");
+                        suicide("FATAL: bad configuration data");
                 }
                 break;
 
             case 'F':
                 if (read_cfg) {
-                    log_line("ERROR: duplicate configuration file data specified");
-                    exit(EXIT_FAILURE);
+                    suicide("ERROR: duplicate configuration file data specified");
                 } else {
                     read_cfg = 1;
                     if (parse_config(NULL) != 1)
-                        suicide("FATAL: bad configuration data\n");
+                        suicide("FATAL: bad configuration data");
                 }
                 break;
 
@@ -353,24 +352,24 @@ int main(int argc, char** argv)
     }
 
     if (!read_cfg)
-        suicide("FATAL - no configuration file, exiting.\n");
+        suicide("FATAL - no configuration file, exiting.");
 
     if (chroot_enabled() && getuid())
-        suicide("FATAL - I need root for chroot!\n");
+        suicide("FATAL - I need root for chroot!");
 
     if (gflags_detach)
         if (daemon(0,0))
-            suicide("FATAL - detaching fork failed\n");
+            suicide("FATAL - detaching fork failed");
 
     if (file_exists(pidfile, "w") == -1)
-        exit(EXIT_FAILURE);
+        suicide("FATAL - cannot open pidfile for write");
     write_pid(pidfile);
 
     umask(077);
     fix_signals();
 
     if (!chroot_exists())
-        suicide("FATAL - No chroot path specified.  Refusing to run.\n");
+        suicide("FATAL - No chroot path specified.  Refusing to run.");
 
     /* Note that failure cases are handled by called fns. */
     imprison(get_chroot());

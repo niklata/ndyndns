@@ -69,7 +69,7 @@ char *query_curip(void)
 	last_time = mono_time();
 
 	if (ret != CURLE_OK) {
-		log_line("Failed to get ip from remote: [%s]\n", curlerror);
+		log_line("Failed to get ip from remote: [%s]", curlerror);
 		goto out;
 	}
 

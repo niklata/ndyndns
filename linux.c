@@ -47,16 +47,16 @@ char *get_interface_ip(char *ifname)
 
 	fd = socket(PF_INET, SOCK_DGRAM, 0);
 	if (fd == -1) {
-		log_line("%s: (get_interface_ip) failed to open interface \
-			 socket: %s\n", ifname, strerror(errno));
+		log_line("%s: (%s) failed to open interface socket: %s",
+				 ifname, __func__, strerror(errno));
 		goto out;
 	}
 
 	strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
 	ifr.ifr_addr.sa_family = AF_INET;
 	if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
-		log_line("%s: (get_interface_ip) SIOCGIFADDR failed: %s\n",
-			ifname, strerror(errno));
+		log_line("%s: (%s) SIOCGIFADDR failed: %s",
+				 ifname, __func__, strerror(errno));
 		goto outfd;
 	}
 

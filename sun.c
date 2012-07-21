@@ -45,14 +45,14 @@ char *get_interface_ip(char *ifname)
 
 	s = socket(AF_INET, SOCK_DGRAM, 0);
 	if (s < 0) {
-		log_line("Failed to open socket: unable to get NIC ip.\n");
+		log_line("Failed to open socket: unable to get NIC ip.");
 		goto out;
 	}
 
 	strlcpy(lif.lfr_name, ifname, LIFNAMSIZ);
 	r = ioctl(s, SIOCGLIFADDR, &lif);
 	if (r) {
-		log_line("Failed to get interface address info.\n");
+		log_line("Failed to get interface address info.");
 		goto out2;
 	}
 

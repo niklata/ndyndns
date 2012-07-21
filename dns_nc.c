@@ -155,7 +155,7 @@ static void nc_update_host(char *host, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    log_line("update url: [%s]\n", url);
+    log_line("update url: [%s]", url);
     h = curl_easy_init();
     curl_easy_setopt(h, CURLOPT_URL, url);
     curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
@@ -170,16 +170,15 @@ static void nc_update_host(char *host, char *curip)
     if (update_ip_curl_errcheck(ret, curlerror) == 1)
         goto out;
 
-    log_line("response returned: [%s]\n", data.buf);
+    log_line("response returned: [%s]", data.buf);
     if (strstr(data.buf, "<ErrCount>0")) {
-        log_line(
-            "%s: [good] - Update successful.\n", host);
+        log_line("%s: [good] - Update successful.", host);
         write_dnsip(host, curip);
         write_dnsdate(host, mono_time());
         modify_nc_hostdate_in_list(&namecheap_conf, host, mono_time());
         modify_nc_hostip_in_list(&namecheap_conf, host, curip);
     } else {
-        log_line("%s: [fail] - Failed to update.\n", host);
+        log_line("%s: [fail] - Failed to update.", host);
     }
 
   out:
@@ -190,7 +189,7 @@ void nc_work(char *curip)
 {
     for (host_data_t *t = namecheap_conf.hostlist; t != NULL; t = t->next) {
         if (strcmp(curip, t->ip)) {
-            log_line("adding for update [%s]\n", t->host);
+            log_line("adding for update [%s]", t->host);
             nc_update_host(t->host, curip);
         }
     }

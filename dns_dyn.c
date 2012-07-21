@@ -116,7 +116,7 @@ static void add_to_return_code_list(return_codes name,
         t = t->next;
     }
 
-    log_line("add_to_return_code_list: failed to add item\n");
+    log_line("%s: failed to add item", __func__);
     free(item);
 }
 
@@ -228,65 +228,51 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
 
     switch (retcode) {
         default:
-            log_line(
-                "%s: FATAL: postprocess_update() has invalid state\n", host);
+            log_line("%s: FATAL: %s has invalid state", host, __func__);
             ret = -1;
             break;
         case RET_BADSYS:
-            log_line(
-                "%s: [badsys] - FATAL: Should never happen!\n", host);
+            log_line("%s: [badsys] - FATAL: Should never happen!", host);
             break;
         case RET_BADAGENT:
-            log_line(
-                "%s: [badagent] - FATAL: Client program is banned!\n", host);
+            log_line("%s: [badagent] - FATAL: Client program is banned!", host);
             break;
         case RET_BADAUTH:
-            log_line(
-                "%s: [badauth] - FATAL: Invalid username or password.\n", host);
+            log_line("%s: [badauth] - FATAL: Invalid username or password.", host);
             break;
         case RET_NOTDONATOR:
-            log_line(
-                "%s: [!donator] - FATAL: Option requested that is only allowed to donating users (such as 'offline').\n", host);
+            log_line("%s: [!donator] - FATAL: Option requested that is only allowed to donating users (such as 'offline').", host);
             break;
         case RET_NOTFQDN:
-            log_line(
-                "%s: [notfqdn] - FATAL: Hostname isn't a fully-qualified domain name (such as 'hostname.dyndns.org')'.\n", host);
+            log_line("%s: [notfqdn] - FATAL: Hostname isn't a fully-qualified domain name (such as 'hostname.dyndns.org')'.", host);
             break;
         case RET_NOHOST:
-            log_line(
-                "%s: [nohost] - FATAL: Hostname doesn't exist or wrong service type specified (dyndns, static, custom).\n", host);
+            log_line("%s: [nohost] - FATAL: Hostname doesn't exist or wrong service type specified (dyndns, static, custom).", host);
             break;
         case RET_NOTYOURS:
-            log_line(
-                "%s: [!yours] - FATAL: Hostname exists, but doesn't belong to your account.\n", host);
+            log_line("%s: [!yours] - FATAL: Hostname exists, but doesn't belong to your account.", host);
             break;
         case RET_ABUSE:
-            log_line(
-                "%s: [abuse] - FATAL: Hostname is banned for abuse.\n", host);
+            log_line("%s: [abuse] - FATAL: Hostname is banned for abuse.", host);
             break;
         case RET_NUMHOST:
-            log_line(
-                "%s: [numhost] - FATAL: Too many or too few hosts found.\n", host);
+            log_line("%s: [numhost] - FATAL: Too many or too few hosts found.", host);
             break;
         case RET_DNSERR:
-            log_line(
-                "%s: [dnserr] - FATAL: DNS error encountered by server.\n", host);
+            log_line("%s: [dnserr] - FATAL: DNS error encountered by server.", host);
             break;
         case RET_911:
-            log_line(
-                "%s: [911] - FATAL: Critical error on dyndns.org's hardware.  Check http://www.dyndns.org/news/status/ for details.\n", host);
+            log_line("%s: [911] - FATAL: Critical error on dyndns.org's hardware.  Check http://www.dyndns.org/news/status/ for details.", host);
             break;
             /* Don't hardfail, 'success' */
         case RET_GOOD:
-            log_line(
-                "%s: [good] - Update successful.\n", host);
+            log_line("%s: [good] - Update successful.", host);
             write_dnsip(host, curip);
             write_dnsdate(host, mono_time());
             ret = 0;
             break;
         case RET_NOCHG:
-            log_line(
-                "%s: [nochg] - Unnecessary update; further updates will be considered abusive.\n", host);
+            log_line("%s: [nochg] - Unnecessary update; further updates will be considered abusive.", host);
             write_dnsip(host, curip);
             write_dnsdate(host, mono_time());
             ret = 0;
@@ -433,7 +419,7 @@ static void dyndns_update_ip(char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    log_line("update url: [%s]\n", url);
+    log_line("update url: [%s]", url);
     h = curl_easy_init();
     curl_easy_setopt(h, CURLOPT_URL, url);
     curl_easy_setopt(h, CURLOPT_USERPWD, unpwd);
@@ -453,7 +439,7 @@ static void dyndns_update_ip(char *curip)
     decompose_buf_to_list(data.buf);
     if (get_strlist_arity(dd_update_list) !=
         get_return_code_list_arity(dd_return_list)) {
-        log_line("list arity doesn't match, updates may be suspect\n");
+        log_line("list arity doesn't match, updates may be suspect");
     }
 
     for (t = dd_update_list, u = dd_return_list;
@@ -466,7 +452,7 @@ static void dyndns_update_ip(char *curip)
                 exit(EXIT_FAILURE);
                 break;
             case -2:
-                log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.\n", t->str, t->str);
+                log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.", t->str, t->str);
                 write_dnserr(t->str, ret2);
                 remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
                 break;
@@ -489,13 +475,13 @@ void dd_work(char *curip)
 
     for (host_data_t *t = dyndns_conf.hostlist; t != NULL; t = t->next) {
         if (strcmp(curip, t->ip)) {
-            log_line("adding for update [%s]\n", t->host);
+            log_line("adding for update [%s]", t->host);
             add_to_strlist(&dd_update_list, t->host);
             continue;
         }
         if (dyndns_conf.system == SYSTEM_DYNDNS &&
             mono_time() - t->date > REFRESH_INTERVAL) {
-            log_line("adding for refresh [%s]\n", t->host);
+            log_line("adding for refresh [%s]", t->host);
             add_to_strlist(&dd_update_list, t->host);
         }
     }

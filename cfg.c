@@ -76,7 +76,7 @@ static char *get_dnserr(char *host)
     int len;
 
     if (!host)
-        suicide("FATAL - get_dnserr: host is NULL\n");
+        suicide("%s: host is NULL", __func__);
 
     memset(buf, '\0', MAX_BUF);
 
@@ -94,7 +94,7 @@ static char *get_dnserr(char *host)
         goto out;
 
     if (!fgets(buf, sizeof buf, f)) {
-        log_line("%s-dnserr is empty.  Assuming error: [unknown].\n", host);
+        log_line("%s-dnserr is empty.  Assuming error: [unknown].", host);
         ret = xmalloc(sizeof "unknown" + 1);
         strlcpy(ret, "unknown", sizeof "unknown" + 1);
         goto outfd;
@@ -122,7 +122,7 @@ static void add_to_host_data_list(host_data_t **list, char *host, char *ip,
 
     err = get_dnserr(host);
     if (err) {
-        log_line("host:[%s] is locked because of error:[%s].  Correct the problem and remove [%s-dnserr] to allow update.\n", host, err, host);
+        log_line("host:[%s] is locked because of error:[%s].  Correct the problem and remove [%s-dnserr] to allow update.", host, err, host);
         free(err);
         return;
     }
@@ -164,7 +164,7 @@ static void add_to_host_data_list(host_data_t **list, char *host, char *ip,
         }
         t = t->next;
     }
-    log_line("add_to_host_data_list: coding error\n");
+    log_line("%s: coding error", __func__);
 out:
     free(item->host);
     free(item->ip);
@@ -183,7 +183,7 @@ static void add_to_hostpair_list(hostpairs_t **list, char *host, char *passwd,
 
     err = get_dnserr(host);
     if (err) {
-        log_line("host:[%s] is locked because of error:[%s].  Correct the problem and remove [%s-dnserr] to allow update.\n", host, err, host);
+        log_line("host:[%s] is locked because of error:[%s].  Correct the problem and remove [%s-dnserr] to allow update.", host, err, host);
         free(err);
         return;
     }
@@ -232,7 +232,7 @@ static void add_to_hostpair_list(hostpairs_t **list, char *host, char *passwd,
         }
         t = t->next;
     }
-    log_line("add_to_hostpair_list: coding error\n");
+    log_line("%s: coding error", __func__);
 out:
     free(item->host);
     free(item->password);
@@ -248,7 +248,7 @@ static time_t get_dnsdate(char *host)
     time_t ret = 0;
 
     if (!host)
-        suicide("FATAL - get_dnsdate: host is NULL\n");
+        suicide("FATAL - get_dnsdate: host is NULL");
 
     len = strlen(get_chroot()) + strlen(host) + strlen("-dnsdate") + 6;
     file = xmalloc(len);
@@ -261,13 +261,12 @@ static time_t get_dnsdate(char *host)
     free(file);
 
     if (!f) {
-        log_line("No existing %s-dnsdate.  Assuming date == 0.\n",
-             host);
+        log_line("No existing %s-dnsdate.  Assuming date == 0.", host);
         goto out;
     }
 
     if (!fgets(buf, sizeof buf, f)) {
-        log_line("%s-dnsdate is empty.  Assuming date == 0.\n", host);
+        log_line("%s-dnsdate is empty.  Assuming date == 0.", host);
         goto outfd;
     }
 
@@ -287,34 +286,30 @@ static char *lookup_dns(char *name) {
     int len;
 
     if (!name)
-        suicide("FATAL - lookup_dns: host is NULL!\n");
+        suicide("%s: host is NULL!", __func__);
 
     hent = gethostbyname(name);
     if (hent == NULL) {
         switch (h_errno) {
         case HOST_NOT_FOUND:
-            log_line(
-            "failed to resolve %s: host not found.\n", name);
+            log_line("failed to resolve %s: host not found.", name);
             break;
         case NO_ADDRESS:
-            log_line(
-            "failed to resolve %s: no IP for host.\n", name);
+            log_line("failed to resolve %s: no IP for host.", name);
             break;
         case NO_RECOVERY:
         default:
-            log_line(
-            "failed to resolve %s: non-recoverable error.\n", name);
+            log_line("failed to resolve %s: non-recoverable error.", name);
             break;
         case TRY_AGAIN:
-            log_line(
-            "failed to resolve %s: temporary error on an authoritative nameserver.\n", name);
+            log_line("failed to resolve %s: temporary error on an authoritative nameserver.", name);
             break;
         }
         goto out;
     }
 
     t = inet_ntoa(*((struct in_addr *)hent->h_addr));
-    log_line("lookup_dns: returned [%s]\n", t);
+    log_line("%s: returned [%s]", __func__, t);
 
     len = strlen(t) + 1;
     ret = xmalloc(len);
@@ -332,7 +327,7 @@ static char *get_dnsip(char *host)
     struct in_addr inr;
 
     if (!host)
-        suicide("FATAL - get_dnsip: host is NULL\n");
+        suicide("%s: host is NULL", __func__);
 
     memset(buf, '\0', MAX_BUF);
 
@@ -347,19 +342,19 @@ static char *get_dnsip(char *host)
     free(file);
 
     if (!f) {
-        log_line("No existing %s-dnsip.  Querying DNS.\n", host);
+        log_line("No existing %s-dnsip.  Querying DNS.", host);
         ret = lookup_dns(host);
         goto out;
     }
 
     if (!fgets(buf, sizeof buf, f)) {
-        log_line("%s-dnsip is empty.  Querying DNS.\n", host);
+        log_line("%s-dnsip is empty.  Querying DNS.", host);
         ret = lookup_dns(host);
         goto outfd;
     }
 
     if (inet_aton(buf, &inr) == 0) {
-        log_line("%s-dnsip is corrupt.  Querying DNS.\n", host);
+        log_line("%s-dnsip is corrupt.  Querying DNS.", host);
         ret = lookup_dns(host);
         goto outfd;
     }
@@ -385,7 +380,7 @@ static void do_populate(host_data_t **list, char *host_in)
     if (strlen(host)) {
         ip = get_dnsip(host);
         if (ip) {
-            log_line("adding: [%s] ip: [%s]\n", host, ip);
+            log_line("adding: [%s] ip: [%s]", host, ip);
             add_to_host_data_list(list, host, ip, get_dnsdate(host));
         } else {
             log_line("No ip found for [%s].  No updates will be done.", host);
@@ -414,7 +409,7 @@ static void do_populate_hp(hostpairs_t **list, char *pair_in)
     if (strlen(host) && strlen(passwd)) {
         ip = get_dnsip(host);
         if (ip) {
-            log_line("adding: [%s] ip: [%s]\n", host, ip);
+            log_line("adding: [%s] ip: [%s]", host, ip);
             add_to_hostpair_list(list, host, passwd, ip, get_dnsdate(host));
         } else {
             log_line("No ip found for [%s].  No updates will be done.", host);
@@ -430,12 +425,11 @@ static void populate_hostlist(host_data_t **list, char *hostname)
     size_t len;
 
     if (!list || !left)
-        suicide("NULL passed to populate_hostlist()\n");
-    if (strlen(left) == 0) {
+        suicide("%s: NULL passed as argument", __func__);
+    if (strlen(left) == 0)
         suicide("No hosts were provided for updates.  Exiting.");
-    }
 
-    log_line("hosts: [%s]\n", left);
+    log_line("hosts: [%s]", left);
 
     do {
         right = strchr(left, ',');
@@ -464,10 +458,9 @@ static void populate_hostpairs(hostpairs_t **list, char *hostpair)
     size_t len;
 
     if (!list || !left)
-        suicide("NULL passed to populate_hostlist()\n");
-    if (strlen(left) == 0) {
+        suicide("%s: NULL passed as argument", __func__);
+    if (strlen(left) == 0)
         suicide("No hostpairs were provided for updates.  Exiting.");
-    }
 
     do {
         right = strchr(left, ',');
@@ -497,15 +490,15 @@ static int validate_dyndns_conf(dyndns_conf_t *t)
     if (t->username || t->password || t->hostlist) {
         if (t->username == NULL) {
             r = 0;
-            log_line("dyndns config invalid: no username provided\n");
+            log_line("dyndns config invalid: no username provided");
         }
         if (t->password == NULL) {
             r = 0;
-            log_line("dyndns config invalid: no password provided\n");
+            log_line("dyndns config invalid: no password provided");
         }
         if (t->hostlist == NULL) {
             r = 0;
-            log_line("dyndns config invalid: no hostnames provided\n");
+            log_line("dyndns config invalid: no hostnames provided");
         }
     }
     return r;
@@ -518,11 +511,11 @@ static int validate_nc_conf(namecheap_conf_t *t)
     if (t->password || t->hostlist) {
         if (t->password == NULL) {
             r = 0;
-            log_line("namecheap config invalid: no password provided\n");
+            log_line("namecheap config invalid: no password provided");
         }
         if (t->hostlist == NULL) {
             r = 0;
-            log_line("namecheap config invalid: no hostnames provided\n");
+            log_line("namecheap config invalid: no hostnames provided");
         }
     }
     return r;
@@ -534,15 +527,15 @@ static int validate_he_conf(he_conf_t *t)
     int r = 1;
     if (t->tunlist == NULL && t->hostpairs == NULL) {
         r = 0;
-        log_line("he config invalid: no tunnelids or hostpairs provided\n");
+        log_line("he config invalid: no tunnelids or hostpairs provided");
     } else if (t->tunlist) {
         if (t->userid == NULL) {
             r = 0;
-            log_line("he config invalid: no userid provided\n");
+            log_line("he config invalid: no userid provided");
         }
         if (t->passhash == NULL) {
             r = 0;
-            log_line("he config invalid: no passhash provided\n");
+            log_line("he config invalid: no passhash provided");
         }
     }
     return r;
@@ -636,7 +629,7 @@ enum prs_state {
 
 void parse_warn(unsigned int lnum, char *name)
 {
-    log_line("WARNING: config line %d: %s statement not valid in section\n", lnum, name);
+    log_line("WARNING: config line %d: %s statement not valid in section", lnum, name);
 }
 
 /* if file is NULL, then read stdin */
@@ -651,18 +644,12 @@ int parse_config(char *file)
 
     if (file) {
         f = fopen(file, "r");
-        if (!f) {
-            log_line("FATAL: parse_config: failed to open [%s] for \
-                             read\n", file);
-            exit(EXIT_FAILURE);
-        }
+        if (!f)
+            suicide("%s: failed to open [%s] for read", __func__, file);
     } else {
         f = fdopen(0, "r");
-        if (!f) {
-            log_line("FATAL: parse_config: failed to open stdin for \
-                             read\n");
-            exit(EXIT_FAILURE);
-        }
+        if (!f)
+            suicide("%s: failed to open stdin for read", __func__);
     }
 
     while (!feof(f)) {
@@ -1020,10 +1007,8 @@ int parse_config(char *file)
         }
     }
 
-    if (fclose(f)) {
-        log_line("parse_config: failed to close [%s]\n", file);
-        exit(EXIT_FAILURE);
-    }
+    if (fclose(f))
+        suicide("%s: failed to close [%s]", __func__, file);
     ret = validate_dyndns_conf(&dyndns_conf) |
         validate_nc_conf(&namecheap_conf) | validate_he_conf(&he_conf);
     return ret;

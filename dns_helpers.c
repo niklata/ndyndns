@@ -35,12 +35,11 @@ static void write_dnsfile(char *fn, char *cnts)
     int fd, written = 0, oldwritten, len;
 
     if (!fn || !cnts)
-        suicide("FATAL - write_dnsfile: received NULL\n");
+        suicide("%s: received NULL", __func__);
 
     fd = open(fn, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-
     if (fd == -1)
-        suicide("FATAL - failed to open %s for write\n", fn);
+        suicide("%s: failed to open %s for write", __func__, fn);
 
     len = strlen(cnts);
 
@@ -52,13 +51,13 @@ static void write_dnsfile(char *fn, char *cnts)
                 written = oldwritten;
                 continue;
             }
-            suicide("FATAL - write() failed on %s\n", fn);
+            suicide("%s: write() failed on %s", __func__, fn);
         }
     }
 
     fsync(fd);
     if (close(fd) == -1)
-        suicide("error closing %s; possible corruption\n", fn);
+        suicide("%s: error closing %s; possible corruption", __func__, fn);
 }
 
 void write_dnsdate(char *host, time_t date)
@@ -67,7 +66,7 @@ void write_dnsdate(char *host, time_t date)
     char *file, buf[MAX_BUF];
 
     if (!host)
-        suicide("FATAL - write_dnsdate: host is NULL\n");
+        suicide("%s: host is NULL", __func__);
 
     len = strlen(host) + strlen("-dnsdate") + 5;
     file = xmalloc(len);
@@ -88,9 +87,9 @@ void write_dnsip(char *host, char *ip)
     char *file, buf[MAX_BUF];
 
     if (!host)
-        suicide("FATAL - write_dnsip: host is NULL\n");
+        suicide("%s: host is NULL", __func__);
     if (!ip)
-        suicide("FATAL - write_dnsip: ip is NULL\n");
+        suicide("%s: ip is NULL", __func__);
 
     len = strlen(host) + strlen("-dnsip") + 5;
     file = xmalloc(len);
@@ -110,7 +109,7 @@ void write_dnserr(char *host, return_codes code)
     char *file, buf[MAX_BUF], *error;
 
     if (!host)
-        suicide("FATAL - write_dnserr: host is NULL\n");
+        suicide("%s: host is NULL", __func__);
 
     len = strlen(host) + strlen("-dnserr") + 5;
     file = xmalloc(len);
@@ -167,13 +166,13 @@ int update_ip_curl_errcheck(int val, char *cerr)
         case CURLE_BAD_CONTENT_ENCODING:
         case CURLE_SSL_ENGINE_INITFAILED:
         case CURLE_LOGIN_DENIED:
-            suicide("Update failed.  cURL returned a fatal error: [%s].  Exiting.\n", cerr);
+            suicide("Update failed.  cURL returned a fatal error: [%s].  Exiting.", cerr);
             break;
         case CURLE_OUT_OF_MEMORY:
         case CURLE_READ_ERROR:
         case CURLE_TOO_MANY_REDIRECTS:
         case CURLE_RECV_ERROR:
-            suicide("Update status unknown.  cURL returned a fatal error: [%s].  Exiting.\n", cerr);
+            suicide("Update status unknown.  cURL returned a fatal error: [%s].  Exiting.", cerr);
             break;
         case CURLE_COULDNT_RESOLVE_PROXY:
         case CURLE_COULDNT_RESOLVE_HOST:
@@ -182,10 +181,10 @@ int update_ip_curl_errcheck(int val, char *cerr)
         case CURLE_HTTP_PORT_FAILED:
         case CURLE_GOT_NOTHING:
         case CURLE_SEND_ERROR:
-            log_line("Temporary error connecting to host: [%s].  Queuing for retry.\n", cerr);
+            log_line("Temporary error connecting to host: [%s].  Queuing for retry.", cerr);
             return 1;
         default:
-            log_line("cURL returned nonfatal error: [%s]\n", cerr);
+            log_line("cURL returned nonfatal error: [%s]", cerr);
             return 0;
     }
     return -1;
@@ -194,7 +193,7 @@ int update_ip_curl_errcheck(int val, char *cerr)
 void update_ip_buf_error(size_t len, size_t size)
 {
     if (len > size)
-        suicide("FATAL - config file would overflow a fixed buffer\n");
+        suicide("%s: config file would overflow a fixed buffer", __func__);
 }
 
 
