@@ -1,6 +1,6 @@
 /* util.c - utility functions
  *
- * (C) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2005-2012 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -48,5 +49,13 @@ size_t write_response(char *buf, size_t size, size_t nmemb, void *dat)
 	data->buf[data->idx + 1] = '\0';
 
 	return j;
+}
+
+time_t mono_time(void)
+{
+	struct timespec ts;
+	if (clock_gettime(CLOCK_MONOTONIC, &ts))
+		suicide("%s: clock_gettime failed: %s", __func__, strerror(errno));
+	return ts.tv_sec;
 }
 

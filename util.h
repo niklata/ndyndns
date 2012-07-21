@@ -1,6 +1,6 @@
 /* util.h - utility functions
  *
- * (C) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2005-2012 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #ifndef NJK_UTIL_H_
 #define NJK_UTIL_H_ 1
+#include <time.h>
+
 typedef struct {
 	char *buf;
 	size_t buflen;
@@ -26,5 +28,6 @@ typedef struct {
 
 void null_crlf(char *data);
 size_t write_response(char *buf, size_t size, size_t nmemb, void *dat);
+time_t mono_time(void);
 #endif
 

@@ -428,8 +428,8 @@ static void nc_update_host(char *host, char *curip)
         log_line(
             "%s: [good] - Update successful.\n", host);
         write_dnsip(host, curip);
-        write_dnsdate(host, time(0));
-        modify_nc_hostdate_in_list(&namecheap_conf, host, time(0));
+        write_dnsdate(host, mono_time());
+        modify_nc_hostdate_in_list(&namecheap_conf, host, mono_time());
         modify_nc_hostip_in_list(&namecheap_conf, host, curip);
     } else {
         log_line("%s: [fail] - Failed to update.\n", host);
@@ -513,12 +513,12 @@ static void he_update_tunid(char *tunid, char *curip)
         log_line(
             "%s: [good] - Update successful.\n", tunid);
         write_dnsip(tunid, curip);
-        write_dnsdate(tunid, time(0));
+        write_dnsdate(tunid, mono_time());
     } else if (strstr(data.buf, "-ERROR: This tunnel is already associated with this IP address.")) {
         log_line(
             "%s: [nochg] - Unnecessary update; further updates will be considered abusive.\n" , tunid);
         write_dnsip(tunid, curip);
-        write_dnsdate(tunid, time(0));
+        write_dnsdate(tunid, mono_time());
     } else if (strstr(data.buf, "abuse")) {
         log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.\n", tunid, tunid);
         write_dnserr(tunid, -2);
@@ -602,8 +602,8 @@ static void he_update_host(char *host, char *password, char *curip)
         log_line(
             "%s: [good] - Update successful.\n", host);
         write_dnsip(host, curip);
-        write_dnsdate(host, time(0));
-        modify_he_hostdate_in_list(&he_conf, host, time(0));
+        write_dnsdate(host, mono_time());
+        modify_he_hostdate_in_list(&he_conf, host, mono_time());
         modify_he_hostip_in_list(&he_conf, host, curip);
     } else {
         log_line("%s: [fail] - Failed to update.\n", host);
@@ -754,14 +754,14 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
             log_line(
                 "%s: [good] - Update successful.\n", host);
             write_dnsip(host, curip);
-            write_dnsdate(host, time(0));
+            write_dnsdate(host, mono_time());
             ret = 0;
             break;
         case RET_NOCHG:
             log_line(
                 "%s: [nochg] - Unnecessary update; further updates will be considered abusive.\n", host);
             write_dnsip(host, curip);
-            write_dnsdate(host, time(0));
+            write_dnsdate(host, mono_time());
             ret = 0;
             break;
     }
@@ -944,7 +944,7 @@ static void dyndns_update_ip(char *curip)
                 remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
                 break;
             case 0:
-                modify_hostdate_in_list(&dyndns_conf, t->str, time(0));
+                modify_hostdate_in_list(&dyndns_conf, t->str, mono_time());
                 modify_hostip_in_list(&dyndns_conf, t->str, curip);
                 break;
         }
@@ -967,7 +967,7 @@ static void dd_work(char *curip)
             continue;
         }
         if (dyndns_conf.system == SYSTEM_DYNDNS &&
-            time(0) - t->date > REFRESH_INTERVAL) {
+            mono_time() - t->date > REFRESH_INTERVAL) {
             log_line("adding for refresh [%s]\n", t->host);
             add_to_strlist(&dd_update_list, t->host);
         }
