@@ -16,6 +16,7 @@ AC_CHECK_FUNCS(strlcpy strlcat)
 UNAME=`uname -s`
 if test x"$UNAME" = xLinux; then
     PLATFORM=linux
+    AC_CHECK_HEADERS(linux/seccomp.h)
 else
     AC_CHECK_HEADER(ifaddrs.h,PLATFORM=bsd)
     if test x"$UNAME" = xSolaris; then

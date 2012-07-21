@@ -1,6 +1,6 @@
 /* linux.h - Linux-specific functions include
  *
- * (C) 2004-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2004-2012 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,5 +19,6 @@
 #ifndef NJK_IFCHD_LINUX_H_
 #define NJK_IFCHD_LINUX_H_ 1
 char *get_interface_ip(char *ifname);
+int enforce_seccomp(void);
 #endif
 

@@ -79,3 +79,8 @@ out:
 	return ret;
 }
 
+int enforce_seccomp(void)
+{
+    return 0;
+}
+

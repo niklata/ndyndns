@@ -1,6 +1,6 @@
 /* linux.c - Linux-specific functions
  *
- * (C) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2005-2012 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,12 @@
 #include <errno.h>
 
 #include "defines.h"
+#include "config.h"
 #include "log.h"
 #include "strl.h"
 #include "util.h"
 #include "malloc.h"
+#include "seccomp-bpf.h"
 
 /* allocates from heap for return */
 char *get_interface_ip(char *ifname)
@@ -70,4 +72,58 @@ out:
 	return ret;
 }
 
+#ifdef HAVE_LINUX_SECCOMP_H
+int enforce_seccomp(void)
+{
+    struct sock_filter filter[] = {
+        VALIDATE_ARCHITECTURE,
+        EXAMINE_SYSCALL,
+        ALLOW_SYSCALL(read),
+        ALLOW_SYSCALL(write),
+        ALLOW_SYSCALL(sendto), // used for glibc syslog routines
+        ALLOW_SYSCALL(nanosleep),
+        ALLOW_SYSCALL(clock_gettime),
+        ALLOW_SYSCALL(close),
+        ALLOW_SYSCALL(ioctl),
+        ALLOW_SYSCALL(open),
+        ALLOW_SYSCALL(socket),
+        ALLOW_SYSCALL(connect),
+        ALLOW_SYSCALL(poll),
+        ALLOW_SYSCALL(recvfrom),
+        ALLOW_SYSCALL(getsockopt),
+        ALLOW_SYSCALL(getpeername),
+        ALLOW_SYSCALL(getsockname),
+        ALLOW_SYSCALL(stat),
+        ALLOW_SYSCALL(getuid),
+        ALLOW_SYSCALL(fsync),
+        ALLOW_SYSCALL(fstat),
+        ALLOW_SYSCALL(fcntl),
+        ALLOW_SYSCALL(brk),
+        ALLOW_SYSCALL(mmap),
+        ALLOW_SYSCALL(munmap),
+
+        ALLOW_SYSCALL(rt_sigreturn),
+#ifdef __NR_sigreturn
+        ALLOW_SYSCALL(sigreturn),
+#endif
+        ALLOW_SYSCALL(exit_group),
+        ALLOW_SYSCALL(exit),
+        KILL_PROCESS,
+    };
+    struct sock_fprog prog = {
+        .len = (unsigned short)(sizeof filter / sizeof filter[0]),
+        .filter = filter,
+    };
+    if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0))
+        return -1;
+    if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog))
+        return -1;
+    return 0;
+}
+#else
+int enforce_seccomp(void)
+{
+    return 1;
+}
+#endif
 
