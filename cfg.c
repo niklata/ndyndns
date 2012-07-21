@@ -636,7 +636,7 @@ void parse_warn(unsigned int lnum, char *name)
 int parse_config(char *file)
 {
     FILE *f;
-    char buf[MAXLINE];
+    char buf[MAX_BUF];
     int ret = -1;
     unsigned int lnum = 0;
     char *point, *tmp;

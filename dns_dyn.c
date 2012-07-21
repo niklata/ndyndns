@@ -467,6 +467,7 @@ static void dyndns_update_ip(char *curip)
     free(data.buf);
 }
 
+#define DYN_REFRESH_INTERVAL (28*24*3600 + 60)
 void dd_work(char *curip)
 {
     free_strlist(dd_update_list);
@@ -481,7 +482,7 @@ void dd_work(char *curip)
             continue;
         }
         if (dyndns_conf.system == SYSTEM_DYNDNS &&
-            mono_time() - t->date > REFRESH_INTERVAL) {
+            mono_time() - t->date > DYN_REFRESH_INTERVAL) {
             log_line("adding for refresh [%s]", t->host);
             add_to_strlist(&dd_update_list, t->host);
         }

@@ -57,9 +57,9 @@
 int use_ssl = 1;
 
 static char ifname[IFNAMSIZ] = "ppp0";
-static char pidfile[MAX_PATH_LENGTH] = PID_FILE_DEFAULT;
+static char pidfile[MAX_PATH_LENGTH] = "/var/run/ndyndns.pid";
 
-static int update_interval = DEFAULT_UPDATE_INTERVAL;
+static int update_interval = 120; // seconds
 static int update_from_remote = 0;
 static int cfg_uid = 0, cfg_gid = 0;
 
