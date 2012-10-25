@@ -50,7 +50,7 @@ size_t write_response(char *buf, size_t size, size_t nmemb, void *dat)
     return j;
 }
 
-time_t mono_time(void)
+time_t clock_time(void)
 {
     struct timespec ts;
     if (clock_gettime(CLOCK_REALTIME, &ts))

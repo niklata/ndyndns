@@ -175,8 +175,8 @@ static void nc_update_host(char *host, char *curip)
     if (strstr(data.buf, "<ErrCount>0")) {
         log_line("%s: [good] - Update successful.", host);
         write_dnsip(host, curip);
-        write_dnsdate(host, mono_time());
-        modify_nc_hostdate_in_list(&namecheap_conf, host, mono_time());
+        write_dnsdate(host, clock_time());
+        modify_nc_hostdate_in_list(&namecheap_conf, host, clock_time());
         modify_nc_hostip_in_list(&namecheap_conf, host, curip);
     } else {
         log_line("%s: [fail] - Failed to update.", host);

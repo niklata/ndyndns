@@ -147,8 +147,8 @@ static void he_update_host(char *host, char *password, char *curip)
     if (strstr(data.buf, "good")) {
         log_line("%s: [good] - Update successful.", host);
         write_dnsip(host, curip);
-        write_dnsdate(host, mono_time());
-        modify_he_hostdate_in_list(&he_conf, host, mono_time());
+        write_dnsdate(host, clock_time());
+        modify_he_hostdate_in_list(&he_conf, host, clock_time());
         modify_he_hostip_in_list(&he_conf, host, curip);
     } else {
         log_line("%s: [fail] - Failed to update.", host);
@@ -251,11 +251,11 @@ static void he_update_tunid(char *tunid, char *curip)
     if (strstr(data.buf, "+OK")) {
         log_line("%s: [good] - Update successful.", tunid);
         write_dnsip(tunid, curip);
-        write_dnsdate(tunid, mono_time());
+        write_dnsdate(tunid, clock_time());
     } else if (strstr(data.buf, "-ERROR: This tunnel is already associated with this IP address.")) {
         log_line("%s: [nochg] - Unnecessary update; further updates will be considered abusive." , tunid);
         write_dnsip(tunid, curip);
-        write_dnsdate(tunid, mono_time());
+        write_dnsdate(tunid, clock_time());
     } else if (strstr(data.buf, "abuse")) {
         log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.", tunid, tunid);
         write_dnserr(tunid, -2);

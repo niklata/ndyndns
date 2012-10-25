@@ -269,13 +269,13 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
         case RET_GOOD:
             log_line("%s: [good] - Update successful.", host);
             write_dnsip(host, curip);
-            write_dnsdate(host, mono_time());
+            write_dnsdate(host, clock_time());
             ret = 0;
             break;
         case RET_NOCHG:
             log_line("%s: [nochg] - Unnecessary update; further updates will be considered abusive.", host);
             write_dnsip(host, curip);
-            write_dnsdate(host, mono_time());
+            write_dnsdate(host, clock_time());
             ret = 0;
             break;
     }
@@ -464,7 +464,7 @@ static void dyndns_update_ip(char *curip)
                 remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
                 break;
             case 0:
-                modify_dyn_hostdate_in_list(&dyndns_conf, t->str, mono_time());
+                modify_dyn_hostdate_in_list(&dyndns_conf, t->str, clock_time());
                 modify_dyn_hostip_in_list(&dyndns_conf, t->str, curip);
                 break;
         }
@@ -488,7 +488,7 @@ void dd_work(char *curip)
             continue;
         }
         if (dyndns_conf.system == SYSTEM_DYNDNS &&
-            mono_time() - t->date > DYN_REFRESH_INTERVAL) {
+            clock_time() - t->date > DYN_REFRESH_INTERVAL) {
             log_line("adding for refresh [%s]", t->host);
             add_to_strlist(&dd_update_list, t->host);
         }

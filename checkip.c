@@ -46,7 +46,7 @@ char *query_curip(void)
     int len;
     time_t now;
 
-    now = mono_time();
+    now = clock_time();
 
     /* query no more than once every ten minutes */
     if (now - last_time < 600)
@@ -66,7 +66,7 @@ char *query_curip(void)
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
 
-    last_time = mono_time();
+    last_time = clock_time();
 
     if (ret != CURLE_OK) {
         log_line("Failed to get ip from remote: [%s]", curlerror);
