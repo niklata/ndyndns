@@ -139,7 +139,7 @@ static void he_update_host(char *host, char *password, char *curip)
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
 
-    if (update_ip_curl_errcheck(ret, curlerror) == 1)
+    if (update_ip_curl_errcheck(ret, curlerror))
         goto out;
 
     // "good x.x.x.x" is success

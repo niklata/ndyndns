@@ -106,6 +106,11 @@ int enforce_seccomp(void)
 #ifdef __NR_sigreturn
         ALLOW_SYSCALL(sigreturn),
 #endif
+        ALLOW_SYSCALL(rt_sigaction),
+        ALLOW_SYSCALL(alarm),
+        ALLOW_SYSCALL(rt_sigprocmask),
+        ALLOW_SYSCALL(futex),
+
         // Allowed by vDSO
         ALLOW_SYSCALL(getcpu),
         ALLOW_SYSCALL(time),

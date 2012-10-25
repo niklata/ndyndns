@@ -53,7 +53,7 @@ size_t write_response(char *buf, size_t size, size_t nmemb, void *dat)
 time_t mono_time(void)
 {
     struct timespec ts;
-    if (clock_gettime(CLOCK_MONOTONIC, &ts))
+    if (clock_gettime(CLOCK_REALTIME, &ts))
         suicide("%s: clock_gettime failed: %s", __func__, strerror(errno));
     return ts.tv_sec;
 }

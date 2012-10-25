@@ -434,8 +434,14 @@ static void dyndns_update_ip(char *curip)
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
 
-    if (update_ip_curl_errcheck(ret, curlerror) == 1)
+    ret2 = update_ip_curl_errcheck(ret, curlerror);
+    if (ret2 > 0) {
+        if (ret2 == 2) { /* Permanent error. */
+            log_line("[%s] had a non-recoverable HTTP error.  Removing from updates.  Restart the daemon to re-enable updates.", t->str);
+            remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
+        }
         goto out;
+    }
 
     decompose_buf_to_list(data.buf);
     if (get_strlist_arity(dd_update_list) !=

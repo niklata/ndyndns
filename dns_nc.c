@@ -168,7 +168,7 @@ static void nc_update_host(char *host, char *curip)
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
 
-    if (update_ip_curl_errcheck(ret, curlerror) == 1)
+    if (update_ip_curl_errcheck(ret, curlerror))
         goto out;
 
     log_line("response returned: [%s]", data.buf);

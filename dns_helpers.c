@@ -140,7 +140,7 @@ void write_dnserr(char *host, return_codes code)
     free(file);
 }
 
-/* Returns 0 on success, 1 on temporary error, terminates program on fatal */
+/* Returns 0 on success, 1 on temporary error, 2 on permanent error */
 int update_ip_curl_errcheck(int val, char *cerr)
 {
     switch (val) {
@@ -150,7 +150,6 @@ int update_ip_curl_errcheck(int val, char *cerr)
         case CURLE_FAILED_INIT:
         case CURLE_URL_MALFORMAT:
         case CURLE_URL_MALFORMAT_USER:
-        case CURLE_SSL_CONNECT_ERROR:
         case CURLE_HTTP_RANGE_ERROR:
         case CURLE_HTTP_POST_ERROR:
         case CURLE_ABORTED_BY_CALLBACK:
@@ -166,14 +165,15 @@ int update_ip_curl_errcheck(int val, char *cerr)
         case CURLE_BAD_CONTENT_ENCODING:
         case CURLE_SSL_ENGINE_INITFAILED:
         case CURLE_LOGIN_DENIED:
-            suicide("Update failed.  cURL returned a fatal error: [%s].  Exiting.", cerr);
-            break;
+        case CURLE_TOO_MANY_REDIRECTS:
+            log_line("Update failed.  cURL returned a fatal error: [%s].", cerr);
+            return 2;
         case CURLE_OUT_OF_MEMORY:
         case CURLE_READ_ERROR:
-        case CURLE_TOO_MANY_REDIRECTS:
         case CURLE_RECV_ERROR:
-            suicide("Update status unknown.  cURL returned a fatal error: [%s].  Exiting.", cerr);
-            break;
+            log_line("Update status unknown: [%s].  Queuing for retry.", cerr);
+            return 1;
+        case CURLE_SSL_CONNECT_ERROR:
         case CURLE_COULDNT_RESOLVE_PROXY:
         case CURLE_COULDNT_RESOLVE_HOST:
         case CURLE_COULDNT_CONNECT:
@@ -187,7 +187,7 @@ int update_ip_curl_errcheck(int val, char *cerr)
             log_line("cURL returned nonfatal error: [%s]", cerr);
             return 0;
     }
-    return -1;
+    return 0;
 }
 
 void update_ip_buf_error(size_t len, size_t size)
