@@ -101,6 +101,7 @@ int enforce_seccomp(void)
         ALLOW_SYSCALL(brk),
         ALLOW_SYSCALL(mmap),
         ALLOW_SYSCALL(munmap),
+        ALLOW_SYSCALL(sendmmsg),
 
         ALLOW_SYSCALL(rt_sigreturn),
 #ifdef __NR_sigreturn
