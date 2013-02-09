@@ -1,6 +1,6 @@
 /* checkip.c - checkip-specific functions
  *
- * (C) 2007-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2007-2013 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <curl/curl.h>
 
 #include "defines.h"
+#include "dns_helpers.h"
 #include "log.h"
 #include "strl.h"
 #include "util.h"
@@ -38,11 +39,8 @@ static time_t last_time = 0;
  */
 char *query_curip(void)
 {
-    CURL *h;
-    CURLcode ret;
-    char curlerror[CURL_ERROR_SIZE];
     conn_data_t data;
-    char *ip = NULL, *retval = NULL, *p = NULL;
+    char *ip = NULL, *ret = NULL, *p = NULL;
     int len;
     time_t now;
 
@@ -50,30 +48,19 @@ char *query_curip(void)
 
     /* query no more than once every ten minutes */
     if (now - last_time < 600)
-        return retval;
+        return ret;
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    h = curl_easy_init();
-    curl_easy_setopt(h, CURLOPT_URL, "http://checkip.dyndns.com");
-    curl_easy_setopt(h, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
-    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
-    curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
-    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    ret = curl_easy_perform(h);
-    curl_easy_cleanup(h);
-
-    last_time = clock_time();
-
-    if (ret != CURLE_OK) {
-        log_line("Failed to get ip from remote: [%s]", curlerror);
+    if (dyndns_curl_send("http://checkip.dyndns.com", &data, "ndyndns",
+                         NULL, true, false)) {
+        log_line("Failed to get IP from remote host.");
         goto out;
     }
+    last_time = clock_time();
 
     ip = strstr(data.buf, "Current IP Address:");
     if (!ip)
@@ -86,10 +73,10 @@ char *query_curip(void)
         goto out;
     ++len;
 
-    retval = xmalloc(len);
-    strlcpy(retval, ip, len);
+    ret = xmalloc(len);
+    strlcpy(ret, ip, len);
 out:
     free(data.buf);
-    return retval;
+    return ret;
 }
 

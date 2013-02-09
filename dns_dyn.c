@@ -1,4 +1,4 @@
-/* (c) 2005-2012 Nicholas J. Kain <njkain at gmail dot com>
+/* (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -284,17 +284,14 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
 
 static void dyndns_update_ip(char *curip)
 {
-    CURL *h;
-    CURLcode ret;
     int len, runonce = 0;
     char url[MAX_BUF];
     char tbuf[32];
     char unpwd[256];
     char useragent[64];
-    char curlerror[CURL_ERROR_SIZE];
     strlist_t *t;
     return_code_list_t *u;
-    int ret2;
+    int ret;
     conn_data_t data;
 
     if (!dd_update_list || !curip)
@@ -420,25 +417,9 @@ static void dyndns_update_ip(char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    log_line("update url: [%s]", url);
-    h = curl_easy_init();
-    curl_easy_setopt(h, CURLOPT_URL, url);
-    curl_easy_setopt(h, CURLOPT_USERPWD, unpwd);
-    curl_easy_setopt(h, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
-    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
-    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
-    curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
-    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    if (use_ssl)
-        curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
-    ret = curl_easy_perform(h);
-    curl_easy_cleanup(h);
-
-    ret2 = update_ip_curl_errcheck(ret, curlerror);
-    if (ret2 > 0) {
-        if (ret2 == 2) { /* Permanent error. */
+    ret = dyndns_curl_send(url, &data, useragent, unpwd, true, use_ssl);
+    if (ret > 0) {
+        if (ret == 2) { /* Permanent error. */
             log_line("[%s] had a non-recoverable HTTP error.  Removing from updates.  Restart the daemon to re-enable updates.", t->str);
             remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
         }
@@ -454,15 +435,15 @@ static void dyndns_update_ip(char *curip)
     for (t = dd_update_list, u = dd_return_list;
          t != NULL && u != NULL; t = t->next, u = u->next) {
 
-        ret2 = postprocess_update(t->str, curip, u->code);
-        switch (ret2) {
+        ret = postprocess_update(t->str, curip, u->code);
+        switch (ret) {
             case -1:
             default:
                 exit(EXIT_FAILURE);
                 break;
             case -2:
                 log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.", t->str, t->str);
-                write_dnserr(t->str, ret2);
+                write_dnserr(t->str, ret);
                 remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
                 break;
             case 0:

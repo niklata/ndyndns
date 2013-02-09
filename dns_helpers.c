@@ -1,4 +1,4 @@
-/* (c) 2005-2012 Nicholas J. Kain <njkain at gmail dot com>
+/* (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,7 +141,7 @@ void write_dnserr(char *host, return_codes code)
 }
 
 /* Returns 0 on success, 1 on temporary error, 2 on permanent error */
-int update_ip_curl_errcheck(int val, char *cerr)
+static int update_ip_curl_errcheck(int val, char *cerr)
 {
     switch (val) {
         case CURLE_OK:
@@ -196,4 +196,30 @@ void update_ip_buf_error(size_t len, size_t size)
         suicide("%s: config file would overflow a fixed buffer", __func__);
 }
 
+int dyndns_curl_send(char *url, conn_data_t *data, char *useragent,
+                     char *unpwd, bool do_auth, bool use_ssl)
+{
+    CURL *h;
+    CURLcode ret;
+    char curlerror[CURL_ERROR_SIZE];
+
+    log_line("update url: [%s]", url);
+    h = curl_easy_init();
+    curl_easy_setopt(h, CURLOPT_URL, url);
+    curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
+    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
+    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
+    curl_easy_setopt(h, CURLOPT_WRITEDATA, data);
+    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+    if (unpwd)
+        curl_easy_setopt(h, CURLOPT_USERPWD, unpwd);
+    if (do_auth)
+        curl_easy_setopt(h, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    if (use_ssl)
+        curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
+    ret = curl_easy_perform(h);
+    curl_easy_cleanup(h);
+    return update_ip_curl_errcheck(ret, curlerror);
+}
 

@@ -1,4 +1,4 @@
-/* (c) 2010-2012 Nicholas J. Kain <njkain at gmail dot com>
+/* (c) 2010-2013 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,12 +79,9 @@ static void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host,
 
 static void nc_update_host(char *host, char *curip)
 {
-    CURL *h;
-    CURLcode ret;
     int len, hostname_size = 0, domain_size = 0;
     char url[MAX_BUF];
     char useragent[64];
-    char curlerror[CURL_ERROR_SIZE];
     char *hostname = NULL, *domain = NULL, *p;
     conn_data_t data;
 
@@ -156,35 +153,18 @@ static void nc_update_host(char *host, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    log_line("update url: [%s]", url);
-    h = curl_easy_init();
-    curl_easy_setopt(h, CURLOPT_URL, url);
-    curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
-    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
-    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
-    curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
-    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    if (use_ssl)
-        curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
-    ret = curl_easy_perform(h);
-    curl_easy_cleanup(h);
-
-    if (update_ip_curl_errcheck(ret, curlerror))
-        goto out;
-
-    log_line("response returned: [%s]", data.buf);
-    if (strstr(data.buf, "<ErrCount>0")) {
-        log_line("%s: [good] - Update successful.", host);
-        write_dnsip(host, curip);
-        write_dnsdate(host, clock_time());
-        modify_nc_hostdate_in_list(&namecheap_conf, host, clock_time());
-        modify_nc_hostip_in_list(&namecheap_conf, host, curip);
-    } else {
-        log_line("%s: [fail] - Failed to update.", host);
+    if (!dyndns_curl_send(url, &data, useragent, NULL, false, use_ssl)) {
+        log_line("response returned: [%s]", data.buf);
+        if (strstr(data.buf, "<ErrCount>0")) {
+            log_line("%s: [good] - Update successful.", host);
+            write_dnsip(host, curip);
+            write_dnsdate(host, clock_time());
+            modify_nc_hostdate_in_list(&namecheap_conf, host, clock_time());
+            modify_nc_hostip_in_list(&namecheap_conf, host, curip);
+        } else {
+            log_line("%s: [fail] - Failed to update.", host);
+        }
     }
-
-  out:
     free(data.buf);
 }
 

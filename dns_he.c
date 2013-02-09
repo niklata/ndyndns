@@ -1,4 +1,4 @@
-/* (c) 2010-2012 Nicholas J. Kain <njkain at gmail dot com>
+/* (c) 2010-2013 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,12 +79,9 @@ static void modify_he_hostdate_in_list(he_conf_t *conf, char *host, time_t time)
 
 static void he_update_host(char *host, char *password, char *curip)
 {
-    CURL *h;
-    CURLcode ret;
     int len;
     char url[MAX_BUF];
     char useragent[64];
-    char curlerror[CURL_ERROR_SIZE];
     conn_data_t data;
 
     if (!host || !password || !curip)
@@ -127,36 +124,19 @@ static void he_update_host(char *host, char *password, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    log_line("update url: [%s]", url);
-    h = curl_easy_init();
-    curl_easy_setopt(h, CURLOPT_URL, url);
-    curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
-    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
-    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
-    curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
-    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    if (use_ssl)
-        curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
-    ret = curl_easy_perform(h);
-    curl_easy_cleanup(h);
-
-    if (update_ip_curl_errcheck(ret, curlerror))
-        goto out;
-
-    // "good x.x.x.x" is success
-    log_line("response returned: [%s]", data.buf);
-    if (strstr(data.buf, "good")) {
-        log_line("%s: [good] - Update successful.", host);
-        write_dnsip(host, curip);
-        write_dnsdate(host, clock_time());
-        modify_he_hostdate_in_list(&he_conf, host, clock_time());
-        modify_he_hostip_in_list(&he_conf, host, curip);
-    } else {
-        log_line("%s: [fail] - Failed to update.", host);
+    if (!dyndns_curl_send(url, &data, useragent, NULL, false, use_ssl)) {
+        // "good x.x.x.x" is success
+        log_line("response returned: [%s]", data.buf);
+        if (strstr(data.buf, "good")) {
+            log_line("%s: [good] - Update successful.", host);
+            write_dnsip(host, curip);
+            write_dnsdate(host, clock_time());
+            modify_he_hostdate_in_list(&he_conf, host, clock_time());
+            modify_he_hostip_in_list(&he_conf, host, curip);
+        } else {
+            log_line("%s: [fail] - Failed to update.", host);
+        }
     }
-
-  out:
     free(data.buf);
 }
 
@@ -182,12 +162,9 @@ void he_dns_work(char *curip)
 
 static void he_update_tunid(char *tunid, char *curip)
 {
-    CURL *h;
-    CURLcode ret;
     int len;
     char url[MAX_BUF];
     char useragent[64];
-    char curlerror[CURL_ERROR_SIZE];
     conn_data_t data;
 
     if (!tunid || !curip)
@@ -233,42 +210,26 @@ static void he_update_tunid(char *tunid, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    log_line("update url: [%s]", url);
-    h = curl_easy_init();
-    curl_easy_setopt(h, CURLOPT_URL, url);
-    curl_easy_setopt(h, CURLOPT_USERAGENT, useragent);
-    curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
-    curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
-    curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
-    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    if (use_ssl)
-        curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
-    ret = curl_easy_perform(h);
-    curl_easy_cleanup(h);
-
-    if (update_ip_curl_errcheck(ret, curlerror) == 1)
-        goto out;
-
-    // "+OK: Tunnel endpoint updated to: x.x.x.x" is success
-    log_line("response returned: [%s]", data.buf);
-    if (strstr(data.buf, "+OK")) {
-        log_line("%s: [good] - Update successful.", tunid);
-        write_dnsip(tunid, curip);
-        write_dnsdate(tunid, clock_time());
-    } else if (strstr(data.buf, "-ERROR: This tunnel is already associated with this IP address.")) {
-        log_line("%s: [nochg] - Unnecessary update; further updates will be considered abusive." , tunid);
-        write_dnsip(tunid, curip);
-        write_dnsdate(tunid, clock_time());
-    } else if (strstr(data.buf, "abuse")) {
-        log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.", tunid, tunid);
-        write_dnserr(tunid, -2);
-        remove_host_from_host_data_list(&he_conf.tunlist, tunid);
-    } else {
-        log_line("%s: [fail] - Failed to update.", tunid);
+    // XXX: What about the difference between temp=1 and final=2 errors?
+    if (!dyndns_curl_send(url, &data, useragent, NULL, false, use_ssl)) {
+        // "+OK: Tunnel endpoint updated to: x.x.x.x" is success
+        log_line("response returned: [%s]", data.buf);
+        if (strstr(data.buf, "+OK")) {
+            log_line("%s: [good] - Update successful.", tunid);
+            write_dnsip(tunid, curip);
+            write_dnsdate(tunid, clock_time());
+        } else if (strstr(data.buf, "-ERROR: This tunnel is already associated with this IP address.")) {
+            log_line("%s: [nochg] - Unnecessary update; further updates will be considered abusive." , tunid);
+            write_dnsip(tunid, curip);
+            write_dnsdate(tunid, clock_time());
+        } else if (strstr(data.buf, "abuse")) {
+            log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.", tunid, tunid);
+            write_dnserr(tunid, -2);
+            remove_host_from_host_data_list(&he_conf.tunlist, tunid);
+        } else {
+            log_line("%s: [fail] - Failed to update.", tunid);
+        }
     }
-
-  out:
     free(data.buf);
 }
 

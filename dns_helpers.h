@@ -1,6 +1,6 @@
 #ifndef NDYNDNS_DNS_HELPERS_H_
 #define NDYNDNS_DNS_HELPERS_H_
-/* (c) 2005-2012 Nicholas J. Kain <njkain at gmail dot com>
+/* (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include <stdbool.h>
+#include "util.h" /* for conn_data_t */
 
 extern int use_ssl;
 
@@ -38,7 +41,8 @@ typedef enum {
 void write_dnsdate(char *host, time_t date);
 void write_dnsip(char *host, char *ip);
 void write_dnserr(char *host, return_codes code);
-int update_ip_curl_errcheck(int val, char *cerr);
 void update_ip_buf_error(size_t len, size_t size);
+int dyndns_curl_send(char *url, conn_data_t *data, char *useragent,
+                     char *unpwd, bool do_auth, bool use_ssl);
 
 #endif
