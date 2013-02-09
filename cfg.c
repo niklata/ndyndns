@@ -368,6 +368,8 @@ out:
     return ret;
 }
 
+typedef void (*do_populate_fn)(hostdata_t **list, char *instr);
+
 static void do_populate(hostdata_t **list, char *host_in)
 {
     char *ip, *host, *host_orig;
@@ -419,18 +421,10 @@ static void do_populate_hp(hostdata_t **list, char *pair_in)
     free(host_orig);
 }
 
-// XXX: What is the difference between this and populate_hostpairs() now?
-static void populate_hostlist(hostdata_t **list, char *hostname)
+static void populate_hostlist_generic(do_populate_fn fn, hostdata_t **list,
+                                      char *left)
 {
-    char *left = hostname, *right = (char *)1, *t = NULL, *p;
-    size_t len;
-
-    if (!list || !left)
-        suicide("%s: NULL passed as argument", __func__);
-    if (strlen(left) == 0)
-        suicide("No hosts were provided for updates.  Exiting.");
-
-    log_line("hosts: [%s]", left);
+    char *right = (char *)1, *p;
 
     do {
         right = strchr(left, ',');
@@ -439,49 +433,39 @@ static void populate_hostlist(hostdata_t **list, char *hostname)
                 if (*p == ' ' || *p == '\t')
                     break;
             }
-            len = p - left + 1;
-            t = xmalloc(len);
+            size_t len = p - left + 1;
+            char *t = xmalloc(len);
             memset(t, '\0', len);
             memcpy(t, left, len - 1);
-            do_populate(list, t);
+            fn(list, t);
             free(t);
             left = right + 1;
         } else {
-            do_populate(list, left);
+            fn(list, left);
             break;
         }
     } while (1);
 }
 
+static void populate_hostlist(hostdata_t **list, char *hostname)
+{
+    if (!list || !hostname)
+        suicide("%s: NULL passed as argument", __func__);
+    if (strlen(hostname) == 0)
+        suicide("No hosts were provided for updates.  Exiting.");
+
+    log_line("hosts: [%s]", hostname);
+    populate_hostlist_generic(do_populate, list, hostname);
+}
+
 static void populate_hostpairs(hostdata_t **list, char *hostpair)
 {
-    char *left = hostpair, *right = (char *)1, *t = NULL, *p;
-    size_t len;
-
-    if (!list || !left)
+    if (!list || !hostpair)
         suicide("%s: NULL passed as argument", __func__);
-    if (strlen(left) == 0)
+    if (strlen(hostpair) == 0)
         suicide("No hostpairs were provided for updates.  Exiting.");
-
-    do {
-        right = strchr(left, ',');
-        if (right != NULL && left < right) {
-            for (p = left; p < right; ++p) {
-                if (*p == ' ' || *p == '\t')
-                    break;
-            }
-            len = p - left + 1;
-            t = xmalloc(len);
-            memset(t, '\0', len);
-            memcpy(t, left, len - 1);
-            do_populate_hp(list, t);
-            free(t);
-            left = right + 1;
-        } else {
-            do_populate_hp(list, left);
-            break;
-        }
-    } while (1);
+    log_line("hostpairs: [%s]", hostpair);
+    populate_hostlist_generic(do_populate_hp, list, hostpair);
 }
 
 /* returns 1 for valid config, 0 for invalid */
