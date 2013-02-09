@@ -20,7 +20,7 @@
 
 typedef struct {
     char *password;
-    host_data_t *hostlist;
+    hostdata_t *hostlist;
 } namecheap_conf_t;
 
 extern namecheap_conf_t namecheap_conf;

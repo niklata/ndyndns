@@ -21,8 +21,8 @@
 typedef struct {
     char *userid;
     char *passhash;
-    hostpairs_t *hostpairs;
-    host_data_t *tunlist;
+    hostdata_t *hostpairs;
+    hostdata_t *tunlist;
 } he_conf_t;
 
 extern he_conf_t he_conf;

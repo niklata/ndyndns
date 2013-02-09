@@ -32,21 +32,14 @@ offline (default: NO)
 
 typedef struct {
     char *host;
-    char *ip;
-    time_t date;
-    void *next;
-} host_data_t;
-
-typedef struct {
-    char *host;
     char *password;
     char *ip;
     time_t date;
     void *next;
-} hostpairs_t;
+} hostdata_t;
 
 void init_config();
-void remove_host_from_host_data_list(host_data_t **phl, char *host);
+void remove_host_from_hostdata_list(hostdata_t **phl, char *host);
 int parse_config(char *file);
 #endif
 

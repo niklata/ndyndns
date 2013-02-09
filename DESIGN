@@ -27,10 +27,11 @@ a linked list of structures:
 
 typedef struct {
 	char *host;
+	char *password;
 	char *ip;
 	time_t date;
 	void *next;
-} host_data_t;
+} hostdata_t;
 
 
 A hashtable would scale better, but in practice, the list will be very

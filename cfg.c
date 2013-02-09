@@ -44,9 +44,9 @@ void init_config()
     init_he_conf();
 }
 
-void remove_host_from_host_data_list(host_data_t **phl, char *host)
+void remove_host_from_hostdata_list(hostdata_t **phl, char *host)
 {
-    host_data_t *cur = *phl, *after = NULL, *p;
+    hostdata_t *cur = *phl, *after = NULL, *p;
 
     if (!strcmp(cur->host, host)) {
         after = cur->next;
@@ -111,10 +111,10 @@ out:
 
 
 /* allocates memory.  ip may be NULL */
-static void add_to_host_data_list(host_data_t **list, char *host, char *ip,
+static void add_to_hostdata_list(hostdata_t **list, char *host, char *ip,
                     time_t time)
 {
-    host_data_t *item, *t;
+    hostdata_t *item, *t;
     char *elem, *err = NULL;
     size_t len;
 
@@ -127,7 +127,7 @@ static void add_to_host_data_list(host_data_t **list, char *host, char *ip,
         return;
     }
 
-    item = xmalloc(sizeof (host_data_t));
+    item = xmalloc(sizeof (hostdata_t));
     item->date = time;
     item->next = NULL;
     item->ip = NULL;
@@ -172,10 +172,10 @@ out:
 }
 
 /* allocates memory.  ip may be NULL */
-static void add_to_hostpair_list(hostpairs_t **list, char *host, char *passwd,
+static void add_to_hostpair_list(hostdata_t **list, char *host, char *passwd,
                                  char *ip, time_t time)
 {
-    hostpairs_t *item, *t;
+    hostdata_t *item, *t;
     char *elem, *err = NULL;
     size_t len;
 
@@ -188,7 +188,7 @@ static void add_to_hostpair_list(hostpairs_t **list, char *host, char *passwd,
         return;
     }
 
-    item = xmalloc(sizeof (hostpairs_t));
+    item = xmalloc(sizeof (hostdata_t));
     item->date = time;
     item->next = NULL;
     item->ip = NULL;
@@ -368,7 +368,7 @@ out:
     return ret;
 }
 
-static void do_populate(host_data_t **list, char *host_in)
+static void do_populate(hostdata_t **list, char *host_in)
 {
     char *ip, *host, *host_orig;
 
@@ -381,7 +381,7 @@ static void do_populate(host_data_t **list, char *host_in)
         ip = get_dnsip(host);
         if (ip) {
             log_line("adding: [%s] ip: [%s]", host, ip);
-            add_to_host_data_list(list, host, ip, get_dnsdate(host));
+            add_to_hostdata_list(list, host, ip, get_dnsdate(host));
         } else {
             log_line("No ip found for [%s].  No updates will be done.", host);
         }
@@ -390,7 +390,7 @@ static void do_populate(host_data_t **list, char *host_in)
     free(host_orig);
 }
 
-static void do_populate_hp(hostpairs_t **list, char *pair_in)
+static void do_populate_hp(hostdata_t **list, char *pair_in)
 {
     char *ip, *host, *host_orig, *passwd;
 
@@ -419,7 +419,8 @@ static void do_populate_hp(hostpairs_t **list, char *pair_in)
     free(host_orig);
 }
 
-static void populate_hostlist(host_data_t **list, char *hostname)
+// XXX: What is the difference between this and populate_hostpairs() now?
+static void populate_hostlist(hostdata_t **list, char *hostname)
 {
     char *left = hostname, *right = (char *)1, *t = NULL, *p;
     size_t len;
@@ -452,7 +453,7 @@ static void populate_hostlist(host_data_t **list, char *hostname)
     } while (1);
 }
 
-static void populate_hostpairs(hostpairs_t **list, char *hostpair)
+static void populate_hostpairs(hostdata_t **list, char *hostpair)
 {
     char *left = hostpair, *right = (char *)1, *t = NULL, *p;
     size_t len;

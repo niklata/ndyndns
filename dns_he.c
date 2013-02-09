@@ -37,44 +37,42 @@ void init_he_conf()
     he_conf.tunlist = NULL;
 }
 
-static void modify_he_hostip_in_list(he_conf_t *conf, char *host, char *ip)
+static void modify_he_hostip_in_list(hostdata_t *t, char *host, char *ip)
 {
-    hostpairs_t *t;
-    size_t len;
-    char *buf;
-
-    if (!conf || !host || !conf->hostpairs)
+    if (!t || !host)
         return;
-
-    for (t = conf->hostpairs; t && strcmp(t->host, host); t = t->next);
-
-    if (!t)
-        return; /* not found */
-
-    free(t->ip);
-    if (!ip) {
-        t->ip = ip;
-        return;
+    for (; t && strcmp(t->host, host); t = t->next);
+    if (t) {
+        free(t->ip);
+        t->ip = NULL;
+        if (ip) {
+            size_t len = strlen(ip) + 1;
+            char *buf = xmalloc(len);
+            strlcpy(buf, ip, len);
+            t->ip = buf;
+        }
     }
-    len = strlen(ip) + 1;
-    buf = xmalloc(len);
-    strlcpy(buf, ip, len);
-    t->ip = buf;
 }
 
-static void modify_he_hostdate_in_list(he_conf_t *conf, char *host, time_t time)
+static void modify_he_hostip_in_conf(he_conf_t *conf, char *host, char *ip)
 {
-    hostpairs_t *t;
+    if (conf)
+        modify_he_hostip_in_list(conf->hostpairs, host, ip);
+}
 
-    if (!conf || !host || !conf->hostpairs)
+static void modify_he_hostdate_in_list(hostdata_t *t, char *host, time_t time)
+{
+    if (!t || !host)
         return;
+    for (; t && strcmp(t->host, host); t = t->next);
+    if (t)
+        t->date = time;
+}
 
-    for (t = conf->hostpairs; t && strcmp(t->host, host); t = t->next);
-
-    if (!t)
-        return; /* not found */
-
-    t->date = time;
+static void modify_he_hostdate_in_conf(he_conf_t *conf, char *host, time_t time)
+{
+    if (conf)
+        modify_he_hostdate_in_list(conf->hostpairs, host, time);
 }
 
 static void he_update_host(char *host, char *password, char *curip)
@@ -131,8 +129,8 @@ static void he_update_host(char *host, char *password, char *curip)
             log_line("%s: [good] - Update successful.", host);
             write_dnsip(host, curip);
             write_dnsdate(host, clock_time());
-            modify_he_hostdate_in_list(&he_conf, host, clock_time());
-            modify_he_hostip_in_list(&he_conf, host, curip);
+            modify_he_hostdate_in_conf(&he_conf, host, clock_time());
+            modify_he_hostip_in_conf(&he_conf, host, curip);
         } else {
             log_line("%s: [fail] - Failed to update.", host);
         }
@@ -142,7 +140,7 @@ static void he_update_host(char *host, char *password, char *curip)
 
 void he_dns_work(char *curip)
 {
-    for (hostpairs_t *tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
+    for (hostdata_t *tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
         if (strcmp(curip, tp->ip)) {
             size_t csiz = strlen(tp->host) + strlen(tp->password) + 2;
             char *host = alloca(csiz), *pass, *p;
@@ -210,7 +208,6 @@ static void he_update_tunid(char *tunid, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    // XXX: What about the difference between temp=1 and final=2 errors?
     if (!dyndns_curl_send(url, &data, useragent, NULL, false, use_ssl)) {
         // "+OK: Tunnel endpoint updated to: x.x.x.x" is success
         log_line("response returned: [%s]", data.buf);
@@ -218,6 +215,8 @@ static void he_update_tunid(char *tunid, char *curip)
             log_line("%s: [good] - Update successful.", tunid);
             write_dnsip(tunid, curip);
             write_dnsdate(tunid, clock_time());
+            modify_he_hostdate_in_list(he_conf.tunlist, tunid, clock_time());
+            modify_he_hostip_in_list(he_conf.tunlist, tunid, curip);
         } else if (strstr(data.buf, "-ERROR: This tunnel is already associated with this IP address.")) {
             log_line("%s: [nochg] - Unnecessary update; further updates will be considered abusive." , tunid);
             write_dnsip(tunid, curip);
@@ -225,7 +224,7 @@ static void he_update_tunid(char *tunid, char *curip)
         } else if (strstr(data.buf, "abuse")) {
             log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.", tunid, tunid);
             write_dnserr(tunid, -2);
-            remove_host_from_host_data_list(&he_conf.tunlist, tunid);
+            remove_host_from_hostdata_list(&he_conf.tunlist, tunid);
         } else {
             log_line("%s: [fail] - Failed to update.", tunid);
         }
@@ -235,7 +234,7 @@ static void he_update_tunid(char *tunid, char *curip)
 
 void he_tun_work(char *curip)
 {
-    for (host_data_t *t = he_conf.tunlist; t != NULL; t = t->next) {
+    for (hostdata_t *t = he_conf.tunlist; t != NULL; t = t->next) {
         if (strcmp(curip, t->ip)) {
             log_line("adding for update [%s]", t->host);
             he_update_tunid(t->host, curip);

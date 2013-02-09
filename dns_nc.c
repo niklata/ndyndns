@@ -38,7 +38,7 @@ void init_namecheap_conf()
 static void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host,
                                      char *ip)
 {
-    host_data_t *t;
+    hostdata_t *t;
     size_t len;
     char *buf;
 
@@ -64,7 +64,7 @@ static void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host,
 static void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host,
                                        time_t time)
 {
-    host_data_t *t;
+    hostdata_t *t;
 
     if (!conf || !host || !conf->hostlist)
         return;
@@ -170,7 +170,7 @@ static void nc_update_host(char *host, char *curip)
 
 void nc_work(char *curip)
 {
-    for (host_data_t *t = namecheap_conf.hostlist; t != NULL; t = t->next) {
+    for (hostdata_t *t = namecheap_conf.hostlist; t != NULL; t = t->next) {
         if (strcmp(curip, t->ip)) {
             log_line("adding for update [%s]", t->host);
             nc_update_host(t->host, curip);

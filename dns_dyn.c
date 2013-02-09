@@ -45,7 +45,7 @@ void init_dyndns_conf()
 
 static void modify_dyn_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip)
 {
-    host_data_t *t;
+    hostdata_t *t;
     size_t len;
     char *buf;
 
@@ -71,7 +71,7 @@ static void modify_dyn_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip)
 static void modify_dyn_hostdate_in_list(dyndns_conf_t *conf, char *host,
                                         time_t time)
 {
-    host_data_t *t;
+    hostdata_t *t;
 
     if (!conf || !host || !conf->hostlist)
         return;
@@ -421,7 +421,7 @@ static void dyndns_update_ip(char *curip)
     if (ret > 0) {
         if (ret == 2) { /* Permanent error. */
             log_line("[%s] had a non-recoverable HTTP error.  Removing from updates.  Restart the daemon to re-enable updates.", t->str);
-            remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
+            remove_host_from_hostdata_list(&dyndns_conf.hostlist, t->str);
         }
         goto out;
     }
@@ -444,7 +444,7 @@ static void dyndns_update_ip(char *curip)
             case -2:
                 log_line("[%s] has a configuration problem.  Refusing to update until %s-dnserr is removed.", t->str, t->str);
                 write_dnserr(t->str, ret);
-                remove_host_from_host_data_list(&dyndns_conf.hostlist, t->str);
+                remove_host_from_hostdata_list(&dyndns_conf.hostlist, t->str);
                 break;
             case 0:
                 modify_dyn_hostdate_in_list(&dyndns_conf, t->str, clock_time());
@@ -464,7 +464,7 @@ void dd_work(char *curip)
     dd_update_list = NULL;
     dd_return_list = NULL;
 
-    for (host_data_t *t = dyndns_conf.hostlist; t != NULL; t = t->next) {
+    for (hostdata_t *t = dyndns_conf.hostlist; t != NULL; t = t->next) {
         if (strcmp(curip, t->ip)) {
             log_line("adding for update [%s]", t->host);
             add_to_strlist(&dd_update_list, t->host);

@@ -44,7 +44,7 @@ typedef enum {
 typedef struct {
     char *username;
     char *password;
-    host_data_t *hostlist;
+    hostdata_t *hostlist;
     char *mx;
     wc_state wildcard;
     backmx_state backmx;
