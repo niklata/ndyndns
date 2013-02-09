@@ -134,6 +134,8 @@ static void he_update_host(char *host, char *password, char *curip)
     curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
     curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
     curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
+    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
     if (use_ssl)
         curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
     ret = curl_easy_perform(h);
@@ -238,6 +240,8 @@ static void he_update_tunid(char *tunid, char *curip)
     curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
     curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
     curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
+    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
     if (use_ssl)
         curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
     ret = curl_easy_perform(h);

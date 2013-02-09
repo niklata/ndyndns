@@ -63,6 +63,8 @@ char *query_curip(void)
     curl_easy_setopt(h, CURLOPT_ERRORBUFFER, curlerror);
     curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, write_response);
     curl_easy_setopt(h, CURLOPT_WRITEDATA, &data);
+    curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+    curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
 
