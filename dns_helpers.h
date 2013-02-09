@@ -46,4 +46,9 @@ void dyndns_curlbuf_cat(char *dst, char *src, size_t size);
 int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd, bool do_auth,
                      bool use_ssl);
 
+#define DDCB_CPY(dst, src) do { \
+    dyndns_curlbuf_cpy(dst, src, sizeof dst); } while (0)
+#define DDCB_CAT(dst, src) do { \
+    dyndns_curlbuf_cat(dst, src, sizeof dst); } while (0)
+
 #endif

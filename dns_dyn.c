@@ -297,59 +297,59 @@ static void dyndns_update_ip(char *curip)
 
     /* set up the authentication url */
     if (use_ssl)
-        dyndns_curlbuf_cpy(url, "https", sizeof url);
+        DDCB_CPY(url, "https");
     else
-        dyndns_curlbuf_cpy(url, "http", sizeof url);
-    dyndns_curlbuf_cat(url, "://members.dyndns.org/nic/update?", sizeof url);
+        DDCB_CPY(url, "http");
+    DDCB_CAT(url, "://members.dyndns.org/nic/update?");
 
-    dyndns_curlbuf_cat(url, "system=", sizeof url);
+    DDCB_CAT(url, "system=");
     switch (dyndns_conf.system) {
-    case SYSTEM_STATDNS: dyndns_curlbuf_cat(url, "statdns", sizeof url); break;
-    case SYSTEM_CUSTOMDNS: dyndns_curlbuf_cat(url, "custom", sizeof url); break;
-    default: dyndns_curlbuf_cat(url, "dyndns", sizeof url); break;
+    case SYSTEM_STATDNS: DDCB_CAT(url, "statdns"); break;
+    case SYSTEM_CUSTOMDNS: DDCB_CAT(url, "custom"); break;
+    default: DDCB_CAT(url, "dyndns"); break;
     }
 
-    dyndns_curlbuf_cat(url, "&hostname=", sizeof url);
+    DDCB_CAT(url, "&hostname=");
     for (t = dd_update_list, runonce = 0; t != NULL; t = t->next) {
         if (runonce)
-            dyndns_curlbuf_cat(url, ",", sizeof url);
+            DDCB_CAT(url, ",");
         runonce = 1;
-        dyndns_curlbuf_cat(url, t->str, sizeof url);
+        DDCB_CAT(url, t->str);
     }
 
-    dyndns_curlbuf_cat(url, "&myip=", sizeof url);
-    dyndns_curlbuf_cat(url, curip, sizeof url);
+    DDCB_CAT(url, "&myip=");
+    DDCB_CAT(url, curip);
 
-    dyndns_curlbuf_cat(url, "&wildcard=", sizeof url);
+    DDCB_CAT(url, "&wildcard=");
     switch (dyndns_conf.wildcard) {
-    case WC_YES: dyndns_curlbuf_cat(url, "ON", sizeof url); break;
-    case WC_NO: dyndns_curlbuf_cat(url, "OFF", sizeof url); break;
-    default: dyndns_curlbuf_cat(url, "NOCHG", sizeof url); break;
+    case WC_YES: DDCB_CAT(url, "ON"); break;
+    case WC_NO: DDCB_CAT(url, "OFF"); break;
+    default: DDCB_CAT(url, "NOCHG"); break;
     }
 
-    dyndns_curlbuf_cat(url, "&mx=", sizeof url);
+    DDCB_CAT(url, "&mx=");
     if (!dyndns_conf.mx)
-        dyndns_curlbuf_cat(url, "NOCHG", sizeof url);
+        DDCB_CAT(url, "NOCHG");
     else
-        dyndns_curlbuf_cat(url, dyndns_conf.mx, sizeof url);
+        DDCB_CAT(url, dyndns_conf.mx);
 
-    dyndns_curlbuf_cat(url, "&backmx=", sizeof url);
+    DDCB_CAT(url, "&backmx=");
     switch (dyndns_conf.backmx) {
-    case BMX_YES: dyndns_curlbuf_cat(url, "YES", sizeof url); break;
-    case BMX_NO: dyndns_curlbuf_cat(url, "NO", sizeof url); break;
-    default: dyndns_curlbuf_cat(url, "NOCHG", sizeof url); break;
+    case BMX_YES: DDCB_CAT(url, "YES"); break;
+    case BMX_NO: DDCB_CAT(url, "NO"); break;
+    default: DDCB_CAT(url, "NOCHG"); break;
     }
 
-    dyndns_curlbuf_cat(url, "&offline=", sizeof url);
+    DDCB_CAT(url, "&offline=");
     switch (dyndns_conf.offline) {
-    case OFFLINE_YES: dyndns_curlbuf_cat(url, "YES", sizeof url); break;
-    default: dyndns_curlbuf_cat(url, "NO", sizeof url); break;
+    case OFFLINE_YES: DDCB_CAT(url, "YES"); break;
+    default: DDCB_CAT(url, "NO"); break;
     }
 
     /* set up username:password pair */
-    dyndns_curlbuf_cpy(unpwd, dyndns_conf.username, sizeof unpwd);
-    dyndns_curlbuf_cat(unpwd, ":", sizeof unpwd);
-    dyndns_curlbuf_cat(unpwd, dyndns_conf.password, sizeof unpwd);
+    DDCB_CPY(unpwd, dyndns_conf.username);
+    DDCB_CAT(unpwd, ":");
+    DDCB_CAT(unpwd, dyndns_conf.password);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);

@@ -112,22 +112,18 @@ static void nc_update_host(char *host, char *curip)
 
     /* set up the authentication url */
     if (use_ssl)
-        dyndns_curlbuf_cpy(url, "https", sizeof url);
+        DDCB_CPY(url, "https");
     else
-        dyndns_curlbuf_cpy(url, "http", sizeof url);
-    dyndns_curlbuf_cat(url, "://dynamicdns.park-your-domain.com/update?", sizeof url);
-
-    dyndns_curlbuf_cat(url, "host=", sizeof url);
-    dyndns_curlbuf_cat(url, hostname, sizeof url);
-
-    dyndns_curlbuf_cat(url, "&domain=", sizeof url);
-    dyndns_curlbuf_cat(url, domain, sizeof url);
-
-    dyndns_curlbuf_cat(url, "&password=", sizeof url);
-    dyndns_curlbuf_cat(url, namecheap_conf.password, sizeof url);
-
-    dyndns_curlbuf_cat(url, "&ip=", sizeof url);
-    dyndns_curlbuf_cat(url, curip, sizeof url);
+        DDCB_CPY(url, "http");
+    DDCB_CAT(url, "://dynamicdns.park-your-domain.com/update?");
+    DDCB_CAT(url, "host=");
+    DDCB_CAT(url, hostname);
+    DDCB_CAT(url, "&domain=");
+    DDCB_CAT(url, domain);
+    DDCB_CAT(url, "&password=");
+    DDCB_CAT(url, namecheap_conf.password);
+    DDCB_CAT(url, "&ip=");
+    DDCB_CAT(url, curip);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);

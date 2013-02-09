@@ -150,21 +150,17 @@ static void he_update_tunid(char *tunid, char *curip)
 
     /* set up the authentication url */
     if (use_ssl)
-        dyndns_curlbuf_cpy(url, "https", sizeof url);
+        DDCB_CPY(url, "https");
     else
-        dyndns_curlbuf_cpy(url, "http", sizeof url);
-
-    dyndns_curlbuf_cat(url, "://ipv4.tunnelbroker.net/ipv4_end.php?ip=", sizeof url);
-    dyndns_curlbuf_cat(url, curip, sizeof url);
-
-    dyndns_curlbuf_cat(url, "&pass=", sizeof url);
-    dyndns_curlbuf_cat(url, he_conf.passhash, sizeof url);
-
-    dyndns_curlbuf_cat(url, "&apikey=", sizeof url);
-    dyndns_curlbuf_cat(url, he_conf.userid, sizeof url);
-
-    dyndns_curlbuf_cat(url, "&tid=", sizeof url);
-    dyndns_curlbuf_cat(url, tunid, sizeof url);
+        DDCB_CPY(url, "http");
+    DDCB_CAT(url, "://ipv4.tunnelbroker.net/ipv4_end.php?ip=");
+    DDCB_CAT(url, curip);
+    DDCB_CAT(url, "&pass=");
+    DDCB_CAT(url, he_conf.passhash);
+    DDCB_CAT(url, "&apikey=");
+    DDCB_CAT(url, he_conf.userid);
+    DDCB_CAT(url, "&tid=");
+    DDCB_CAT(url, tunid);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
