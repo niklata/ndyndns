@@ -1,4 +1,4 @@
-/* (c) 2005-2012 Nicholas J. Kain <njkain at gmail dot com>
+/* (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -55,6 +56,7 @@
 #include "dns_he.h"
 
 int use_ssl = 1;
+bool dyndns_verify_ssl = true;
 
 static char ifname[IFNAMSIZ] = "ppp0";
 static char pidfile[MAX_PATH_LENGTH] = "/var/run/ndyndns.pid";
@@ -237,13 +239,14 @@ int main(int argc, char** argv)
             {"user", 1, 0, 'u'},
             {"group", 1, 0, 'g'},
             {"interface", 1, 0, 'i'},
+            {"no-ssl-verify", 0, 0, 'V'},
             {"remote", 0, 0, 'r'},
             {"help", 0, 0, 'h'},
             {"version", 0, 0, 'v'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "rdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
+        c = getopt_long(argc, argv, "Vrdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -251,7 +254,7 @@ int main(int argc, char** argv)
             case 'h':
                 printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", PACKAGE_VERSION);
                 printf(
-                    "Copyright (c) 2005-2012 Nicholas J. Kain\n"
+                    "Copyright (c) 2005-2013 Nicholas J. Kain\n"
                     "Usage: ndyndns [OPTIONS]\n"
                     "  -d, --detach                detach from TTY and daemonize\n"
                     "  -n, --nodetach              stay attached to TTY\n"
@@ -266,6 +269,8 @@ int main(int argc, char** argv)
                     "  -u, --user                  user name that ndyndns should run as\n"
                     "  -g, --group                 group name that ndyndns should run as\n"
                     "  -i, --interface             interface ip to check (default: ppp0)\n"
+                    "  -V, --no-ssl-verify         don't confirm that SSL peer has a non-expired\n"
+                    "                              CA-signed certificate\n"
                     "  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
                     "  -h, --help                  print this help and exit\n"
                     "  -v, --version               print version and license info and exit\n");
@@ -274,7 +279,7 @@ int main(int argc, char** argv)
 
             case 'v':
                 printf(
-                    "ndyndns %s Copyright (c) 2005-2012 Nicholas J. Kain\n"
+                    "ndyndns %s Copyright (c) 2005-2013 Nicholas J. Kain\n"
                     "This program is free software: you can redistribute it and/or modify\n"
                     "it under the terms of the GNU General Public License as published by\n"
                     "the Free Software Foundation, either version 3 of the License, or\n"
@@ -348,6 +353,10 @@ int main(int argc, char** argv)
 
             case 'i':
                 cfg_set_interface(optarg);
+                break;
+
+            case 'V':
+                dyndns_verify_ssl = false;
                 break;
         }
     }

@@ -356,7 +356,7 @@ static void dyndns_update_ip(char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    ret = dyndns_curl_send(url, &data, unpwd, true, use_ssl);
+    ret = dyndns_curl_send(url, &data, unpwd);
     if (ret > 0) {
         if (ret == 2) { /* Permanent error. */
             log_line("[%s] had a non-recoverable HTTP error.  Removing from updates.  Restart the daemon to re-enable updates.", t->str);

@@ -104,7 +104,7 @@ static void he_update_host(char *host, char *password, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    if (!dyndns_curl_send(url, &data, NULL, false, use_ssl)) {
+    if (!dyndns_curl_send(url, &data, NULL)) {
         // "good x.x.x.x" is success
         log_line("response returned: [%s]", data.buf);
         if (strstr(data.buf, "good")) {
@@ -167,7 +167,7 @@ static void he_update_tunid(char *tunid, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    if (!dyndns_curl_send(url, &data, NULL, false, use_ssl)) {
+    if (!dyndns_curl_send(url, &data, NULL)) {
         // "+OK: Tunnel endpoint updated to: x.x.x.x" is success
         log_line("response returned: [%s]", data.buf);
         if (strstr(data.buf, "+OK")) {

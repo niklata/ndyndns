@@ -130,7 +130,7 @@ static void nc_update_host(char *host, char *curip)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    if (!dyndns_curl_send(url, &data, NULL, false, use_ssl)) {
+    if (!dyndns_curl_send(url, &data, NULL)) {
         log_line("response returned: [%s]", data.buf);
         if (strstr(data.buf, "<ErrCount>0")) {
             log_line("%s: [good] - Update successful.", host);

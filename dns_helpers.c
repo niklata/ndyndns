@@ -205,8 +205,8 @@ void dyndns_curlbuf_cat(char *dst, char *src, size_t size)
         suicide("%s: would overflow a fixed buffer", __func__);
 }
 
-int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd, bool do_auth,
-                     bool use_ssl)
+extern bool dyndns_verify_ssl;
+int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd)
 {
     CURL *h;
     CURLcode ret;
@@ -226,11 +226,11 @@ int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd, bool do_auth,
     curl_easy_setopt(h, CURLOPT_WRITEDATA, data);
     curl_easy_setopt(h, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
     curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-    if (unpwd)
+    if (unpwd) {
         curl_easy_setopt(h, CURLOPT_USERPWD, unpwd);
-    if (do_auth)
-        curl_easy_setopt(h, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    if (use_ssl)
+        curl_easy_setopt(h, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+    }
+    if (!dyndns_verify_ssl)
         curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, (long)0);
     ret = curl_easy_perform(h);
     curl_easy_cleanup(h);
