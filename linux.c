@@ -71,7 +71,7 @@ outfd:
 out:
     return ret;
 }
-
+#if 0
 #ifdef HAVE_LINUX_SECCOMP_H
 int enforce_seccomp(void)
 {
@@ -136,5 +136,6 @@ int enforce_seccomp(void)
 {
     return 1;
 }
+#endif
 #endif
 

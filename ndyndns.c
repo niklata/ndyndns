@@ -379,10 +379,10 @@ int main(int argc, char** argv)
     /* Cover our tracks... */
     wipe_chroot();
     memset(pidfile, '\0', sizeof pidfile);
-
+#if 0
     if (enforce_seccomp())
         log_line("seccomp filter cannot be installed");
-
+#endif
     curl_global_init(CURL_GLOBAL_ALL);
     use_ssl = check_ssl();
 
