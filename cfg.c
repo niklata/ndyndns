@@ -1,6 +1,6 @@
 /* cfg.c - configuration file functions
  *
- * (C) 2005-2011 Nicholas J. Kain <njkain at gmail dot com>
+ * (C) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
