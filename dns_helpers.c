@@ -24,6 +24,7 @@
 #include <curl/curl.h>
 
 #include "dns_helpers.h"
+#include "config.h"
 #include "defines.h"
 #include "log.h"
 #include "strl.h"
@@ -190,18 +191,31 @@ static int update_ip_curl_errcheck(int val, char *cerr)
     return 0;
 }
 
-void update_ip_buf_error(size_t len, size_t size)
+void dyndns_curlbuf_cpy(char *dst, char *src, size_t size)
 {
-    if (len > size)
-        suicide("%s: config file would overflow a fixed buffer", __func__);
+    size_t len = strlcpy(dst, src, size);
+    if (len >= size)
+        suicide("%s: would overflow a fixed buffer", __func__);
 }
 
-int dyndns_curl_send(char *url, conn_data_t *data, char *useragent,
-                     char *unpwd, bool do_auth, bool use_ssl)
+void dyndns_curlbuf_cat(char *dst, char *src, size_t size)
+{
+    size_t len = strlcat(dst, src, size);
+    if (len >= size)
+        suicide("%s: would overflow a fixed buffer", __func__);
+}
+
+int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd, bool do_auth,
+                     bool use_ssl)
 {
     CURL *h;
     CURLcode ret;
+    char useragent[64];
     char curlerror[CURL_ERROR_SIZE];
+
+    /* set up useragent */
+    dyndns_curlbuf_cpy(useragent, "ndyndns/", sizeof useragent);
+    dyndns_curlbuf_cat(useragent, PACKAGE_VERSION, sizeof useragent);
 
     log_line("update url: [%s]", url);
     h = curl_easy_init();

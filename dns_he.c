@@ -77,52 +77,34 @@ static void modify_he_hostdate_in_conf(he_conf_t *conf, char *host, time_t time)
 
 static void he_update_host(char *host, char *password, char *curip)
 {
-    int len;
     char url[MAX_BUF];
-    char useragent[64];
     conn_data_t data;
 
     if (!host || !password || !curip)
         return;
 
     /* set up the authentication url */
-    if (use_ssl) {
-        len = strlcpy(url, "https://", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    } else {
-        len = strlcpy(url, "http://", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    }
+    if (use_ssl)
+        dyndns_curlbuf_cpy(url, "https://", sizeof url);
+    else
+        dyndns_curlbuf_cpy(url, "http://", sizeof url);
 
-    len = strlcat(url, host, sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, ":", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, password, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, host, sizeof url);
+    dyndns_curlbuf_cat(url, ":", sizeof url);
+    dyndns_curlbuf_cat(url, password, sizeof url);
 
-    len = strlcat(url, "@dyn.dns.he.net/nic/update?hostname=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, host, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "@dyn.dns.he.net/nic/update?hostname=", sizeof url);
+    dyndns_curlbuf_cat(url, host, sizeof url);
 
-    len = strlcat(url, "&myip=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, curip, sizeof url);
-    update_ip_buf_error(len, sizeof url);
-
-    /* set up useragent */
-    len = strlcpy(useragent, "ndyndns/", sizeof useragent);
-    update_ip_buf_error(len, sizeof useragent);
-    len = strlcat(useragent, PACKAGE_VERSION, sizeof useragent);
-    update_ip_buf_error(len, sizeof useragent);
+    dyndns_curlbuf_cat(url, "&myip=", sizeof url);
+    dyndns_curlbuf_cat(url, curip, sizeof url);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    if (!dyndns_curl_send(url, &data, useragent, NULL, false, use_ssl)) {
+    if (!dyndns_curl_send(url, &data, NULL, false, use_ssl)) {
         // "good x.x.x.x" is success
         log_line("response returned: [%s]", data.buf);
         if (strstr(data.buf, "good")) {
@@ -160,55 +142,36 @@ void he_dns_work(char *curip)
 
 static void he_update_tunid(char *tunid, char *curip)
 {
-    int len;
     char url[MAX_BUF];
-    char useragent[64];
     conn_data_t data;
 
     if (!tunid || !curip)
         return;
 
     /* set up the authentication url */
-    if (use_ssl) {
-        len = strlcpy(url, "https", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    } else {
-        len = strlcpy(url, "http", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    }
+    if (use_ssl)
+        dyndns_curlbuf_cpy(url, "https", sizeof url);
+    else
+        dyndns_curlbuf_cpy(url, "http", sizeof url);
 
-    len = strlcat(url, "://ipv4.tunnelbroker.net/ipv4_end.php?ip=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, curip, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "://ipv4.tunnelbroker.net/ipv4_end.php?ip=", sizeof url);
+    dyndns_curlbuf_cat(url, curip, sizeof url);
 
-    len = strlcat(url, "&pass=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, he_conf.passhash, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "&pass=", sizeof url);
+    dyndns_curlbuf_cat(url, he_conf.passhash, sizeof url);
 
-    len = strlcat(url, "&apikey=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, he_conf.userid, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "&apikey=", sizeof url);
+    dyndns_curlbuf_cat(url, he_conf.userid, sizeof url);
 
-    len = strlcat(url, "&tid=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, tunid, sizeof url);
-    update_ip_buf_error(len, sizeof url);
-
-    /* set up useragent */
-    len = strlcpy(useragent, "ndyndns/", sizeof useragent);
-    update_ip_buf_error(len, sizeof useragent);
-    len = strlcat(useragent, PACKAGE_VERSION, sizeof useragent);
-    update_ip_buf_error(len, sizeof useragent);
+    dyndns_curlbuf_cat(url, "&tid=", sizeof url);
+    dyndns_curlbuf_cat(url, tunid, sizeof url);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    if (!dyndns_curl_send(url, &data, useragent, NULL, false, use_ssl)) {
+    if (!dyndns_curl_send(url, &data, NULL, false, use_ssl)) {
         // "+OK: Tunnel endpoint updated to: x.x.x.x" is success
         log_line("response returned: [%s]", data.buf);
         if (strstr(data.buf, "+OK")) {

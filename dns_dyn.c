@@ -284,11 +284,9 @@ static int postprocess_update(char *host, char *curip, return_codes retcode)
 
 static void dyndns_update_ip(char *curip)
 {
-    int len, runonce = 0;
+    int runonce = 0;
     char url[MAX_BUF];
-    char tbuf[32];
     char unpwd[256];
-    char useragent[64];
     strlist_t *t;
     return_code_list_t *u;
     int ret;
@@ -298,126 +296,67 @@ static void dyndns_update_ip(char *curip)
         return;
 
     /* set up the authentication url */
-    if (use_ssl) {
-        len = strlcpy(url,
-                      "https://members.dyndns.org/nic/update?", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    } else {
-        len = strlcpy(url,
-                      "http://members.dyndns.org/nic/update?", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    }
+    if (use_ssl)
+        dyndns_curlbuf_cpy(url, "https", sizeof url);
+    else
+        dyndns_curlbuf_cpy(url, "http", sizeof url);
+    dyndns_curlbuf_cat(url, "://members.dyndns.org/nic/update?", sizeof url);
 
+    dyndns_curlbuf_cat(url, "system=", sizeof url);
     switch (dyndns_conf.system) {
-        case SYSTEM_STATDNS:
-            strlcpy(tbuf, "statdns", sizeof tbuf);
-            break;
-        case SYSTEM_CUSTOMDNS:
-            strlcpy(tbuf, "custom", sizeof tbuf);
-            break;
-        default:
-            strlcpy(tbuf, "dyndns", sizeof tbuf);
-            break;
+    case SYSTEM_STATDNS: dyndns_curlbuf_cat(url, "statdns", sizeof url); break;
+    case SYSTEM_CUSTOMDNS: dyndns_curlbuf_cat(url, "custom", sizeof url); break;
+    default: dyndns_curlbuf_cat(url, "dyndns", sizeof url); break;
     }
-    len = strlcat(url, "system=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, tbuf, sizeof url);
-    update_ip_buf_error(len, sizeof url);
 
-    len = strlcat(url, "&hostname=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "&hostname=", sizeof url);
     for (t = dd_update_list, runonce = 0; t != NULL; t = t->next) {
-        if (runonce) {
-            len = strlcat(url, ",", sizeof url);
-            update_ip_buf_error(len, sizeof url);
-        }
+        if (runonce)
+            dyndns_curlbuf_cat(url, ",", sizeof url);
         runonce = 1;
-        len = strlcat(url, t->str, sizeof url);
-        update_ip_buf_error(len, sizeof url);
+        dyndns_curlbuf_cat(url, t->str, sizeof url);
     }
 
-    len = strlcat(url, "&myip=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, curip, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "&myip=", sizeof url);
+    dyndns_curlbuf_cat(url, curip, sizeof url);
 
+    dyndns_curlbuf_cat(url, "&wildcard=", sizeof url);
     switch (dyndns_conf.wildcard) {
-        case WC_YES:
-            strlcpy(tbuf, "ON", sizeof tbuf);
-            break;
-        case WC_NO:
-            strlcpy(tbuf, "OFF", sizeof tbuf);
-            break;
-        default:
-            strlcpy(tbuf, "NOCHG", sizeof tbuf);
-            break;
-    }
-    len = strlcat(url, "&wildcard=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, tbuf, sizeof url);
-    update_ip_buf_error(len, sizeof url);
-
-    len = strlcat(url, "&mx=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    if (dyndns_conf.mx == NULL) {
-        len = strlcat(url, "NOCHG", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    } else {
-        len = strlcat(url, dyndns_conf.mx, sizeof url);
-        update_ip_buf_error(len, sizeof url);
+    case WC_YES: dyndns_curlbuf_cat(url, "ON", sizeof url); break;
+    case WC_NO: dyndns_curlbuf_cat(url, "OFF", sizeof url); break;
+    default: dyndns_curlbuf_cat(url, "NOCHG", sizeof url); break;
     }
 
+    dyndns_curlbuf_cat(url, "&mx=", sizeof url);
+    if (!dyndns_conf.mx)
+        dyndns_curlbuf_cat(url, "NOCHG", sizeof url);
+    else
+        dyndns_curlbuf_cat(url, dyndns_conf.mx, sizeof url);
+
+    dyndns_curlbuf_cat(url, "&backmx=", sizeof url);
     switch (dyndns_conf.backmx) {
-        case BMX_YES:
-            strlcpy(tbuf, "YES", sizeof tbuf);
-            break;
-        case BMX_NO:
-            strlcpy(tbuf, "NO", sizeof tbuf);
-            break;
-        default:
-            strlcpy(tbuf, "NOCHG", sizeof tbuf);
-            break;
+    case BMX_YES: dyndns_curlbuf_cat(url, "YES", sizeof url); break;
+    case BMX_NO: dyndns_curlbuf_cat(url, "NO", sizeof url); break;
+    default: dyndns_curlbuf_cat(url, "NOCHG", sizeof url); break;
     }
-    len = strlcat(url, "&backmx=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, tbuf, sizeof url);
-    update_ip_buf_error(len, sizeof url);
 
+    dyndns_curlbuf_cat(url, "&offline=", sizeof url);
     switch (dyndns_conf.offline) {
-        case OFFLINE_YES:
-            strlcpy(tbuf, "YES", sizeof tbuf);
-            break;
-        default:
-            strlcpy(tbuf, "NO", sizeof tbuf);
-            break;
+    case OFFLINE_YES: dyndns_curlbuf_cat(url, "YES", sizeof url); break;
+    default: dyndns_curlbuf_cat(url, "NO", sizeof url); break;
     }
-    len = strlcat(url, "&offline=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, tbuf, sizeof url);
-    update_ip_buf_error(len, sizeof url);
-
 
     /* set up username:password pair */
-    len = strlcpy(unpwd, dyndns_conf.username, sizeof unpwd);
-    update_ip_buf_error(len, sizeof unpwd);
-    len = strlcat(unpwd, ":", sizeof unpwd);
-    update_ip_buf_error(len, sizeof unpwd);
-    len = strlcat(unpwd, dyndns_conf.password, sizeof unpwd);
-    update_ip_buf_error(len, sizeof unpwd);
-
-
-    /* set up useragent */
-    len = strlcpy(useragent, "ndyndns/", sizeof useragent);
-    update_ip_buf_error(len, sizeof useragent);
-    len = strlcat(useragent, PACKAGE_VERSION, sizeof useragent);
-    update_ip_buf_error(len, sizeof useragent);
+    dyndns_curlbuf_cpy(unpwd, dyndns_conf.username, sizeof unpwd);
+    dyndns_curlbuf_cat(unpwd, ":", sizeof unpwd);
+    dyndns_curlbuf_cat(unpwd, dyndns_conf.password, sizeof unpwd);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    ret = dyndns_curl_send(url, &data, useragent, unpwd, true, use_ssl);
+    ret = dyndns_curl_send(url, &data, unpwd, true, use_ssl);
     if (ret > 0) {
         if (ret == 2) { /* Permanent error. */
             log_line("[%s] had a non-recoverable HTTP error.  Removing from updates.  Restart the daemon to re-enable updates.", t->str);

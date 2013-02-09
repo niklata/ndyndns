@@ -79,9 +79,8 @@ static void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host,
 
 static void nc_update_host(char *host, char *curip)
 {
-    int len, hostname_size = 0, domain_size = 0;
+    int hostname_size = 0, domain_size = 0;
     char url[MAX_BUF];
-    char useragent[64];
     char *hostname = NULL, *domain = NULL, *p;
     conn_data_t data;
 
@@ -112,48 +111,30 @@ static void nc_update_host(char *host, char *curip)
         return;
 
     /* set up the authentication url */
-    if (use_ssl) {
-        len = strlcpy(url, "https", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    } else {
-        len = strlcpy(url, "http", sizeof url);
-        update_ip_buf_error(len, sizeof url);
-    }
-    len = strlcat(url, "://dynamicdns.park-your-domain.com/update?", sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    if (use_ssl)
+        dyndns_curlbuf_cpy(url, "https", sizeof url);
+    else
+        dyndns_curlbuf_cpy(url, "http", sizeof url);
+    dyndns_curlbuf_cat(url, "://dynamicdns.park-your-domain.com/update?", sizeof url);
 
-    len = strlcat(url, "host=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, hostname, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "host=", sizeof url);
+    dyndns_curlbuf_cat(url, hostname, sizeof url);
 
-    len = strlcat(url, "&domain=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, domain, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "&domain=", sizeof url);
+    dyndns_curlbuf_cat(url, domain, sizeof url);
 
-    len = strlcat(url, "&password=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, namecheap_conf.password, sizeof url);
-    update_ip_buf_error(len, sizeof url);
+    dyndns_curlbuf_cat(url, "&password=", sizeof url);
+    dyndns_curlbuf_cat(url, namecheap_conf.password, sizeof url);
 
-    len = strlcat(url, "&ip=", sizeof url);
-    update_ip_buf_error(len, sizeof url);
-    len = strlcat(url, curip, sizeof url);
-    update_ip_buf_error(len, sizeof url);
-
-    /* set up useragent */
-    len = strlcpy(useragent, "ndyndns/", sizeof useragent);
-    update_ip_buf_error(len, sizeof useragent);
-    len = strlcat(useragent, PACKAGE_VERSION, sizeof useragent);
-    update_ip_buf_error(len, sizeof useragent);
+    dyndns_curlbuf_cat(url, "&ip=", sizeof url);
+    dyndns_curlbuf_cat(url, curip, sizeof url);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    if (!dyndns_curl_send(url, &data, useragent, NULL, false, use_ssl)) {
+    if (!dyndns_curl_send(url, &data, NULL, false, use_ssl)) {
         log_line("response returned: [%s]", data.buf);
         if (strstr(data.buf, "<ErrCount>0")) {
             log_line("%s: [good] - Update successful.", host);

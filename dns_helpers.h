@@ -41,8 +41,9 @@ typedef enum {
 void write_dnsdate(char *host, time_t date);
 void write_dnsip(char *host, char *ip);
 void write_dnserr(char *host, return_codes code);
-void update_ip_buf_error(size_t len, size_t size);
-int dyndns_curl_send(char *url, conn_data_t *data, char *useragent,
-                     char *unpwd, bool do_auth, bool use_ssl);
+void dyndns_curlbuf_cpy(char *dst, char *src, size_t size);
+void dyndns_curlbuf_cat(char *dst, char *src, size_t size);
+int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd, bool do_auth,
+                     bool use_ssl);
 
 #endif

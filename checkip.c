@@ -55,8 +55,8 @@ char *query_curip(void)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    if (dyndns_curl_send("http://checkip.dyndns.com", &data, "ndyndns",
-                         NULL, true, false)) {
+    if (dyndns_curl_send("http://checkip.dyndns.com", &data, NULL,
+                         true, false)) {
         log_line("Failed to get IP from remote host.");
         goto out;
     }
