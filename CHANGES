@@ -1,3 +1,22 @@
+2.2:
+
+* Change layout of the chroot. THIS REQUIRES USER INTERVENTION. It's safer on
+  some systems to have the chroot root directory be unwritable by the chrooted
+  user. Please refer to UPGRADING for instructions (including an easy-to-modify
+  shell script recipe).
+* Support Hurricane Electric dynamic DNS and IPv6 tunnel updates.
+* Don't kill the daemon on cURL errors. It's disruptive now that multiple
+  services can be updated from a single daemon.
+* Enable SSL certificate CA signature verification by default.
+* Allow HTTP authentication methods other than plaintext. These are all
+  irrelevant when SSL is used (which is necessary for real security), but
+  there's no real reason to disallow other methods.
+* Disable cURL protocols other than HTTP or HTTPS.
+* Use POSIX clock_gettime(CLOCK_MONOTONIC) rather than time().
+* Use nanosleep() instead of sleep().
+* Lots of cosmetic reorganization and cleanups for maintainability.
+* Change license to 2-clause BSD.
+
 2.1:
 
 * Fix a bug in the configuration file parser that could lead to the data
@@ -17,3 +36,4 @@
 * Support parsing of configuration files passed in through standard input.
 * Parse configuration files before forking into the background as a daemon.
 * Change license to GPL3.
+
