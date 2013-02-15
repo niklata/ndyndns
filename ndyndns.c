@@ -1,17 +1,29 @@
-/* (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+/* ndyndns.c
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * All rights reserved.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * - Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <unistd.h>
@@ -252,46 +264,52 @@ int main(int argc, char** argv)
         switch (c) {
 
             case 'h':
-                printf("ndyndns %s, dyndns update client.  Licensed under GNU GPL.\n", PACKAGE_VERSION);
                 printf(
-                    "Copyright (c) 2005-2013 Nicholas J. Kain\n"
-                    "Usage: ndyndns [OPTIONS]\n"
-                    "  -d, --detach                detach from TTY and daemonize\n"
-                    "  -n, --nodetach              stay attached to TTY\n"
-                    "  -q, --quiet                 don't print to std(out|err) or log\n");
-                printf(
-                    "  -c, --chroot                path where ndyndns should chroot\n"
-                    "  -x, --disable-chroot        do not actually chroot (not recommended)\n"
-                    "  -f, --file                  configuration file\n"
-                    "  -F, --cfg-stdin             read configuration file from standard input\n"
-                    "  -p, --pidfile               pidfile path\n");
-                printf(
-                    "  -u, --user                  user name that ndyndns should run as\n"
-                    "  -g, --group                 group name that ndyndns should run as\n"
-                    "  -i, --interface             interface ip to check (default: ppp0)\n"
-                    "  -V, --no-ssl-verify         don't confirm that SSL peer has a non-expired\n"
-                    "                              CA-signed certificate\n"
-                    "  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
-                    "  -h, --help                  print this help and exit\n"
-                    "  -v, --version               print version and license info and exit\n");
+"ndyndns " PACKAGE_VERSION ", dyndns update client.  Licensed under 2-clause BSD.\n"
+"Copyright (c) 2005-2013 Nicholas J. Kain\n"
+"Usage: ndyndns [OPTIONS]\n"
+"  -d, --detach                detach from TTY and daemonize\n"
+"  -n, --nodetach              stay attached to TTY\n"
+"  -q, --quiet                 don't print to std(out|err) or log\n"
+"  -c, --chroot                path where ndyndns should chroot\n"
+"  -x, --disable-chroot        do not actually chroot (not recommended)\n"
+"  -f, --file                  configuration file\n"
+"  -F, --cfg-stdin             read configuration file from standard input\n"
+"  -p, --pidfile               pidfile path\n"
+"  -u, --user                  user name that ndyndns should run as\n"
+"  -g, --group                 group name that ndyndns should run as\n"
+"  -i, --interface             interface ip to check (default: ppp0)\n"
+"  -V, --no-ssl-verify         don't confirm that SSL peer has a non-expired\n"
+"                              CA-signed certificate\n"
+"  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
+"  -h, --help                  print this help and exit\n"
+"  -v, --version               print version and license info and exit\n"
+                );
                 exit(EXIT_FAILURE);
                 break;
 
             case 'v':
-                printf(
-                    "ndyndns %s Copyright (c) 2005-2013 Nicholas J. Kain\n"
-                    "This program is free software: you can redistribute it and/or modify\n"
-                    "it under the terms of the GNU General Public License as published by\n"
-                    "the Free Software Foundation, either version 3 of the License, or\n"
-                    "(at your option) any later version.\n\n", PACKAGE_VERSION);
-                printf(
-                    "This program is distributed in the hope that it will be useful,\n"
-                    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-                    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-                    "GNU General Public License for more details.\n\n"
-
-                    "You should have received a copy of the GNU General Public License\n"
-                    "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n");
+                printf("ndyndns %s, dhcp client.\n", PACKAGE_VERSION);
+                printf("Copyright (c) 2005-2013 Nicholas J. Kain\n"
+                       "All rights reserved.\n\n"
+                       "Redistribution and use in source and binary forms, with or without\n"
+                       "modification, are permitted provided that the following conditions are met:\n\n"
+                       "- Redistributions of source code must retain the above copyright notice,\n"
+                       "  this list of conditions and the following disclaimer.\n"
+                       "- Redistributions in binary form must reproduce the above copyright notice,\n"
+                       "  this list of conditions and the following disclaimer in the documentation\n"
+                       "  and/or other materials provided with the distribution.\n\n"
+                       "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n"
+                       "AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\n"
+                       "IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE\n"
+                       "ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE\n"
+                       "LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n"
+                       "CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n"
+                       "SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n"
+                       "INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n"
+                       "CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n"
+                       "ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n"
+                       "POSSIBILITY OF SUCH DAMAGE.\n");
                 exit(EXIT_FAILURE);
                 break;
 
