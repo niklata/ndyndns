@@ -1,6 +1,6 @@
-If you are upgrading from ndyndns 2.1 to a later version, then it will be
-necessary to update your chroot directory.  The following assumes your ndyndns
-daemon runs as user:group ndyndns:ndyndns.
+If you are upgrading from a version before 2.2, then it will be necessary to
+update your chroot directory.  The following assumes your ndyndns daemon runs
+as user:group ndyndns:ndyndns.
 
 chown root.root $CHROOTDIR
 chmod 755 $CHROOTDIR
