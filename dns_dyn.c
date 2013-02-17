@@ -372,7 +372,8 @@ static void dyndns_update_ip(char *curip)
     if (ret > 0) {
         if (ret == 2) { /* Permanent error. */
             log_line("[%s] had a non-recoverable HTTP error.  Removing from updates.  Restart the daemon to re-enable updates.", t->str);
-            remove_host_from_hostdata_list(&dyndns_conf.hostlist, t->str);
+            for (t = dd_update_list, runonce = 0; t != NULL; t = t->next)
+                remove_host_from_hostdata_list(&dyndns_conf.hostlist, t->str);
         }
         goto out;
     }
