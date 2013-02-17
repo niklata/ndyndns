@@ -68,7 +68,6 @@
 #include "dns_he.h"
 
 int use_ssl = 1;
-bool dyndns_verify_ssl = true;
 
 static char ifname[IFNAMSIZ] = "ppp0";
 static char pidfile[MAX_PATH_LENGTH] = "/var/run/ndyndns.pid";
@@ -251,14 +250,13 @@ int main(int argc, char** argv)
             {"user", 1, 0, 'u'},
             {"group", 1, 0, 'g'},
             {"interface", 1, 0, 'i'},
-            {"no-ssl-verify", 0, 0, 'V'},
             {"remote", 0, 0, 'r'},
             {"help", 0, 0, 'h'},
             {"version", 0, 0, 'v'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "Vrdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
+        c = getopt_long(argc, argv, "rdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -279,8 +277,6 @@ int main(int argc, char** argv)
 "  -u, --user                  user name that ndyndns should run as\n"
 "  -g, --group                 group name that ndyndns should run as\n"
 "  -i, --interface             interface ip to check (default: ppp0)\n"
-"  -V, --no-ssl-verify         don't confirm that SSL peer has a non-expired\n"
-"                              CA-signed certificate\n"
 "  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
 "  -h, --help                  print this help and exit\n"
 "  -v, --version               print version and license info and exit\n"
@@ -371,10 +367,6 @@ int main(int argc, char** argv)
 
             case 'i':
                 cfg_set_interface(optarg);
-                break;
-
-            case 'V':
-                dyndns_verify_ssl = false;
                 break;
         }
     }
