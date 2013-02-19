@@ -158,6 +158,8 @@ Taylor R. Campbell for spotting a bug in the signal handling code, and
 suggesting the implementation of a facility to read configuration files
 from standard input.
 
+Seth Fulton for spotting a bug in subdomain updates for Namecheap ddns.
+
 CONTACT
 =======
 

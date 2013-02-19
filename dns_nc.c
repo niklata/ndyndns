@@ -91,36 +91,43 @@ static void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host,
 
 static void nc_update_host(char *host, char *curip)
 {
-    int hostname_size = 0, domain_size = 0;
+    int hostname_size = 0, domain_size = 0, dotc = 0;
     char url[MAX_BUF];
-    char *hostname = NULL, *domain = NULL, *p;
+    char *hostname = NULL, *domain = NULL;
+    size_t ic;
     conn_data_t data;
 
     if (!host || !curip)
         return;
 
-    p = strrchr(host, '.');
-    if (!p)
-        return;
-    p = strrchr(p+1, '.');
-    if (!p) {
-        domain_size = strlen(host) + 1;
+    ic = strlen(host);
+    strlcpy(url, host, sizeof url);
+    for (; ic > 0; --ic) {
+        if (url[ic] == '.') {
+            ++dotc;
+            if (dotc == 2) {
+                // This is the . before the domain name.
+                domain_size = strlen(url+ic+1) + 1;
+                domain = xmalloc(domain_size);
+                strlcpy(domain, url+ic+1, domain_size);
+                url[ic] = '\0';
+            }
+        }
+    }
+    if (dotc >= 2) {
+        hostname_size = strlen(url) + 1;
+        hostname = xmalloc(hostname_size);
+        strlcpy(hostname, url, hostname_size);
+    } else {
+        domain_size = strlen(url) + 1;
+        domain = xmalloc(domain_size);
+        strlcpy(domain, url, domain_size);
         hostname_size = 2;
-        hostname = alloca(hostname_size);
+        hostname = xmalloc(hostname_size);
         hostname[0] = '@';
         hostname[1] = '\0';
-        domain = host;
-    } else {
-        hostname_size = p - host + 1;
-        domain_size = hostname + strlen(host) - p;
-        hostname = alloca(hostname_size);
-        domain = alloca(domain_size);
-        strlcpy(hostname, host, hostname_size);
-        strlcpy(domain, p+1, domain_size);
     }
-
-    if (!hostname || !domain)
-        return;
+    memset(url, 0, sizeof url);
 
     /* set up the authentication url */
     if (use_ssl)
@@ -155,6 +162,8 @@ static void nc_update_host(char *host, char *curip)
         }
     }
     free(data.buf);
+    free(hostname);
+    free(domain);
 }
 
 void nc_work(char *curip)
