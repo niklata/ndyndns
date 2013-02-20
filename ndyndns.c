@@ -38,6 +38,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <netdb.h>
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
@@ -373,6 +374,8 @@ int main(int argc, char** argv)
 
     if (!read_cfg)
         suicide("FATAL - no configuration file, exiting.");
+
+    (void) gethostbyname("localhost");
 
     if (chroot_enabled() && getuid())
         suicide("FATAL - I need root for chroot!");
