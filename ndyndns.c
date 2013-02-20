@@ -375,7 +375,13 @@ int main(int argc, char** argv)
     if (!read_cfg)
         suicide("FATAL - no configuration file, exiting.");
 
-    (void) gethostbyname("localhost");
+    /* This is tricky -- we *must* use a name that will not be in hosts,
+     * otherwise, at least with eglibc, the resolve and NSS libraries will not
+     * be properly loaded.  The '.invalid' label is RFC-guaranteed to never
+     * be installed into the root zone, so we use that to avoid harassing
+     * DNS servers at start.
+     */
+    (void) gethostbyname("fail.invalid");
 
     if (chroot_enabled() && getuid())
         suicide("FATAL - I need root for chroot!");
