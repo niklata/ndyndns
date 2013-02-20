@@ -5,9 +5,10 @@
   user. Please refer to UPGRADING for instructions (including an easy-to-modify
   shell script recipe).
 * Support Hurricane Electric dynamic DNS and IPv6 tunnel updates.
+* Fix a bug that prevented Namecheap DDNS entries that included a subdomain
+  from being updated.
 * Don't kill the daemon on cURL errors. It's disruptive now that multiple
   services can be updated from a single daemon.
-* Enable SSL certificate CA signature verification by default.
 * Allow HTTP authentication methods other than plaintext. These are all
   irrelevant when SSL is used (which is necessary for real security), but
   there's no real reason to disallow other methods.
