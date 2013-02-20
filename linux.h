@@ -28,6 +28,5 @@
 #ifndef NJK_IFCHD_LINUX_H_
 #define NJK_IFCHD_LINUX_H_ 1
 char *get_interface_ip(char *ifname);
-int enforce_seccomp(void);
 #endif
 

@@ -3,9 +3,6 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the <linux/seccomp.h> header file. */
-#undef HAVE_LINUX_SECCOMP_H
-
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
