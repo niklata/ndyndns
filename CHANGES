@@ -7,6 +7,10 @@
 * Support Hurricane Electric dynamic DNS and IPv6 tunnel updates.
 * Fix a bug that prevented Namecheap DDNS entries that included a subdomain
   from being updated.
+* Call gethostbyname() before going into the chroot to force libcs to load
+  any dependent sublibraries while those libraries are accessible.  This
+  change should make it much easier to create and maintain a suitable
+  chroot environment.
 * Don't kill the daemon on cURL errors. It's disruptive now that multiple
   services can be updated from a single daemon.
 * Allow HTTP authentication methods other than plaintext. These are all

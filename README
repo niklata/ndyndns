@@ -6,7 +6,7 @@ Licensed under BSD.
 REQUIREMENTS
 ============
 
-Linux-based system (2.6.x/glibc 2.x tested)
+Linux-based system (2.6.x/3.x/glibc 2.x tested)
 BSD-based system (OpenBSD 3.8 tested)
 MacOS (10.5 tested)
 
@@ -67,6 +67,15 @@ username = test
 password = test
 hostname = test.dyndns.org, test.ath.cx, test.dnsalias.net, test.dnsalias.org
 wildcard
+
+[namecheap]
+password = 390842ab834343
+hosts = testhost2.test
+
+[he]
+userid = 30943842094820948092384
+passhash = 934830984028420894201
+tunnelids = 943943
 
 -----------------
 
@@ -164,7 +173,12 @@ CONTACT
 =======
 
 ndyndns is completely compliant with dyndns.org's protocol specs and client
-recommendations, at least as far as I can tell.  If you find any problems,
-don't hesitate to contact me.
+recommendations, at least as far as I can tell.  Namecheap and he.net have less
+detailed developer documentation, but I have attempted to handle them using
+similar principles.
+
+If you find any problems, please don't hesitate to contact me.  Email is best
+for a prompt response, but I also check the issue tracker on googlecode from
+time to time.
 
 
