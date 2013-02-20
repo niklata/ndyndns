@@ -97,19 +97,19 @@ static void he_update_host(char *host, char *password, char *curip)
 
     /* set up the authentication url */
     if (use_ssl)
-        dyndns_curlbuf_cpy(url, "https://", sizeof url);
+        DDCB_CPY(url, "https://");
     else
-        dyndns_curlbuf_cpy(url, "http://", sizeof url);
+        DDCB_CPY(url, "http://");
 
-    dyndns_curlbuf_cat(url, host, sizeof url);
-    dyndns_curlbuf_cat(url, ":", sizeof url);
-    dyndns_curlbuf_cat(url, password, sizeof url);
+    DDCB_CAT(url, host);
+    DDCB_CAT(url, ":");
+    DDCB_CAT(url, password);
 
-    dyndns_curlbuf_cat(url, "@dyn.dns.he.net/nic/update?hostname=", sizeof url);
-    dyndns_curlbuf_cat(url, host, sizeof url);
+    DDCB_CAT(url, "@dyn.dns.he.net/nic/update?hostname=");
+    DDCB_CAT(url, host);
 
-    dyndns_curlbuf_cat(url, "&myip=", sizeof url);
-    dyndns_curlbuf_cat(url, curip, sizeof url);
+    DDCB_CAT(url, "&myip=");
+    DDCB_CAT(url, curip);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
