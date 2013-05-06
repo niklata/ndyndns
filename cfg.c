@@ -92,10 +92,10 @@ static char *get_dnserr(char *host)
 
     len = strlen(get_chroot()) + strlen(host) + strlen("-dnserr") + 6;
     file = xmalloc(len);
-    strlcpy(file, get_chroot(), len);
-    strlcat(file, "/var/", len);
-    strlcat(file, host, len);
-    strlcat(file, "-dnserr", len);
+    strnkcpy(file, get_chroot(), len);
+    strnkcat(file, "/var/", len);
+    strnkcat(file, host, len);
+    strnkcat(file, "-dnserr", len);
 
     f = fopen(file, "r");
     free(file);
@@ -106,13 +106,13 @@ static char *get_dnserr(char *host)
     if (!fgets(buf, sizeof buf, f)) {
         log_line("%s-dnserr is empty.  Assuming error: [unknown].", host);
         ret = xmalloc(sizeof "unknown" + 1);
-        strlcpy(ret, "unknown", sizeof "unknown" + 1);
+        strnkcpy(ret, "unknown", sizeof "unknown" + 1);
         goto outfd;
     }
 
     len = strlen(buf) + 1;
     ret = xmalloc(len);
-    strlcpy(ret, buf, len);
+    strnkcpy(ret, buf, len);
 outfd:
     fclose(f);
 out:
@@ -144,7 +144,7 @@ static void add_to_hostdata_list(hostdata_t **list, char *host, char *ip,
 
     len = strlen(host) + 1;
     elem = xmalloc(len);
-    strlcpy(elem, host, len);
+    strnkcpy(elem, host, len);
     item->host = elem;
 
     if (!ip || !item->host) {
@@ -158,7 +158,7 @@ static void add_to_hostdata_list(hostdata_t **list, char *host, char *ip,
 
     len = strlen(ip) + 1;
     elem = xmalloc(len);
-    strlcpy(elem, ip, len);
+    strnkcpy(elem, ip, len);
     item->ip = elem;
 
     if (!*list) {
@@ -205,17 +205,17 @@ static void add_to_hostpair_list(hostdata_t **list, char *host, char *passwd,
 
     len = strlen(host) + 1;
     elem = xmalloc(len);
-    strlcpy(elem, host, len);
+    strnkcpy(elem, host, len);
     item->host = elem;
 
     len = strlen(passwd) + 1;
     elem = xmalloc(len);
-    strlcpy(elem, passwd, len);
+    strnkcpy(elem, passwd, len);
     item->password = elem;
 
     len = strlen(ip) + 1;
     elem = xmalloc(len);
-    strlcpy(elem, ip, len);
+    strnkcpy(elem, ip, len);
     item->ip = elem;
 
     if (!ip) {
@@ -262,10 +262,10 @@ static time_t get_dnsdate(char *host)
 
     len = strlen(get_chroot()) + strlen(host) + strlen("-dnsdate") + 6;
     file = xmalloc(len);
-    strlcpy(file, get_chroot(), len);
-    strlcat(file, "/var/", len);
-    strlcat(file, host, len);
-    strlcat(file, "-dnsdate", len);
+    strnkcpy(file, get_chroot(), len);
+    strnkcat(file, "/var/", len);
+    strnkcat(file, host, len);
+    strnkcat(file, "-dnsdate", len);
 
     f = fopen(file, "r");
     free(file);
@@ -323,7 +323,7 @@ static char *lookup_dns(char *name) {
 
     len = strlen(t) + 1;
     ret = xmalloc(len);
-    strlcpy(ret, t, len);
+    strnkcpy(ret, t, len);
 out:
     return ret;
 }
@@ -343,10 +343,10 @@ static char *get_dnsip(char *host)
 
     len = strlen(get_chroot()) + strlen(host) + strlen("-dnsip") + 6;
     file = xmalloc(len);
-    strlcpy(file, get_chroot(), len);
-    strlcat(file, "/var/", len);
-    strlcat(file, host, len);
-    strlcat(file, "-dnsip", len);
+    strnkcpy(file, get_chroot(), len);
+    strnkcat(file, "/var/", len);
+    strnkcat(file, host, len);
+    strnkcat(file, "-dnsip", len);
 
     f = fopen(file, "r");
     free(file);
@@ -371,7 +371,7 @@ static char *get_dnsip(char *host)
 
     len = strlen(buf) + 1;
     ret = xmalloc(len);
-    strlcpy(ret, buf, len);
+    strnkcpy(ret, buf, len);
 outfd:
     fclose(f);
 out:
@@ -573,7 +573,7 @@ static char *parse_line_string(char *line, char *key)
             break;
     }
     ret = xmalloc(len + 1);
-    strlcpy(ret, point, len + 1);
+    strnkcpy(ret, point, len + 1);
 out:
     return ret;
 }

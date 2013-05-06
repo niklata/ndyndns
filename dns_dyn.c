@@ -76,7 +76,7 @@ static void modify_dyn_hostip_in_list(dyndns_conf_t *conf, char *host, char *ip)
     }
     len = strlen(ip) + 1;
     buf = xmalloc(len);
-    strlcpy(buf, ip, len);
+    strnkcpy(buf, ip, len);
     t->ip = buf;
 }
 

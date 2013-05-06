@@ -69,7 +69,7 @@ static void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host,
     }
     len = strlen(ip) + 1;
     buf = xmalloc(len);
-    strlcpy(buf, ip, len);
+    strnkcpy(buf, ip, len);
     t->ip = buf;
 }
 
@@ -101,7 +101,10 @@ static void nc_update_host(char *host, char *curip)
         return;
 
     ic = strlen(host);
-    strlcpy(url, host, sizeof url);
+    if (strnkcpy(url, host, sizeof url)) {
+        log_line("nc_update_host: hostname is too long");
+        return;
+    }
     for (; ic > 0; --ic) {
         if (url[ic] == '.') {
             ++dotc;
@@ -109,7 +112,7 @@ static void nc_update_host(char *host, char *curip)
                 // This is the . before the domain name.
                 domain_size = strlen(url+ic+1) + 1;
                 domain = xmalloc(domain_size);
-                strlcpy(domain, url+ic+1, domain_size);
+                strnkcpy(domain, url+ic+1, domain_size);
                 url[ic] = '\0';
             }
         }
@@ -117,11 +120,11 @@ static void nc_update_host(char *host, char *curip)
     if (dotc >= 2) {
         hostname_size = strlen(url) + 1;
         hostname = xmalloc(hostname_size);
-        strlcpy(hostname, url, hostname_size);
+        strnkcpy(hostname, url, hostname_size);
     } else {
         domain_size = strlen(url) + 1;
         domain = xmalloc(domain_size);
-        strlcpy(domain, url, domain_size);
+        strnkcpy(domain, url, domain_size);
         hostname_size = 2;
         hostname = xmalloc(hostname_size);
         hostname[0] = '@';

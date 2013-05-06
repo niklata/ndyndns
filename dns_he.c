@@ -60,7 +60,7 @@ static void modify_he_hostip_in_list(hostdata_t *t, char *host, char *ip)
         if (ip) {
             size_t len = strlen(ip) + 1;
             char *buf = xmalloc(len);
-            strlcpy(buf, ip, len);
+            strnkcpy(buf, ip, len);
             t->ip = buf;
         }
     }
@@ -134,13 +134,18 @@ static void he_update_host(char *host, char *password, char *curip)
 
 void he_dns_work(char *curip)
 {
+    char host[MAX_BUF], *pass, *p;
     for (hostdata_t *tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
         if (strcmp(curip, tp->ip)) {
-            size_t csiz = strlen(tp->host) + strlen(tp->password) + 2;
-            char *host = alloca(csiz), *pass, *p;
-            strlcpy(host, tp->host, csiz);
-            strlcat(host, ":", csiz);
-            strlcat(host, tp->password, csiz);
+            if (strnkcpy(host, tp->host, sizeof host))
+                goto too_short;
+            if (strnkcat(host, ":", sizeof host))
+                goto too_short;
+            if (strnkcat(host, tp->password, sizeof host)) {
+too_short:
+                log_line("he_dns_work: host+password is too long");
+                continue;
+            }
             p = strchr(host, ':');
             if (!p)
                 continue;

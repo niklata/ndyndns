@@ -63,7 +63,7 @@ char *get_interface_ip(char *ifname)
         goto out;
     }
 
-    strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
+    strnkcpy(ifr.ifr_name, ifname, IFNAMSIZ);
     ifr.ifr_addr.sa_family = AF_INET;
     if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
         log_line("%s: (%s) SIOCGIFADDR failed: %s",
@@ -74,7 +74,7 @@ char *get_interface_ip(char *ifname)
     ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
     len = strlen(ip) + 1;
     ret = xmalloc(len);
-    strlcpy(ret, ip, len);
+    strnkcpy(ret, ip, len);
 outfd:
     close(fd);
 out:

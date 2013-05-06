@@ -85,7 +85,7 @@ char *get_interface_ip(char *ifname)
     ip = inet_ntoa(((struct sockaddr_in *)p->ifa_addr)->sin_addr);
     len = strlen(ip) + 1;
     ret = xmalloc(len);
-    strlcpy(ret, ip, len);
+    strnkcpy(ret, ip, len);
 
 out2:
     freeifaddrs(ifp);

@@ -187,7 +187,7 @@ void cfg_set_quiet(void)
 
 void cfg_set_pidfile(char *pidfname)
 {
-    strlcpy(pidfile, pidfname, sizeof pidfile);
+    strnkcpy(pidfile, pidfname, sizeof pidfile);
 }
 
 void cfg_set_user(char *username)
@@ -228,7 +228,7 @@ void cfg_set_group(char *groupname)
 
 void cfg_set_interface(char *interface)
 {
-    strlcpy(ifname, interface, sizeof ifname);
+    strnkcpy(ifname, interface, sizeof ifname);
 }
 
 int main(int argc, char** argv)

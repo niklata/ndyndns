@@ -59,7 +59,7 @@ char *get_interface_ip(char *ifname)
         goto out;
     }
 
-    strlcpy(lif.lfr_name, ifname, LIFNAMSIZ);
+    strnkcpy(lif.lfr_name, ifname, LIFNAMSIZ);
     r = ioctl(s, SIOCGLIFADDR, &lif);
     if (r) {
         log_line("Failed to get interface address info.");
@@ -69,7 +69,7 @@ char *get_interface_ip(char *ifname)
     ip = inet_ntoa(((struct sockaddr_in *)lif.lifr_addr)->sin_addr);
     len = strlen(ip) + 1;
     ret = xmalloc(len);
-    strlcpy(ret, ip, len);
+    strnkcpy(ret, ip, len);
 out2:
     close(s);
 out:

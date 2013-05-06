@@ -83,7 +83,7 @@ char *query_curip(void)
     ++len;
 
     ret = xmalloc(len);
-    strlcpy(ret, ip, len);
+    strnkcpy(ret, ip, len);
 out:
     free(data.buf);
     return ret;

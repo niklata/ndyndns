@@ -83,9 +83,9 @@ void write_dnsdate(char *host, time_t date)
 
     len = strlen(host) + strlen("-dnsdate") + 5;
     file = xmalloc(len);
-    strlcpy(file, "var/", len);
-    strlcat(file, host, len);
-    strlcat(file, "-dnsdate", len);
+    strnkcpy(file, "var/", len);
+    strnkcat(file, host, len);
+    strnkcat(file, "-dnsdate", len);
     buf[MAX_BUF - 1] = '\0';
     snprintf(buf, sizeof buf - 1, "%u", (unsigned int)date);
 
@@ -106,10 +106,10 @@ void write_dnsip(char *host, char *ip)
 
     len = strlen(host) + strlen("-dnsip") + 5;
     file = xmalloc(len);
-    strlcpy(file, "var/", len);
-    strlcat(file, host, len);
-    strlcat(file, "-dnsip", len);
-    strlcpy(buf, ip, sizeof buf);
+    strnkcpy(file, "var/", len);
+    strnkcat(file, host, len);
+    strnkcat(file, "-dnsip", len);
+    strnkcpy(buf, ip, sizeof buf);
 
     write_dnsfile(file, buf);
     free(file);
@@ -126,9 +126,9 @@ void write_dnserr(char *host, return_codes code)
 
     len = strlen(host) + strlen("-dnserr") + 5;
     file = xmalloc(len);
-    strlcpy(file, "var/", len);
-    strlcat(file, host, len);
-    strlcat(file, "-dnserr", len);
+    strnkcpy(file, "var/", len);
+    strnkcat(file, host, len);
+    strnkcat(file, "-dnserr", len);
 
     switch (code) {
         case RET_NOTFQDN:
@@ -147,7 +147,7 @@ void write_dnserr(char *host, return_codes code)
             error = "unknown";
             break;
     }
-    strlcpy(buf, error, sizeof buf);
+    strnkcpy(buf, error, sizeof buf);
 
     write_dnsfile(file, buf);
     free(file);
@@ -205,15 +205,13 @@ static int update_ip_curl_errcheck(int val, char *cerr)
 
 void dyndns_curlbuf_cpy(char *dst, char *src, size_t size)
 {
-    size_t len = strlcpy(dst, src, size);
-    if (len >= size)
+    if (strnkcpy(dst, src, size))
         suicide("%s: would overflow a fixed buffer", __func__);
 }
 
 void dyndns_curlbuf_cat(char *dst, char *src, size_t size)
 {
-    size_t len = strlcat(dst, src, size);
-    if (len >= size)
+    if (strnkcat(dst, src, size))
         suicide("%s: would overflow a fixed buffer", __func__);
 }
 
