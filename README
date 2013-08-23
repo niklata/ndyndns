@@ -62,12 +62,6 @@ user = dyndns
 group = dyndns
 interface = eth0
 
-[dyndns]
-username = test
-password = test
-hostname = test.dyndns.org, test.ath.cx, test.dnsalias.net, test.dnsalias.org
-wildcard
-
 [namecheap]
 password = 390842ab834343
 hosts = testhost2.test
@@ -171,11 +165,6 @@ Seth Fulton for spotting a bug in subdomain updates for Namecheap ddns.
 
 CONTACT
 =======
-
-ndyndns is completely compliant with dyndns.org's protocol specs and client
-recommendations, at least as far as I can tell.  Namecheap and he.net have less
-detailed developer documentation, but I have attempted to handle them using
-similar principles.
 
 If you find any problems, please don't hesitate to contact me.  Email is best
 for a prompt response, but I also check the issue tracker on googlecode from

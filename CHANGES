@@ -1,3 +1,7 @@
+2.3:
+* Remove support for dyn.com dynamic DNS.  My old free dynamic dns hostnames
+  no longer exist despite having been regularly updated.
+
 2.2:
 
 * Change layout of the chroot. THIS REQUIRES USER INTERVENTION. It's safer on
