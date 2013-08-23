@@ -64,7 +64,6 @@
 #include "util.h"
 #include "malloc.h"
 
-#include "dns_dyn.h"
 #include "dns_nc.h"
 #include "dns_he.h"
 
@@ -139,7 +138,6 @@ static void do_work(void)
             goto sleep;
         }
 
-        dd_work(curip);
         nc_work(curip);
         he_dns_work(curip);
         he_tun_work(curip);

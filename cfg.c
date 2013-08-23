@@ -43,13 +43,11 @@
 #include "malloc.h"
 #include "ndyndns.h"
 
-#include "dns_dyn.h"
 #include "dns_nc.h"
 #include "dns_he.h"
 
 void init_config()
 {
-    init_dyndns_conf();
     init_namecheap_conf();
     init_he_conf();
 }
@@ -479,27 +477,6 @@ static void populate_hostpairs(hostdata_t **list, char *hostpair)
 }
 
 /* returns 1 for valid config, 0 for invalid */
-static int validate_dyndns_conf(dyndns_conf_t *t)
-{
-    int r = 1;
-    if (t->username || t->password || t->hostlist) {
-        if (t->username == NULL) {
-            r = 0;
-            log_line("dyndns config invalid: no username provided");
-        }
-        if (t->password == NULL) {
-            r = 0;
-            log_line("dyndns config invalid: no password provided");
-        }
-        if (t->hostlist == NULL) {
-            r = 0;
-            log_line("dyndns config invalid: no hostnames provided");
-        }
-    }
-    return r;
-}
-
-/* returns 1 for valid config, 0 for invalid */
 static int validate_nc_conf(namecheap_conf_t *t)
 {
     int r = 1;
@@ -599,23 +576,13 @@ static int assign_string(char **to, char *from)
 enum prs_state {
     PRS_NONE,
     PRS_CONFIG,
-    PRS_DYNDNS,
     PRS_NAMECHEAP,
     PRS_HE,
 };
 
 #define PRS_CONFIG_STR "[config]"
-#define PRS_DYNDNS_STR "[dyndns]"
 #define PRS_NAMECHEAP_STR "[namecheap]"
 #define PRS_HE_STR "[he]"
-#define NOWILDCARD_STR "nowildcard"
-#define WILDCARD_STR "wildcard"
-#define PRIMARYMX_STR "primarymx"
-#define BACKUPMX_STR "backupmx"
-#define OFFLINE_STR "offline"
-#define DYNDNS_STR "dyndns"
-#define CUSTOMDNS_STR "customdns"
-#define STATICDNS_STR "staticdns"
 #define DETACH_STR "detach"
 #define NODETACH_STR "nodetach"
 #define QUIET_STR "quiet"
@@ -660,10 +627,6 @@ int parse_config(char *file)
             prs = PRS_CONFIG;
             continue;
         }
-        if (!strncmp(PRS_DYNDNS_STR, point, sizeof PRS_DYNDNS_STR - 1)) {
-            prs = PRS_DYNDNS;
-            continue;
-        }
         if (!strncmp(PRS_NAMECHEAP_STR, point, sizeof PRS_NAMECHEAP_STR - 1)) {
             prs = PRS_NAMECHEAP;
             continue;
@@ -678,9 +641,6 @@ int parse_config(char *file)
             switch (prs) {
                 default:
                     parse_warn(lnum, "password");
-                    break;
-                case PRS_DYNDNS:
-                    assign_string(&dyndns_conf.password, tmp);
                     break;
                 case PRS_NAMECHEAP:
                     assign_string(&namecheap_conf.password, tmp);
@@ -709,9 +669,6 @@ int parse_config(char *file)
             switch (prs) {
                 default:
                     parse_warn(lnum, "hosts");
-                    break;
-                case PRS_DYNDNS:
-                    populate_hostlist(&dyndns_conf.hostlist, tmp);
                     break;
                 case PRS_NAMECHEAP:
                     populate_hostlist(&namecheap_conf.hostlist, tmp);
@@ -749,20 +706,6 @@ int parse_config(char *file)
             continue;
         }
 
-        tmp = parse_line_string(point, "username");
-        if (tmp) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "username");
-                    break;
-                case PRS_DYNDNS:
-                    assign_string(&dyndns_conf.username, tmp);
-                    break;
-            }
-            free(tmp);
-            continue;
-        }
-
         tmp = parse_line_string(point, "userid");
         if (tmp) {
             switch (prs) {
@@ -774,109 +717,6 @@ int parse_config(char *file)
                     break;
             }
             free(tmp);
-            continue;
-        }
-
-        tmp = parse_line_string(point, "mx");
-        if (tmp) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "mx");
-                    break;
-                case PRS_DYNDNS:
-                    assign_string(&dyndns_conf.mx, tmp);
-                    break;
-            }
-            free(tmp);
-            continue;
-        }
-
-        if (!strncmp(NOWILDCARD_STR, point, sizeof NOWILDCARD_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "nowildcard");
-                    break;
-                case PRS_DYNDNS:
-                    dyndns_conf.wildcard = WC_NO;
-                    break;
-            }
-            continue;
-        }
-        if (!strncmp(WILDCARD_STR, point, sizeof WILDCARD_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "wildcard");
-                    break;
-                case PRS_DYNDNS:
-                    dyndns_conf.wildcard = WC_YES;
-                    break;
-            }
-            continue;
-        }
-        if (!strncmp(PRIMARYMX_STR, point, sizeof PRIMARYMX_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "primarymx");
-                    break;
-                case PRS_DYNDNS:
-                    dyndns_conf.backmx = BMX_NO;
-                    break;
-            }
-            continue;
-        }
-        if (!strncmp(BACKUPMX_STR, point, sizeof BACKUPMX_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "backupmx");
-                    break;
-                case PRS_DYNDNS:
-                    dyndns_conf.backmx = BMX_YES;
-                    break;
-            }
-            continue;
-        }
-        if (!strncmp(OFFLINE_STR, point, sizeof OFFLINE_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "offline");
-                    break;
-                case PRS_DYNDNS:
-                    dyndns_conf.offline = OFFLINE_YES;
-                    break;
-            }
-            continue;
-        }
-        if (!strncmp(DYNDNS_STR, point, sizeof DYNDNS_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "dyndns");
-                    break;
-                case PRS_DYNDNS:
-                    dyndns_conf.system = SYSTEM_DYNDNS;
-                    break;
-            }
-            continue;
-        }
-        if (!strncmp(CUSTOMDNS_STR, point, sizeof CUSTOMDNS_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "customdns");
-                    break;
-                case PRS_DYNDNS:
-                    dyndns_conf.system = SYSTEM_CUSTOMDNS;
-                    break;
-            }
-            continue;
-        }
-        if (!strncmp(STATICDNS_STR, point, sizeof STATICDNS_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "staticdns");
-                    break;
-                case PRS_DYNDNS:
-                    dyndns_conf.system = SYSTEM_STATDNS;
-                    break;
-            }
             continue;
         }
 
@@ -1004,7 +844,6 @@ int parse_config(char *file)
 
     if (fclose(f))
         suicide("%s: failed to close [%s]", __func__, file);
-    ret = validate_dyndns_conf(&dyndns_conf) |
-        validate_nc_conf(&namecheap_conf) | validate_he_conf(&he_conf);
+    ret = validate_nc_conf(&namecheap_conf) | validate_he_conf(&he_conf);
     return ret;
 }

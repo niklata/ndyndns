@@ -1,6 +1,6 @@
 CC = @CC@
 INCLUDES = -I./ncmlib
-objects = util.o checkip.o $(PLATFORM).o dns_helpers.o dns_dyn.o dns_nc.o dns_he.o cfg.o ndyndns.o
+objects = util.o checkip.o $(PLATFORM).o dns_helpers.o dns_nc.o dns_he.o cfg.o ndyndns.o
 CURLINC = @CURLINC@
 CURLLIB = @CURLLIB@
 VERSION = @VERSION@
