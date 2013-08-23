@@ -114,9 +114,9 @@ ADDITIONAL NOTES
 If the system running ndyndns is not your border device (eg, it is behind a
 router or firewall, and its IP address is not internet-routable), you should
 add the -r switch to ndyndns.  The -r switch will instruct ndyndns to use
-the IP returned by checkip.dyndns.org.  Note that -r should only be used
-if necessary: as is required by dyndns.org policies, checkip.dyndns.org will
-not be queried more than once every ten minutes.
+the IP returned by checkip.dns.he.net.  Note that -r should only be used
+if necessary: checkip.dns.he.net will not be queried more than once every ten
+minutes.
 
 If chroot is not an option for your system, then you may use the -x or
 --disable-chroot switch to skip the actual call to chroot().  Note
@@ -145,7 +145,7 @@ what allow ndyndns to avoid frivolous updates between restarts and reboots.
 If the system running ndyndns does not have a network interface that has your
 external IP address (ie, the one you wish your dyndns records to contain), then
 try running ndyndns with the --remote (-r) switch.  It will query
-checkip.dyndns.org for your external IP address rather than polling the IP
+checkip.dns.he.net for your external IP address rather than polling the IP
 address of your network interface.
 
 THANKS

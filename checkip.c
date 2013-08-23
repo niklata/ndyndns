@@ -44,6 +44,8 @@
 
 static time_t last_time = 0;
 
+#define CHECKIP_PFX "Your IP address is :"
+
 /* allocates from heap for return;
  * returns NULL if remote host fails to give ip
  */
@@ -65,16 +67,16 @@ char *query_curip(void)
     data.buflen = MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1;
     data.idx = 0;
 
-    if (dyndns_curl_send("http://checkip.dyndns.com", &data, NULL)) {
+    if (dyndns_curl_send("http://checkip.dns.he.net", &data, NULL)) {
         log_line("Failed to get IP from remote host.");
         goto out;
     }
     last_time = clock_time();
 
-    ip = strstr(data.buf, "Current IP Address:");
+    ip = strstr(data.buf, CHECKIP_PFX);
     if (!ip)
         goto out;
-    ip += strlen("Current IP Address:");
+    ip += strlen(CHECKIP_PFX);
     for (; isspace(*ip); ++ip);
 
     for (p = ip, len = 0; *p == '.' || isdigit(*p); ++p, ++len);
