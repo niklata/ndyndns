@@ -62,6 +62,7 @@ void remove_host_from_hostdata_list(hostdata_t **phl, char *host)
         free(cur->ip);
         free(cur);
         *phl = after;
+        return;
     }
     for (; cur->next != NULL; cur = cur->next) {
         p = cur->next;
