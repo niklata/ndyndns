@@ -46,6 +46,8 @@
 #include "dns_nc.h"
 #include "dns_he.h"
 
+extern char chroot_dir[MAX_PATH_LENGTH];
+
 void init_config()
 {
     init_namecheap_conf();
@@ -89,9 +91,9 @@ static char *get_dnserr(char *host)
 
     memset(buf, '\0', MAX_BUF);
 
-    len = strlen(get_chroot()) + strlen(host) + strlen("-dnserr") + 6;
+    len = strlen(chroot_dir) + strlen(host) + strlen("-dnserr") + 6;
     file = xmalloc(len);
-    strnkcpy(file, get_chroot(), len);
+    strnkcpy(file, chroot_dir, len);
     strnkcat(file, "/var/", len);
     strnkcat(file, host, len);
     strnkcat(file, "-dnserr", len);
@@ -259,9 +261,9 @@ static time_t get_dnsdate(char *host)
     if (!host)
         suicide("FATAL - get_dnsdate: host is NULL");
 
-    len = strlen(get_chroot()) + strlen(host) + strlen("-dnsdate") + 6;
+    len = strlen(chroot_dir) + strlen(host) + strlen("-dnsdate") + 6;
     file = xmalloc(len);
-    strnkcpy(file, get_chroot(), len);
+    strnkcpy(file, chroot_dir, len);
     strnkcat(file, "/var/", len);
     strnkcat(file, host, len);
     strnkcat(file, "-dnsdate", len);
@@ -340,9 +342,9 @@ static char *get_dnsip(char *host)
 
     memset(buf, '\0', MAX_BUF);
 
-    len = strlen(get_chroot()) + strlen(host) + strlen("-dnsip") + 6;
+    len = strlen(chroot_dir) + strlen(host) + strlen("-dnsip") + 6;
     file = xmalloc(len);
-    strnkcpy(file, get_chroot(), len);
+    strnkcpy(file, chroot_dir, len);
     strnkcat(file, "/var/", len);
     strnkcat(file, host, len);
     strnkcat(file, "-dnsip", len);
@@ -728,7 +730,7 @@ int parse_config(char *file)
                     parse_warn(lnum, "chroot");
                     break;
                 case PRS_CONFIG:
-                    update_chroot(tmp);
+                    strnkcpy(chroot_dir, tmp, sizeof chroot_dir);
                     break;
             }
             free(tmp);

@@ -71,10 +71,12 @@ int use_ssl = 1;
 
 static char ifname[IFNAMSIZ] = "ppp0";
 static char pidfile[MAX_PATH_LENGTH] = "/var/run/ndyndns.pid";
+char chroot_dir[MAX_PATH_LENGTH] = "";
 
 static int update_interval = 120; // seconds
 static int update_from_remote = 0;
 static int cfg_uid = 0, cfg_gid = 0;
+static bool chroot_enabled = true;
 
 static volatile sig_atomic_t pending_exit;
 
@@ -325,11 +327,11 @@ int main(int argc, char** argv)
                 break;
 
             case 'x':
-                disable_chroot();
+                chroot_enabled = false;
                 break;
 
             case 'c':
-                update_chroot(optarg);
+                strnkcpy(chroot_dir, optarg, sizeof chroot_dir);
                 break;
 
             case 'f':
@@ -381,8 +383,12 @@ int main(int argc, char** argv)
      */
     (void) gethostbyname("fail.invalid");
 
-    if (chroot_enabled() && getuid())
-        suicide("FATAL - I need root for chroot!");
+    if (chroot_enabled) {
+        if (!strncmp(chroot_dir, "", sizeof chroot_dir))
+            suicide("FATAL - No chroot path specified.  Refusing to run.");
+        if (getuid())
+            suicide("FATAL - I need root for chroot!");
+    }
 
     if (gflags_detach)
         if (daemon(0,0))
@@ -395,15 +401,13 @@ int main(int argc, char** argv)
     umask(077);
     fix_signals();
 
-    if (!chroot_exists())
-        suicide("FATAL - No chroot path specified.  Refusing to run.");
-
     /* Note that failure cases are handled by called fns. */
-    imprison(get_chroot());
+    if (chroot_enabled)
+        imprison(chroot_dir);
     drop_root(cfg_uid, cfg_gid);
 
     /* Cover our tracks... */
-    wipe_chroot();
+    memset(chroot_dir, '\0', sizeof chroot_dir);
     memset(pidfile, '\0', sizeof pidfile);
 
     curl_global_init(CURL_GLOBAL_ALL);
