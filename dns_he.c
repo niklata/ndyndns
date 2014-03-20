@@ -1,6 +1,6 @@
 /* dns_he.c
  *
- * Copyright (c) 2010-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2010-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,8 @@
 #include "dns_helpers.h"
 #include "log.h"
 #include "util.h"
-#include "strl.h"
 #include "malloc.h"
+#include "xstrdup.h"
 
 he_conf_t he_conf;
 
@@ -56,13 +56,7 @@ static void modify_he_hostip_in_list(hostdata_t *t, char *host, char *ip)
     for (; t && strcmp(t->host, host); t = t->next);
     if (t) {
         free(t->ip);
-        t->ip = NULL;
-        if (ip) {
-            size_t len = strlen(ip) + 1;
-            char *buf = xmalloc(len);
-            strnkcpy(buf, ip, len);
-            t->ip = buf;
-        }
+        t->ip = ip ? xstrdup(ip) : NULL;
     }
 }
 
@@ -137,12 +131,9 @@ void he_dns_work(char *curip)
     char host[MAX_BUF], *pass, *p;
     for (hostdata_t *tp = he_conf.hostpairs; tp != NULL; tp = tp->next) {
         if (strcmp(curip, tp->ip)) {
-            if (strnkcpy(host, tp->host, sizeof host))
-                goto too_short;
-            if (strnkcat(host, ":", sizeof host))
-                goto too_short;
-            if (strnkcat(host, tp->password, sizeof host)) {
-too_short:
+            ssize_t snlen = snprintf(host, sizeof host, "%s:%s",
+                                     tp->host, tp->password);
+            if (snlen < 0 || (size_t)snlen >= sizeof host) {
                 log_line("he_dns_work: host+password is too long");
                 continue;
             }
