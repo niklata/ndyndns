@@ -1,6 +1,6 @@
 /* linux.c - Linux-specific functions
  *
- * Copyright (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,16 +42,15 @@
 #include "defines.h"
 #include "config.h"
 #include "log.h"
-#include "strl.h"
 #include "util.h"
-#include "malloc.h"
+#include "xstrdup.h"
 
 /* allocates from heap for return */
 char *get_interface_ip(char *ifname)
 {
     struct ifreq ifr;
     char *ip = NULL, *ret = NULL;
-    int fd, len;
+    int fd;
 
     if (ifname == NULL)
         goto out;
@@ -63,7 +62,7 @@ char *get_interface_ip(char *ifname)
         goto out;
     }
 
-    strnkcpy(ifr.ifr_name, ifname, IFNAMSIZ);
+    snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s", ifname);
     ifr.ifr_addr.sa_family = AF_INET;
     if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
         log_line("%s: (%s) SIOCGIFADDR failed: %s",
@@ -72,9 +71,7 @@ char *get_interface_ip(char *ifname)
     }
 
     ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
-    len = strlen(ip) + 1;
-    ret = xmalloc(len);
-    strnkcpy(ret, ip, len);
+    ret = xstrdup(ip);
 outfd:
     close(fd);
 out:
