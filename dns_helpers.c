@@ -1,6 +1,6 @@
 /* dns_helpers.c - common functions for dynamic dns service updates
  *
- * Copyright (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,19 +75,20 @@ static void write_dnsfile(char *fn, char *cnts)
 
 void write_dnsdate(char *host, time_t date)
 {
-    int len;
+    size_t len;
     char *file, buf[MAX_BUF];
 
     if (!host)
         suicide("%s: host is NULL", __func__);
 
-    len = strlen(host) + strlen("-dnsdate") + 5;
+    len = strlen(host) + strlen("var/-dnsdate") + 1;
     file = xmalloc(len);
-    strnkcpy(file, "var/", len);
-    strnkcat(file, host, len);
-    strnkcat(file, "-dnsdate", len);
-    buf[MAX_BUF - 1] = '\0';
-    snprintf(buf, sizeof buf - 1, "%u", (unsigned int)date);
+    ssize_t snlen = snprintf(file, len, "var/%s-dnsdate", host);
+    if (snlen < 0 || (size_t)snlen >= len)
+        suicide("%s: snprintf1 would truncate", __func__);
+    snlen = snprintf(buf, sizeof buf, "%lu", date);
+    if (snlen < 0 || (size_t)snlen >= sizeof buf)
+        suicide("%s: snprintf2 would truncate", __func__);
 
     write_dnsfile(file, buf);
     free(file);
@@ -96,7 +97,7 @@ void write_dnsdate(char *host, time_t date)
 /* assumes that if ip is non-NULL, it is valid */
 void write_dnsip(char *host, char *ip)
 {
-    int len;
+    size_t len;
     char *file, buf[MAX_BUF];
 
     if (!host)
@@ -104,12 +105,14 @@ void write_dnsip(char *host, char *ip)
     if (!ip)
         suicide("%s: ip is NULL", __func__);
 
-    len = strlen(host) + strlen("-dnsip") + 5;
+    len = strlen(host) + strlen("var/-dnsip") + 1;
     file = xmalloc(len);
-    strnkcpy(file, "var/", len);
-    strnkcat(file, host, len);
-    strnkcat(file, "-dnsip", len);
-    strnkcpy(buf, ip, sizeof buf);
+    ssize_t snlen = snprintf(file, len, "var/%s-dnsip", host);
+    if (snlen < 0 || (size_t)snlen >= len)
+        suicide("%s: snprintf1 would truncate", __func__);
+    snlen = snprintf(buf, sizeof buf, "%s", ip);
+    if (snlen < 0 || (size_t)snlen >= sizeof buf)
+        suicide("%s: snprintf2 would truncate", __func__);
 
     write_dnsfile(file, buf);
     free(file);
@@ -118,17 +121,17 @@ void write_dnsip(char *host, char *ip)
 /* assumes that if ip is non-NULL, it is valid */
 void write_dnserr(char *host, return_codes code)
 {
-    int len;
+    size_t len;
     char *file, buf[MAX_BUF], *error;
 
     if (!host)
         suicide("%s: host is NULL", __func__);
 
-    len = strlen(host) + strlen("-dnserr") + 5;
+    len = strlen(host) + strlen("var/-dnserr") + 1;
     file = xmalloc(len);
-    strnkcpy(file, "var/", len);
-    strnkcat(file, host, len);
-    strnkcat(file, "-dnserr", len);
+    ssize_t snlen = snprintf(file, len, "var/%s-dnserr", host);
+    if (snlen < 0 || (size_t)snlen >= len)
+        suicide("%s: snprintf1 would truncate", __func__);
 
     switch (code) {
         case RET_NOTFQDN:
@@ -147,7 +150,9 @@ void write_dnserr(char *host, return_codes code)
             error = "unknown";
             break;
     }
-    strnkcpy(buf, error, sizeof buf);
+    snlen = snprintf(buf, sizeof buf, "%s", error);
+    if (snlen < 0 || (size_t)snlen >= sizeof buf)
+        suicide("%s: snprintf2 would truncate", __func__);
 
     write_dnsfile(file, buf);
     free(file);
