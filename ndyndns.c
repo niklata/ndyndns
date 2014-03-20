@@ -1,6 +1,6 @@
 /* ndyndns.c
  *
- * Copyright (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,6 @@
 #include "chroot.h"
 #include "pidfile.h"
 #include "signals.h"
-#include "strl.h"
 #include "linux.h"
 #include "checkip.h"
 #include "util.h"
@@ -164,30 +163,22 @@ static int check_ssl(void)
     return t;
 }
 
-void cfg_set_remote(void)
+static void copy_cmdarg(char *dest, char *src, size_t destlen, char *argname)
 {
-    update_from_remote = 1;
-    update_interval = 600;
-}
-
-void cfg_set_detach(void)
-{
-    gflags_detach = 1;
-}
-
-void cfg_set_nodetach(void)
-{
-    gflags_detach = 0;
-}
-
-void cfg_set_quiet(void)
-{
-    gflags_quiet = 1;
+    ssize_t olen = snprintf(dest, destlen, "%s", src);
+    if (olen < 0) {
+        log_error("snprintf failed on %s; your system is broken?", argname);
+        exit(EXIT_FAILURE);
+    }
+    if ((size_t)olen >= destlen) {
+        log_error("snprintf would truncate %s arg; it's too long", argname);
+        exit(EXIT_FAILURE);
+    }
 }
 
 void cfg_set_pidfile(char *pidfname)
 {
-    strnkcpy(pidfile, pidfname, sizeof pidfile);
+    copy_cmdarg(pidfile, pidfname, sizeof pidfile, "pidfile");
 }
 
 void cfg_set_user(char *username)
@@ -228,7 +219,7 @@ void cfg_set_group(char *groupname)
 
 void cfg_set_interface(char *interface)
 {
-    strnkcpy(ifname, interface, sizeof ifname);
+    copy_cmdarg(ifname, interface, sizeof ifname, "interface");
 }
 
 int main(int argc, char** argv)
@@ -265,7 +256,7 @@ int main(int argc, char** argv)
             case 'h':
                 printf(
 "ndyndns " PACKAGE_VERSION ", dyndns update client.  Licensed under 2-clause BSD.\n"
-"Copyright (c) 2005-2013 Nicholas J. Kain\n"
+"Copyright (c) 2005-2014 Nicholas J. Kain\n"
 "Usage: ndyndns [OPTIONS]\n"
 "  -d, --detach                detach from TTY and daemonize\n"
 "  -n, --nodetach              stay attached to TTY\n"
@@ -287,7 +278,7 @@ int main(int argc, char** argv)
 
             case 'v':
                 printf("ndyndns %s, dhcp client.\n", PACKAGE_VERSION);
-                printf("Copyright (c) 2005-2013 Nicholas J. Kain\n"
+                printf("Copyright (c) 2005-2014 Nicholas J. Kain\n"
                        "All rights reserved.\n\n"
                        "Redistribution and use in source and binary forms, with or without\n"
                        "modification, are permitted provided that the following conditions are met:\n\n"
@@ -311,19 +302,20 @@ int main(int argc, char** argv)
                 break;
 
             case 'r':
-                cfg_set_remote();
+                update_from_remote = 1;
+                update_interval = 600;
                 break;
 
             case 'd':
-                cfg_set_detach();
+                gflags_detach = 1;
                 break;
 
             case 'n':
-                cfg_set_nodetach();
+                gflags_detach = 0;
                 break;
 
             case 'q':
-                cfg_set_quiet();
+                gflags_quiet = 1;
                 break;
 
             case 'x':
@@ -331,7 +323,7 @@ int main(int argc, char** argv)
                 break;
 
             case 'c':
-                strnkcpy(chroot_dir, optarg, sizeof chroot_dir);
+                copy_cmdarg(chroot_dir, optarg, sizeof chroot_dir, "chroot");
                 break;
 
             case 'f':
