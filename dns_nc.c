@@ -113,19 +113,12 @@ static void nc_update_host(char *host, char *curip)
     memset(url, 0, sizeof url);
 
     /* set up the authentication url */
-    if (use_ssl)
-        DDCB_CPY(url, "https");
-    else
-        DDCB_CPY(url, "http");
-    DDCB_CAT(url, "://dynamicdns.park-your-domain.com/update?");
-    DDCB_CAT(url, "host=");
-    DDCB_CAT(url, hostname);
-    DDCB_CAT(url, "&domain=");
-    DDCB_CAT(url, domain);
-    DDCB_CAT(url, "&password=");
-    DDCB_CAT(url, namecheap_conf.password);
-    DDCB_CAT(url, "&ip=");
-    DDCB_CAT(url, curip);
+    snlen = snprintf
+        (url, sizeof url,
+         "http%s://dynamicdns.park-your-domain.com/update?host=%s&domain=%s&password=%s&ip=%s",
+         use_ssl ? "s" : "", hostname, domain, namecheap_conf.password, curip);
+    if (snlen < 0 || (size_t)snlen >= sizeof url)
+        suicide("%s: url would overflow a fixed buffer", __func__);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);

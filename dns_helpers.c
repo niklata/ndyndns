@@ -39,7 +39,6 @@
 #include "config.h"
 #include "defines.h"
 #include "log.h"
-#include "strl.h"
 #include "malloc.h"
 #include "util.h"
 
@@ -208,18 +207,6 @@ static int update_ip_curl_errcheck(int val, char *cerr)
     return 0;
 }
 
-void dyndns_curlbuf_cpy(char *dst, char *src, size_t size)
-{
-    if (strnkcpy(dst, src, size))
-        suicide("%s: would overflow a fixed buffer", __func__);
-}
-
-void dyndns_curlbuf_cat(char *dst, char *src, size_t size)
-{
-    if (strnkcat(dst, src, size))
-        suicide("%s: would overflow a fixed buffer", __func__);
-}
-
 int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd)
 {
     CURL *h;
@@ -228,8 +215,10 @@ int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd)
     char curlerror[CURL_ERROR_SIZE];
 
     /* set up useragent */
-    dyndns_curlbuf_cpy(useragent, "ndyndns/", sizeof useragent);
-    dyndns_curlbuf_cat(useragent, PACKAGE_VERSION, sizeof useragent);
+    ssize_t snlen = snprintf(useragent, sizeof useragent,
+                             "ndyndns/%s", PACKAGE_VERSION);
+    if (snlen < 0 || (size_t)snlen >= sizeof useragent)
+        log_warning("%s: useragent snprintf would truncate");
 
     log_line("update url: [%s]", url);
     h = curl_easy_init();

@@ -89,21 +89,12 @@ static void he_update_host(char *host, char *password, char *curip)
     if (!host || !password || !curip)
         return;
 
-    /* set up the authentication url */
-    if (use_ssl)
-        DDCB_CPY(url, "https://");
-    else
-        DDCB_CPY(url, "http://");
-
-    DDCB_CAT(url, host);
-    DDCB_CAT(url, ":");
-    DDCB_CAT(url, password);
-
-    DDCB_CAT(url, "@dyn.dns.he.net/nic/update?hostname=");
-    DDCB_CAT(url, host);
-
-    DDCB_CAT(url, "&myip=");
-    DDCB_CAT(url, curip);
+    ssize_t snlen = snprintf
+        (url, sizeof url,
+         "http%s://%s:%s@dyn.dns.he.net/nic/update?hostname=%s&myip=%s",
+         use_ssl ? "s" : "", host, password, host, curip);
+    if (snlen < 0 || (size_t)snlen >= sizeof url)
+        suicide("%s: url would overflow a fixed buffer", __func__);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
@@ -156,19 +147,12 @@ static void he_update_tunid(char *tunid, char *curip)
     if (!tunid || !curip)
         return;
 
-    /* set up the authentication url */
-    if (use_ssl)
-        DDCB_CPY(url, "https");
-    else
-        DDCB_CPY(url, "http");
-    DDCB_CAT(url, "://ipv4.tunnelbroker.net/ipv4_end.php?ip=");
-    DDCB_CAT(url, curip);
-    DDCB_CAT(url, "&pass=");
-    DDCB_CAT(url, he_conf.passhash);
-    DDCB_CAT(url, "&apikey=");
-    DDCB_CAT(url, he_conf.userid);
-    DDCB_CAT(url, "&tid=");
-    DDCB_CAT(url, tunid);
+    ssize_t snlen = snprintf
+        (url, sizeof url,
+         "http%s://ipv4.tunnelbroker.net/ipv4_end.php?ip=%s&pass=%s&apikey=%s&tid=%s",
+         use_ssl ? "s" : "", curip, he_conf.passhash, he_conf.userid, tunid);
+    if (snlen < 0 || (size_t)snlen >= sizeof url)
+        suicide("%s: url would overflow a fixed buffer", __func__);
 
     data.buf = xmalloc(MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
     memset(data.buf, '\0', MAX_CHUNKS * CURL_MAX_WRITE_SIZE + 1);
