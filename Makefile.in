@@ -12,7 +12,7 @@ sbindir = @sbindir@
 datarootdir = @datarootdir@
 mandir = @mandir@
 
-NCMSRC = ncmlib/log.c ncmlib/strl.c ncmlib/malloc.c ncmlib/chroot.c ncmlib/pidfile.c ncmlib/signals.c ncmlib/strlist.c
+NCMSRC = ncmlib/log.c ncmlib/malloc.c ncmlib/chroot.c ncmlib/pidfile.c ncmlib/signals.c
 NCMOBJ = $(NCMSRC:.c=.o)
 
 all: ndyndns
