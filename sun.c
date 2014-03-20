@@ -1,6 +1,6 @@
 /* sun.c - Solaris-specific functions
  *
- * Copyright (c) 2007-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2007-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,9 +38,8 @@
 #include <errno.h>
 
 #include "defines.h"
-#include "log.h"
-#include "strl.h"
 #include "util.h"
+#include "xstrdup.h"
 
 /* allocates from heap for return */
 char *get_interface_ip(char *ifname)
@@ -59,7 +58,7 @@ char *get_interface_ip(char *ifname)
         goto out;
     }
 
-    strnkcpy(lif.lfr_name, ifname, LIFNAMSIZ);
+    snprintf(lif.lfr_name, sizeof lif.lfr_name, "%s", ifname);
     r = ioctl(s, SIOCGLIFADDR, &lif);
     if (r) {
         log_line("Failed to get interface address info.");
@@ -67,9 +66,7 @@ char *get_interface_ip(char *ifname)
     }
 
     ip = inet_ntoa(((struct sockaddr_in *)lif.lifr_addr)->sin_addr);
-    len = strlen(ip) + 1;
-    ret = xmalloc(len);
-    strnkcpy(ret, ip, len);
+    ret = xstrdup(ip);
 out2:
     close(s);
 out:
