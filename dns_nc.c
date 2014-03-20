@@ -1,6 +1,6 @@
 /* dns_nc.c
  *
- * Copyright (c) 2010-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2010-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,8 @@
 #include "dns_helpers.h"
 #include "log.h"
 #include "util.h"
-#include "strl.h"
 #include "malloc.h"
+#include "xstrdup.h"
 
 namecheap_conf_t namecheap_conf;
 
@@ -50,39 +50,26 @@ void init_namecheap_conf()
 static void modify_nc_hostip_in_list(namecheap_conf_t *conf, char *host,
                                      char *ip)
 {
-    hostdata_t *t;
-    size_t len;
-    char *buf;
-
     if (!conf || !host || !conf->hostlist)
         return;
 
+    hostdata_t *t;
     for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
-
     if (!t)
         return; /* not found */
 
     free(t->ip);
-    if (!ip) {
-        t->ip = ip;
-        return;
-    }
-    len = strlen(ip) + 1;
-    buf = xmalloc(len);
-    strnkcpy(buf, ip, len);
-    t->ip = buf;
+    t->ip = ip ? xstrdup(ip) : NULL;
 }
 
 static void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host,
                                        time_t time)
 {
-    hostdata_t *t;
-
     if (!conf || !host || !conf->hostlist)
         return;
 
+    hostdata_t *t;
     for (t = conf->hostlist; t && strcmp(t->host, host); t = t->next);
-
     if (!t)
         return; /* not found */
 
@@ -91,44 +78,37 @@ static void modify_nc_hostdate_in_list(namecheap_conf_t *conf, char *host,
 
 static void nc_update_host(char *host, char *curip)
 {
-    int hostname_size = 0, domain_size = 0, dotc = 0;
+    int dotc = 0;
     char url[MAX_BUF];
     char *hostname = NULL, *domain = NULL;
-    size_t ic;
     conn_data_t data;
 
     if (!host || !curip)
         return;
 
-    ic = strlen(host);
-    if (strnkcpy(url, host, sizeof url)) {
+    ssize_t snlen = snprintf(url, sizeof url, "%s", host);
+    if (snlen < 0 || (size_t)snlen >= sizeof url) {
         log_line("nc_update_host: hostname is too long");
         return;
     }
+    size_t ic = strlen(host);
     for (; ic > 0; --ic) {
         if (url[ic] == '.') {
             ++dotc;
             if (dotc == 2) {
                 // This is the . before the domain name.
-                domain_size = strlen(url+ic+1) + 1;
-                domain = xmalloc(domain_size);
-                strnkcpy(domain, url+ic+1, domain_size);
+                domain = xstrdup(url+ic+1);
                 url[ic] = '\0';
+                break;
             }
         }
     }
-    if (dotc >= 2) {
-        hostname_size = strlen(url) + 1;
-        hostname = xmalloc(hostname_size);
-        strnkcpy(hostname, url, hostname_size);
-    } else {
-        domain_size = strlen(url) + 1;
-        domain = xmalloc(domain_size);
-        strnkcpy(domain, url, domain_size);
-        hostname_size = 2;
-        hostname = xmalloc(hostname_size);
-        hostname[0] = '@';
-        hostname[1] = '\0';
+    if (dotc >= 2)
+        hostname = xstrdup(url);
+    else {
+        static char empty_hostname[] = "@";
+        domain = xstrdup(url);
+        hostname = xstrdup(empty_hostname);
     }
     memset(url, 0, sizeof url);
 
