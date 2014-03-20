@@ -39,14 +39,14 @@
 
 #include "defines.h"
 #include "log.h"
-#include "strl.h"
 #include "util.h"
 
 /* allocates from heap for return */
 char *get_interface_ip(char *ifname)
 {
     struct ifaddrs *ifp = NULL, *p = NULL;
-    char *ret = NULL, *ip;
+    char ip[INET_ADDRSTRLEN];
+    char *ret = NULL;
     size_t len;
     int r, found = 0;
 
@@ -82,10 +82,11 @@ char *get_interface_ip(char *ifname)
         goto out2;
     }
 
-    ip = inet_ntoa(((struct sockaddr_in *)p->ifa_addr)->sin_addr);
-    len = strlen(ip) + 1;
-    ret = xmalloc(len);
-    strnkcpy(ret, ip, len);
+    inet_ntop(AF_INET, ((struct sockaddr_in *)p->ifa_addr)->sin_addr,
+              ip, sizeof ip);
+    ret = strdup(ip);
+    if (!ret)
+        suicide("%s: strdup failed", __func__);
 
 out2:
     freeifaddrs(ifp);
