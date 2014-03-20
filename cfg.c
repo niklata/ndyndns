@@ -38,10 +38,11 @@
 #include "cfg.h"
 #include "util.h"
 #include "log.h"
-#include "strl.h"
 #include "chroot.h"
 #include "malloc.h"
 #include "ndyndns.h"
+#include "copy_cmdarg.h"
+#include "xstrdup.h"
 
 #include "dns_nc.h"
 #include "dns_he.h"
@@ -93,10 +94,7 @@ static char *get_dnserr(char *host)
 
     len = strlen(chroot_dir) + strlen(host) + strlen("-dnserr") + 6;
     file = xmalloc(len);
-    strnkcpy(file, chroot_dir, len);
-    strnkcat(file, "/var/", len);
-    strnkcat(file, host, len);
-    strnkcat(file, "-dnserr", len);
+    snprintf(file, len, "%s/var/%s-dnserr", chroot_dir, host);
 
     f = fopen(file, "r");
     free(file);
@@ -106,28 +104,23 @@ static char *get_dnserr(char *host)
 
     if (!fgets(buf, sizeof buf, f)) {
         log_line("%s-dnserr is empty.  Assuming error: [unknown].", host);
-        ret = xmalloc(sizeof "unknown" + 1);
-        strnkcpy(ret, "unknown", sizeof "unknown" + 1);
+        ret = xstrdup("unknown");
         goto outfd;
     }
 
-    len = strlen(buf) + 1;
-    ret = xmalloc(len);
-    strnkcpy(ret, buf, len);
+    ret = xstrdup(buf);
 outfd:
     fclose(f);
 out:
     return ret;
 }
 
-
 /* allocates memory.  ip may be NULL */
 static void add_to_hostdata_list(hostdata_t **list, char *host, char *ip,
                     time_t time)
 {
     hostdata_t *item, *t;
-    char *elem, *err = NULL;
-    size_t len;
+    char *err = NULL;
 
     if (!list || !host) return;
 
@@ -143,10 +136,7 @@ static void add_to_hostdata_list(hostdata_t **list, char *host, char *ip,
     item->next = NULL;
     item->ip = NULL;
 
-    len = strlen(host) + 1;
-    elem = xmalloc(len);
-    strnkcpy(elem, host, len);
-    item->host = elem;
+    item->host = xstrdup(host);
 
     if (!ip || !item->host) {
         if (item->host) {
@@ -157,10 +147,7 @@ static void add_to_hostdata_list(hostdata_t **list, char *host, char *ip,
         goto out;
     }
 
-    len = strlen(ip) + 1;
-    elem = xmalloc(len);
-    strnkcpy(elem, ip, len);
-    item->ip = elem;
+    item->ip = xstrdup(ip);
 
     if (!*list) {
         *list = item;
@@ -175,7 +162,7 @@ static void add_to_hostdata_list(hostdata_t **list, char *host, char *ip,
         }
         t = t->next;
     }
-    log_line("%s: coding error", __func__);
+    log_error("%s: coding error", __func__);
 out:
     free(item->host);
     free(item->ip);
@@ -187,8 +174,7 @@ static void add_to_hostpair_list(hostdata_t **list, char *host, char *passwd,
                                  char *ip, time_t time)
 {
     hostdata_t *item, *t;
-    char *elem, *err = NULL;
-    size_t len;
+    char *err = NULL;
 
     if (!list || !host || !passwd) return;
 
@@ -204,20 +190,9 @@ static void add_to_hostpair_list(hostdata_t **list, char *host, char *passwd,
     item->next = NULL;
     item->ip = NULL;
 
-    len = strlen(host) + 1;
-    elem = xmalloc(len);
-    strnkcpy(elem, host, len);
-    item->host = elem;
-
-    len = strlen(passwd) + 1;
-    elem = xmalloc(len);
-    strnkcpy(elem, passwd, len);
-    item->password = elem;
-
-    len = strlen(ip) + 1;
-    elem = xmalloc(len);
-    strnkcpy(elem, ip, len);
-    item->ip = elem;
+    item->host = xstrdup(host);
+    item->password = xstrdup(passwd);
+    item->ip = xstrdup(ip);
 
     if (!ip) {
         log_line("[%s] has no ip address.  No updates will be performed for [%s].", host, host);
@@ -263,10 +238,7 @@ static time_t get_dnsdate(char *host)
 
     len = strlen(chroot_dir) + strlen(host) + strlen("-dnsdate") + 6;
     file = xmalloc(len);
-    strnkcpy(file, chroot_dir, len);
-    strnkcat(file, "/var/", len);
-    strnkcat(file, host, len);
-    strnkcat(file, "-dnsdate", len);
+    snprintf(file, len, "%s/var/%s-dnsdate", chroot_dir, host);
 
     f = fopen(file, "r");
     free(file);
@@ -293,8 +265,7 @@ out:
 /* allocates memory for return or returns NULL */
 static char *lookup_dns(char *name) {
     struct hostent *hent;
-    char *ret = NULL, *t = NULL;
-    int len;
+    char *t = NULL;
 
     if (!name)
         suicide("%s: host is NULL!", __func__);
@@ -316,17 +287,12 @@ static char *lookup_dns(char *name) {
             log_line("failed to resolve %s: temporary error on an authoritative nameserver.", name);
             break;
         }
-        goto out;
+        return NULL;
     }
 
     t = inet_ntoa(*((struct in_addr *)hent->h_addr));
     log_line("%s: returned [%s]", __func__, t);
-
-    len = strlen(t) + 1;
-    ret = xmalloc(len);
-    strnkcpy(ret, t, len);
-out:
-    return ret;
+    return xstrdup(t);
 }
 
 /* allocates memory for return or returns NULL */
@@ -344,10 +310,7 @@ static char *get_dnsip(char *host)
 
     len = strlen(chroot_dir) + strlen(host) + strlen("-dnsip") + 6;
     file = xmalloc(len);
-    strnkcpy(file, chroot_dir, len);
-    strnkcat(file, "/var/", len);
-    strnkcat(file, host, len);
-    strnkcat(file, "-dnsip", len);
+    snprintf(file, len, "%s/var/%s-dnsip", chroot_dir, host);
 
     f = fopen(file, "r");
     free(file);
@@ -370,9 +333,7 @@ static char *get_dnsip(char *host)
         goto outfd;
     }
 
-    len = strlen(buf) + 1;
-    ret = xmalloc(len);
-    strnkcpy(ret, buf, len);
+    ret = xstrdup(buf);
 outfd:
     fclose(f);
 out:
@@ -540,7 +501,8 @@ static char *parse_line_string(char *line, char *key)
     if (!foundeq)
         goto out;
     len = strlen(point);
-    while (1) {
+    // Strip terminal whitespace.
+    while (len) {
         if (*(point+len-1) == ' ' || *(point+len-1) == '\t') {
             if (len - 1 >= 0)
                 *(point+len-1) = '\0';
@@ -548,12 +510,10 @@ static char *parse_line_string(char *line, char *key)
                 --len;
             else
                 break;
-        }
-        else
+        } else
             break;
     }
-    ret = xmalloc(len + 1);
-    strnkcpy(ret, point, len + 1);
+    ret = xstrdup(point);
 out:
     return ret;
 }
@@ -730,7 +690,7 @@ int parse_config(char *file)
                     parse_warn(lnum, "chroot");
                     break;
                 case PRS_CONFIG:
-                    strnkcpy(chroot_dir, tmp, sizeof chroot_dir);
+                    copy_cmdarg(chroot_dir, tmp, sizeof chroot_dir, "chroot");
                     break;
             }
             free(tmp);
