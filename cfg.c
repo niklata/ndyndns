@@ -85,16 +85,18 @@ static char *get_dnserr(char *host)
 {
     FILE *f;
     char buf[MAX_BUF], *file, *ret = NULL;
-    int len;
+    size_t len;
 
     if (!host)
         suicide("%s: host is NULL", __func__);
 
     memset(buf, '\0', MAX_BUF);
 
-    len = strlen(chroot_dir) + strlen(host) + strlen("-dnserr") + 6;
+    len = strlen(chroot_dir) + strlen(host) + strlen("/var/-dnserr") + 1;
     file = xmalloc(len);
-    snprintf(file, len, "%s/var/%s-dnserr", chroot_dir, host);
+    ssize_t snlen = snprintf(file, len, "%s/var/%s-dnserr", chroot_dir, host);
+    if (snlen < 0 || (size_t)snlen >= len)
+        suicide("%s: snprintf would truncate", __func__);
 
     f = fopen(file, "r");
     free(file);
@@ -236,9 +238,11 @@ static time_t get_dnsdate(char *host)
     if (!host)
         suicide("FATAL - get_dnsdate: host is NULL");
 
-    len = strlen(chroot_dir) + strlen(host) + strlen("-dnsdate") + 6;
+    len = strlen(chroot_dir) + strlen(host) + strlen("/var/-dnsdate") + 1;
     file = xmalloc(len);
-    snprintf(file, len, "%s/var/%s-dnsdate", chroot_dir, host);
+    ssize_t snlen = snprintf(file, len, "%s/var/%s-dnsdate", chroot_dir, host);
+    if (snlen < 0 || (size_t)snlen >= len)
+        suicide("%s: snprintf would truncate", __func__);
 
     f = fopen(file, "r");
     free(file);
@@ -300,7 +304,7 @@ static char *get_dnsip(char *host)
 {
     FILE *f;
     char buf[MAX_BUF], *file, *ret = NULL;
-    int len;
+    size_t len;
     struct in_addr inr;
 
     if (!host)
@@ -308,9 +312,11 @@ static char *get_dnsip(char *host)
 
     memset(buf, '\0', MAX_BUF);
 
-    len = strlen(chroot_dir) + strlen(host) + strlen("-dnsip") + 6;
+    len = strlen(chroot_dir) + strlen(host) + strlen("/var/-dnsip") + 1;
     file = xmalloc(len);
-    snprintf(file, len, "%s/var/%s-dnsip", chroot_dir, host);
+    ssize_t snlen = snprintf(file, len, "%s/var/%s-dnsip", chroot_dir, host);
+    if (snlen < 0 || (size_t)snlen >= len)
+        suicide("%s: snprintf would truncate", __func__);
 
     f = fopen(file, "r");
     free(file);

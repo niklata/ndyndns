@@ -62,7 +62,9 @@ char *get_interface_ip(char *ifname)
         goto out;
     }
 
-    snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s", ifname);
+    ssize_t snlen = snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s", ifname);
+    if (snlen < 0 || (size_t)snlen >= sizeof ifr.ifr_name)
+        suicide("%s: snprintf would truncate", __func__);
     ifr.ifr_addr.sa_family = AF_INET;
     if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
         log_line("%s: (%s) SIOCGIFADDR failed: %s",

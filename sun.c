@@ -58,7 +58,9 @@ char *get_interface_ip(char *ifname)
         goto out;
     }
 
-    snprintf(lif.lfr_name, sizeof lif.lfr_name, "%s", ifname);
+    ssize_t snlen = snprintf(lif.lfr_name, sizeof lif.lfr_name, "%s", ifname);
+    if (snlen < 0 || (size_t)snlen >= sizeof lif.lif_name)
+        suicide("%s: snprintf would truncate", __func__);
     r = ioctl(s, SIOCGLIFADDR, &lif);
     if (r) {
         log_line("Failed to get interface address info.");
