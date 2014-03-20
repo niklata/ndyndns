@@ -1,6 +1,6 @@
 /* checkip.c - checkip-specific functions
  *
- * Copyright (c) 2007-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2007-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,9 +38,9 @@
 #include "defines.h"
 #include "dns_helpers.h"
 #include "log.h"
-#include "strl.h"
 #include "util.h"
 #include "malloc.h"
+#include "xstrdup.h"
 
 static time_t last_time = 0;
 
@@ -84,8 +84,7 @@ char *query_curip(void)
         goto out;
     ++len;
 
-    ret = xmalloc(len);
-    strnkcpy(ret, ip, len);
+    ret = xstrdup(ip);
 out:
     free(data.buf);
     return ret;
