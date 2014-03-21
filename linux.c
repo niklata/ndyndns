@@ -49,7 +49,7 @@
 char *get_interface_ip(char *ifname)
 {
     struct ifreq ifr;
-    char *ip = NULL, *ret = NULL;
+    char *ret = NULL;
     int fd;
 
     if (ifname == NULL)
@@ -72,7 +72,9 @@ char *get_interface_ip(char *ifname)
         goto outfd;
     }
 
-    ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr,
+              ip, sizeof ip);
     ret = xstrdup(ip);
 outfd:
     close(fd);

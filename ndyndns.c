@@ -134,7 +134,7 @@ static void do_work(void)
 
         if (!curip)
             goto sleep;
-        if (inet_aton(curip, &inr) == 0) {
+        if (inet_pton(AF_INET, curip, &inr) != 1) {
             log_line("%s has ip: [%s], which is invalid.  Sleeping.",
                      ifname, curip);
             goto sleep;

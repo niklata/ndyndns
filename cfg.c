@@ -263,7 +263,6 @@ out:
 /* allocates memory for return or returns NULL */
 static char *lookup_dns(char *name) {
     struct hostent *hent;
-    char *t = NULL;
 
     if (!name)
         suicide("%s: host is NULL!", __func__);
@@ -288,9 +287,10 @@ static char *lookup_dns(char *name) {
         return NULL;
     }
 
-    t = inet_ntoa(*((struct in_addr *)hent->h_addr));
-    log_line("%s: returned [%s]", __func__, t);
-    return xstrdup(t);
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, (struct in_addr *)hent->h_addr, ip, sizeof ip);
+    log_line("%s: returned [%s]", __func__, ip);
+    return xstrdup(ip);
 }
 
 /* allocates memory for return or returns NULL */
@@ -324,7 +324,7 @@ static char *get_dnsip(char *host)
         goto outfd;
     }
 
-    if (inet_aton(buf, &inr) == 0) {
+    if (inet_pton(AF_INET, buf, &inr) != 1) {
         log_line("%s-dnsip is corrupt.  Querying DNS.", host);
         ret = lookup_dns(host);
         goto outfd;

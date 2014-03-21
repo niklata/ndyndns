@@ -45,7 +45,7 @@
 char *get_interface_ip(char *ifname)
 {
     struct lifreq lif;
-    char *ret = NULL, *ip;
+    char *ret = NULL;
     size_t len;
     int r, s;
 
@@ -67,7 +67,9 @@ char *get_interface_ip(char *ifname)
         goto out2;
     }
 
-    ip = inet_ntoa(((struct sockaddr_in *)lif.lifr_addr)->sin_addr);
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &((struct sockaddr_in *)lif.lifr_addr)->sin_addr,
+              ip, sizeof ip);
     ret = xstrdup(ip);
 out2:
     close(s);
