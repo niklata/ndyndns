@@ -32,8 +32,6 @@
 #include <stdbool.h>
 #include "util.h" /* for conn_data_t */
 
-extern int use_ssl;
-
 typedef enum {
     RET_DO_NOTHING,
     RET_BADSYS,

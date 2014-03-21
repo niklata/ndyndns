@@ -67,8 +67,6 @@
 #include "dns_nc.h"
 #include "dns_he.h"
 
-int use_ssl = 1;
-
 static char ifname[IFNAMSIZ] = "ppp0";
 static char pidfile[MAX_PATH_LENGTH] = "/var/run/ndyndns.pid";
 char chroot_dir[MAX_PATH_LENGTH] = "";
@@ -148,20 +146,11 @@ sleep:
     }
 }
 
-static int check_ssl(void)
+static void check_ssl(void)
 {
-    int t;
-    curl_version_info_data *data;
-
-    data = curl_version_info(CURLVERSION_NOW);
-
-    t = data->features & CURL_VERSION_SSL;
-    if (t) {
-        log_line("curl has SSL support, using https.");
-    } else {
-        log_line("curl lacks SSL support, using http.");
-    }
-    return t;
+    curl_version_info_data *data = curl_version_info(CURLVERSION_NOW);
+    if (!(data->features & CURL_VERSION_SSL))
+        suicide("curl lacks SSL support; refusing to run until this is fixed");
 }
 
 void cfg_set_pidfile(char *pidfname)
@@ -385,7 +374,7 @@ int main(int argc, char** argv)
     memset(pidfile, '\0', sizeof pidfile);
 
     curl_global_init(CURL_GLOBAL_ALL);
-    use_ssl = check_ssl();
+    check_ssl();
 
     do_work();
 

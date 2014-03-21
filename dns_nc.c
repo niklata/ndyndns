@@ -114,8 +114,8 @@ static void nc_update_host(char *host, char *curip)
     /* set up the authentication url */
     snlen = snprintf
         (url, sizeof url,
-         "http%s://dynamicdns.park-your-domain.com/update?host=%s&domain=%s&password=%s&ip=%s",
-         use_ssl ? "s" : "", hostname, domain, namecheap_conf.password, curip);
+         "https://dynamicdns.park-your-domain.com/update?host=%s&domain=%s&password=%s&ip=%s",
+         hostname, domain, namecheap_conf.password, curip);
     if (snlen < 0 || (size_t)snlen >= sizeof url)
         suicide("%s: url would overflow a fixed buffer", __func__);
 

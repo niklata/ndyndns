@@ -91,8 +91,8 @@ static void he_update_host(char *host, char *password, char *curip)
 
     ssize_t snlen = snprintf
         (url, sizeof url,
-         "http%s://%s:%s@dyn.dns.he.net/nic/update?hostname=%s&myip=%s",
-         use_ssl ? "s" : "", host, password, host, curip);
+         "https://%s:%s@dyn.dns.he.net/nic/update?hostname=%s&myip=%s",
+         host, password, host, curip);
     if (snlen < 0 || (size_t)snlen >= sizeof url)
         suicide("%s: url would overflow a fixed buffer", __func__);
 
@@ -149,8 +149,8 @@ static void he_update_tunid(char *tunid, char *curip)
 
     ssize_t snlen = snprintf
         (url, sizeof url,
-         "http%s://ipv4.tunnelbroker.net/ipv4_end.php?ip=%s&pass=%s&apikey=%s&tid=%s",
-         use_ssl ? "s" : "", curip, he_conf.passhash, he_conf.userid, tunid);
+         "https://ipv4.tunnelbroker.net/ipv4_end.php?ip=%s&pass=%s&apikey=%s&tid=%s",
+         curip, he_conf.passhash, he_conf.userid, tunid);
     if (snlen < 0 || (size_t)snlen >= sizeof url)
         suicide("%s: url would overflow a fixed buffer", __func__);
 
