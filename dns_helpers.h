@@ -54,13 +54,6 @@ typedef enum {
 void write_dnsdate(char *host, time_t date);
 void write_dnsip(char *host, char *ip);
 void write_dnserr(char *host, return_codes code);
-void dyndns_curlbuf_cpy(char *dst, char *src, size_t size);
-void dyndns_curlbuf_cat(char *dst, char *src, size_t size);
 int dyndns_curl_send(char *url, conn_data_t *data, char *unpwd);
-
-#define DDCB_CPY(dst, src) do { \
-    dyndns_curlbuf_cpy(dst, src, sizeof dst); } while (0)
-#define DDCB_CAT(dst, src) do { \
-    dyndns_curlbuf_cat(dst, src, sizeof dst); } while (0)
 
 #endif
