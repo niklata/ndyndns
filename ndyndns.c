@@ -81,7 +81,7 @@ static bool chroot_enabled = true;
 static volatile sig_atomic_t pending_exit;
 
 static void sighandler(int sig) {
-    sig = sig; /* silence warning */
+    (void)sig;
     pending_exit = 1;
 }
 
@@ -171,13 +171,10 @@ void cfg_set_pidfile(char *pidfname)
 
 void cfg_set_user(char *username)
 {
-    int t;
     char *p;
-    struct passwd *pws;
-
-    t = (unsigned int) strtol(username, &p, 10);
+    int t = (unsigned int) strtol(username, &p, 10);
     if (*p != '\0') {
-        pws = getpwnam(username);
+        struct passwd *pws = getpwnam(username);
         if (pws) {
             cfg_uid = (int)pws->pw_uid;
             if (!cfg_gid)
@@ -190,13 +187,10 @@ void cfg_set_user(char *username)
 
 void cfg_set_group(char *groupname)
 {
-    int t;
     char *p;
-    struct group *grp;
-
-    t = (unsigned int) strtol(groupname, &p, 10);
+    int t = (unsigned int) strtol(groupname, &p, 10);
     if (*p != '\0') {
-        grp = getgrnam(groupname);
+        struct group *grp = getgrnam(groupname);
         if (grp)
             cfg_gid = (int)grp->gr_gid;
         else
@@ -212,7 +206,7 @@ void cfg_set_interface(char *interface)
 
 int main(int argc, char** argv)
 {
-    int c, read_cfg = 0;
+    int read_cfg = 0;
 
     init_config();
 
@@ -236,7 +230,7 @@ int main(int argc, char** argv)
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "rdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "rdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {

@@ -44,21 +44,19 @@
 
 static void write_dnsfile(char *fn, char *cnts)
 {
-    int fd, written = 0, oldwritten, len;
-
     if (!fn || !cnts)
         suicide("%s: received NULL", __func__);
 
-    fd = open(fn, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    int fd = open(fn, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if (fd == -1)
         suicide("%s: failed to open %s for write", __func__, fn);
 
-    len = strlen(cnts);
-
-    while (written < len) {
-        oldwritten = written;
+    size_t len = strlen(cnts);
+    ssize_t written = 0;
+    while ((size_t)written < len) {
+        int oldwritten = written;
         written = write(fd, cnts + written, len - written);
-        if (written == -1) {
+        if (written < 0) {
             if (errno == EINTR) {
                 written = oldwritten;
                 continue;
@@ -76,9 +74,6 @@ void write_dnsdate(char *host, time_t date)
 {
     size_t len;
     char *file, buf[MAX_BUF];
-
-    if (!host)
-        suicide("%s: host is NULL", __func__);
 
     len = strlen(host) + strlen("var/-dnsdate") + 1;
     file = xmalloc(len);
@@ -98,11 +93,6 @@ void write_dnsip(char *host, char *ip)
 {
     size_t len;
     char *file, buf[MAX_BUF];
-
-    if (!host)
-        suicide("%s: host is NULL", __func__);
-    if (!ip)
-        suicide("%s: ip is NULL", __func__);
 
     len = strlen(host) + strlen("var/-dnsip") + 1;
     file = xmalloc(len);

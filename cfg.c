@@ -87,9 +87,6 @@ static char *get_dnserr(char *host)
     char buf[MAX_BUF], *file, *ret = NULL;
     size_t len;
 
-    if (!host)
-        suicide("%s: host is NULL", __func__);
-
     memset(buf, '\0', MAX_BUF);
 
     len = strlen(chroot_dir) + strlen(host) + strlen("/var/-dnserr") + 1;
@@ -235,9 +232,6 @@ static time_t get_dnsdate(char *host)
     size_t len;
     time_t ret = 0;
 
-    if (!host)
-        suicide("FATAL - get_dnsdate: host is NULL");
-
     len = strlen(chroot_dir) + strlen(host) + strlen("/var/-dnsdate") + 1;
     file = xmalloc(len);
     ssize_t snlen = snprintf(file, len, "%s/var/%s-dnsdate", chroot_dir, host);
@@ -307,9 +301,6 @@ static char *get_dnsip(char *host)
     size_t len;
     struct in_addr inr;
 
-    if (!host)
-        suicide("%s: host is NULL", __func__);
-
     memset(buf, '\0', MAX_BUF);
 
     len = strlen(chroot_dir) + strlen(host) + strlen("/var/-dnsip") + 1;
@@ -350,7 +341,7 @@ typedef void (*do_populate_fn)(hostdata_t **list, char *instr);
 
 static void do_populate(hostdata_t **list, char *host_in)
 {
-    char *ip, *host, *host_orig;
+    char *host, *host_orig;
 
     host = strdup(host_in);
     host_orig = host;
@@ -358,7 +349,7 @@ static void do_populate(hostdata_t **list, char *host_in)
         ++host;
 
     if (strlen(host)) {
-        ip = get_dnsip(host);
+        char *ip = get_dnsip(host);
         if (ip) {
             log_line("adding: [%s] ip: [%s]", host, ip);
             add_to_hostdata_list(list, host, ip, get_dnsdate(host));
@@ -372,7 +363,7 @@ static void do_populate(hostdata_t **list, char *host_in)
 
 static void do_populate_hp(hostdata_t **list, char *pair_in)
 {
-    char *ip, *host, *host_orig, *passwd;
+    char *host, *host_orig, *passwd;
 
     host = strdup(pair_in);
     host_orig = host;
@@ -387,7 +378,7 @@ static void do_populate_hp(hostdata_t **list, char *pair_in)
     }
 
     if (strlen(host) && strlen(passwd)) {
-        ip = get_dnsip(host);
+        char *ip = get_dnsip(host);
         if (ip) {
             log_line("adding: [%s] ip: [%s]", host, ip);
             add_to_hostpair_list(list, host, passwd, ip, get_dnsdate(host));
@@ -413,8 +404,8 @@ static void populate_hostlist_generic(do_populate_fn fn, hostdata_t **list,
             }
             size_t len = p - left + 1;
             char *t = xmalloc(len);
-            memset(t, '\0', len);
             memcpy(t, left, len - 1);
+            t[len-1] = '\0';
             fn(list, t);
             free(t);
             left = right + 1;
@@ -570,7 +561,7 @@ int parse_config(char *file)
     char buf[MAX_BUF];
     int ret = -1;
     unsigned int lnum = 0;
-    char *point, *tmp;
+    char *tmp;
     enum prs_state prs = PRS_NONE;
 
     if (file) {
@@ -588,7 +579,7 @@ int parse_config(char *file)
             break;
         ++lnum;
 
-        point = buf;
+        char *point = buf;
         while (*point == ' ' || *point == '\t')
             ++point;
 

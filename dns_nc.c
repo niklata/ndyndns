@@ -110,7 +110,6 @@ static void nc_update_host(char *host, char *curip)
         domain = xstrdup(url);
         hostname = xstrdup(empty_hostname);
     }
-    memset(url, 0, sizeof url);
 
     /* set up the authentication url */
     snlen = snprintf
