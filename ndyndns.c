@@ -119,6 +119,8 @@ static void do_work(void)
     char *curip = NULL;
     struct in_addr inr;
 
+    write_dnsip_lookups();
+
     log_line("updating to interface: [%s]", ifname);
 
     while (1) {

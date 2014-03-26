@@ -46,6 +46,37 @@
 
 #include "dns_nc.h"
 #include "dns_he.h"
+#include "dns_helpers.h"
+
+struct dnsip_lookup_node
+{
+    char *host;
+    char *ip;
+    void *next;
+};
+static struct dnsip_lookup_node *dlq_pending;
+
+void write_dnsip_lookups(void)
+{
+    struct dnsip_lookup_node *next;
+    for (struct dnsip_lookup_node *p = dlq_pending; p; p = next) {
+        next = p->next;
+        write_dnsip(p->host, p->ip);
+        free(p->host);
+        free(p->ip);
+        free(p);
+    }
+    dlq_pending = NULL;
+}
+
+static void queue_dnsip_lookup(char *host, char *ip)
+{
+    struct dnsip_lookup_node *p = xmalloc(sizeof(struct dnsip_lookup_node));
+    p->host = xstrdup(host);
+    p->ip = xstrdup(ip);
+    p->next = dlq_pending;
+    dlq_pending = p;
+}
 
 extern char chroot_dir[MAX_PATH_LENGTH];
 
@@ -290,6 +321,7 @@ static char *lookup_dns(char *name) {
     char ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, (struct in_addr *)hent->h_addr, ip, sizeof ip);
     log_line("%s: returned [%s]", __func__, ip);
+    queue_dnsip_lookup(name, ip);
     return xstrdup(ip);
 }
 
