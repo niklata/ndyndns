@@ -202,8 +202,7 @@ int main(int argc, char** argv)
     while (1) {
         int option_index = 0;
         static struct option long_options[] = {
-            {"detach", 0, 0, 'd'},
-            {"nodetach", 0, 0, 'n'},
+            {"background", 0, 0, 'b'},
             {"pidfile", 1, 0, 'p'},
             {"quiet", 0, 0, 'q'},
             {"chroot", 1, 0, 'c'},
@@ -219,7 +218,7 @@ int main(int argc, char** argv)
             {0, 0, 0, 0}
         };
 
-        int c = getopt_long(argc, argv, "rdnp:qc:xf:Fu:g:i:hv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "rbp:qc:xf:Fu:g:i:hv", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -229,8 +228,7 @@ int main(int argc, char** argv)
 "ndyndns " PACKAGE_VERSION ", dyndns update client.  Licensed under 2-clause BSD.\n"
 "Copyright (c) 2005-2014 Nicholas J. Kain\n"
 "Usage: ndyndns [OPTIONS]\n"
-"  -d, --detach                detach from TTY and daemonize\n"
-"  -n, --nodetach              stay attached to TTY\n"
+"  -b, --background            detach from TTY and daemonize\n"
 "  -q, --quiet                 don't print to std(out|err) or log\n"
 "  -c, --chroot                path where ndyndns should chroot\n"
 "  -x, --disable-chroot        do not actually chroot (not recommended)\n"
@@ -248,7 +246,7 @@ int main(int argc, char** argv)
                 break;
 
             case 'v':
-                printf("ndyndns %s, dhcp client.\n", PACKAGE_VERSION);
+                printf("ndyndns %s, dyndns update client.\n", PACKAGE_VERSION);
                 printf("Copyright (c) 2005-2014 Nicholas J. Kain\n"
                        "All rights reserved.\n\n"
                        "Redistribution and use in source and binary forms, with or without\n"
@@ -277,12 +275,8 @@ int main(int argc, char** argv)
                 update_interval = 600;
                 break;
 
-            case 'd':
+            case 'b':
                 gflags_detach = 1;
-                break;
-
-            case 'n':
-                gflags_detach = 0;
                 break;
 
             case 'q':
