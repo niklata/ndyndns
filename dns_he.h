@@ -37,7 +37,7 @@ typedef struct {
 } he_conf_t;
 
 extern he_conf_t he_conf;
-void init_he_conf();
+void init_he_conf(void);
 
 void he_dns_work(char *curip);
 void he_tun_work(char *curip);

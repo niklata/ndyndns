@@ -80,7 +80,7 @@ static void queue_dnsip_lookup(char *host, char *ip)
 
 extern char chroot_dir[MAX_PATH_LENGTH];
 
-void init_config()
+void init_config(void)
 {
     init_namecheap_conf();
     init_he_conf();

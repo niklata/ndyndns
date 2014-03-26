@@ -41,7 +41,7 @@
 
 namecheap_conf_t namecheap_conf;
 
-void init_namecheap_conf()
+void init_namecheap_conf(void)
 {
     namecheap_conf.password = NULL;
     namecheap_conf.hostlist = NULL;

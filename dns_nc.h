@@ -37,7 +37,7 @@ typedef struct {
 } namecheap_conf_t;
 
 extern namecheap_conf_t namecheap_conf;
-void init_namecheap_conf();
+void init_namecheap_conf(void);
 
 void nc_work(char *curip);
 

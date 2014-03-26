@@ -41,7 +41,7 @@
 
 he_conf_t he_conf;
 
-void init_he_conf()
+void init_he_conf(void)
 {
     he_conf.userid = NULL;
     he_conf.passhash = NULL;

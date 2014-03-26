@@ -50,7 +50,7 @@ typedef struct {
     void *next;
 } hostdata_t;
 
-void init_config();
+void init_config(void);
 void write_dnsip_lookups(void);
 void remove_host_from_hostdata_list(hostdata_t **phl, char *host);
 int parse_config(char *file);
