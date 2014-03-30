@@ -42,34 +42,32 @@
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
-
 #include <signal.h>
 #include <errno.h>
-
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #include <getopt.h>
-
+#undef _GNU_SOURCE
+#endif
 #include <curl/curl.h>
+#include "nk/log.h"
+#include "nk/privilege.h"
+#include "nk/pidfile.h"
+#include "nk/signals.h"
+#include "nk/malloc.h"
+#include "nk/copy_cmdarg.h"
 
 #include "config.h"
-#include "defines.h"
 #include "cfg.h"
-#include "log.h"
-#include "chroot.h"
-#include "pidfile.h"
-#include "signals.h"
 #include "linux.h"
 #include "checkip.h"
 #include "util.h"
-#include "malloc.h"
-#include "copy_cmdarg.h"
-
 #include "dns_nc.h"
 #include "dns_he.h"
 
 static char ifname[IFNAMSIZ] = "ppp0";
-static char pidfile[MAX_PATH_LENGTH] = "/var/run/ndyndns.pid";
-char chroot_dir[MAX_PATH_LENGTH] = "";
+static char pidfile[PATH_MAX] = "/var/run/ndyndns.pid";
+char chroot_dir[PATH_MAX] = "";
 
 static int update_interval = 120; // seconds
 static int update_from_remote = 0;
@@ -332,7 +330,7 @@ int main(int argc, char** argv)
     }
 
     if (!read_cfg)
-        suicide("FATAL - no configuration file, exiting.");
+        suicide("FATAL: no configuration file, exiting.");
 
     /* This is tricky -- we *must* use a name that will not be in hosts,
      * otherwise, at least with eglibc, the resolve and NSS libraries will not
@@ -344,17 +342,17 @@ int main(int argc, char** argv)
 
     if (chroot_enabled) {
         if (!strncmp(chroot_dir, "", sizeof chroot_dir))
-            suicide("FATAL - No chroot path specified.  Refusing to run.");
+            suicide("FATAL: No chroot path specified.  Refusing to run.");
         if (getuid())
-            suicide("FATAL - I need root for chroot!");
+            suicide("FATAL: I need root for chroot!");
     }
 
     if (gflags_detach)
         if (daemon(0,0))
-            suicide("FATAL - detaching fork failed");
+            suicide("FATAL: detaching fork failed");
 
     if (file_exists(pidfile, "w") == -1)
-        suicide("FATAL - cannot open pidfile for write");
+        suicide("FATAL: cannot open pidfile for write");
     write_pid(pidfile);
 
     umask(077);
@@ -362,8 +360,8 @@ int main(int argc, char** argv)
 
     /* Note that failure cases are handled by called fns. */
     if (chroot_enabled)
-        imprison(chroot_dir);
-    drop_root(cfg_uid, cfg_gid);
+        nk_set_chroot(chroot_dir);
+    nk_set_uidgid(cfg_uid, cfg_gid);
 
     /* Cover our tracks... */
     memset(chroot_dir, '\0', sizeof chroot_dir);

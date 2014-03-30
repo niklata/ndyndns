@@ -36,10 +36,8 @@
 #include <arpa/inet.h>
 #include <stropts.h>
 #include <errno.h>
-
-#include "defines.h"
+#include "nk/xstrdup.h"
 #include "util.h"
-#include "xstrdup.h"
 
 /* allocates from heap for return */
 char *get_interface_ip(char *ifname)

@@ -29,15 +29,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
-
-#include "config.h"
+#include "nk/log.h"
+#include "nk/malloc.h"
+#include "nk/xstrdup.h"
 #include "defines.h"
+#include "config.h"
 #include "dns_he.h"
 #include "dns_helpers.h"
-#include "log.h"
 #include "util.h"
-#include "malloc.h"
-#include "xstrdup.h"
 
 he_conf_t he_conf;
 

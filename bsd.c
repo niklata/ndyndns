@@ -1,6 +1,6 @@
 /* bsd.c - BSD-specific functions
  *
- * Copyright (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,7 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <errno.h>
-
-#include "defines.h"
-#include "log.h"
+#include "nk/log.h"
 #include "util.h"
 
 /* allocates from heap for return */

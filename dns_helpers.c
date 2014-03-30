@@ -34,12 +34,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <curl/curl.h>
-
+#include "nk/log.h"
+#include "nk/malloc.h"
+#include "defines.h"
 #include "dns_helpers.h"
 #include "config.h"
-#include "defines.h"
-#include "log.h"
-#include "malloc.h"
 #include "util.h"
 
 static void write_dnsfile(char *fn, char *cnts)

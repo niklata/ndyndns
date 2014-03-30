@@ -1,4 +1,4 @@
-ndyndns, Copyright (c) 2005-2013
+ndyndns, Copyright (c) 2005-2014
 Nicholas J. Kain < njkain <at> gmail <dot> com >
 Licensed under BSD.
 
@@ -36,8 +36,8 @@ following instructions are for performing a generic install that is relatively
 distro-agnostic.  Using vendor packages is highly reccomended if they are
 available, since it will spare you the pain of setting up a working chroot.
 
-If you have problems, I suggest running ndyndns in -n mode so that you can
-see errors printed at the command prompt.  It will make debugging your
+If you have problems, I suggest running ndyndns in the foreground so that you
+can see errors printed at the command prompt.  It will make debugging your
 chroot and configuration much easier.
 
 Building:
@@ -106,7 +106,7 @@ with the name of the network interface associated with the IP that you wish
 to be updated to your dyndns records (eg, for a PPPoE interface on Linux,
 it is probably correct to replace eth0 with ppp0).
 
-ndyndns -n -f /etc/ndyndns.conf
+ndyndns -f /etc/ndyndns.conf
 
 ADDITIONAL NOTES
 ================

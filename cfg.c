@@ -1,6 +1,6 @@
 /* cfg.c - configuration file functions
  *
- * Copyright (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,17 +33,17 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <limits.h>
+#include "nk/log.h"
+#include "nk/privilege.h"
+#include "nk/malloc.h"
+#include "nk/copy_cmdarg.h"
+#include "nk/xstrdup.h"
 
 #include "defines.h"
+#include "ndyndns.h"
 #include "cfg.h"
 #include "util.h"
-#include "log.h"
-#include "chroot.h"
-#include "malloc.h"
-#include "ndyndns.h"
-#include "copy_cmdarg.h"
-#include "xstrdup.h"
-
 #include "dns_nc.h"
 #include "dns_he.h"
 #include "dns_helpers.h"
@@ -78,7 +78,7 @@ static void queue_dnsip_lookup(char *host, char *ip)
     dlq_pending = p;
 }
 
-extern char chroot_dir[MAX_PATH_LENGTH];
+extern char chroot_dir[PATH_MAX];
 
 void init_config(void)
 {

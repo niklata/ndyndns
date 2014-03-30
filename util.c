@@ -1,6 +1,6 @@
 /* util.c - utility functions
  *
- * Copyright (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <ctype.h>
-
+#include "nk/log.h"
 #include "util.h"
-#include "log.h"
 
 void null_crlf(char *data) {
     char *p = data;

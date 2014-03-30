@@ -1,6 +1,6 @@
 /* defines.h
  *
- * Copyright (c) 2005-2013 Nicholas J. Kain <njkain at gmail dot com>
+ * Copyright (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,6 @@
 #ifndef NDYNDNS_DEFINES_H_
 #define NDYNDNS_DEFINES_H_
 
-#define MAX_PATH_LENGTH 1024
 #define MAX_BUF 1024
 #define MAX_CHUNKS 3
 

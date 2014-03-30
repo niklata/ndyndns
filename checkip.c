@@ -34,13 +34,12 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <curl/curl.h>
-
+#include "nk/log.h"
+#include "nk/malloc.h"
+#include "nk/xstrdup.h"
 #include "defines.h"
 #include "dns_helpers.h"
-#include "log.h"
 #include "util.h"
-#include "malloc.h"
-#include "xstrdup.h"
 
 static time_t last_time = 0;
 
