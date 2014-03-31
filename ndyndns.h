@@ -30,7 +30,11 @@
 
 void cfg_set_pidfile(char *pidfname);
 void cfg_set_user(char *username);
-void cfg_set_group(char *groupname);
 void cfg_set_interface(char *interface);
+void cfg_set_chroot(char *chroot);
+void cfg_set_background(void);
+void cfg_set_quiet(void);
+void cfg_set_disable_chroot(void);
+void cfg_set_remote(void);
 
 #endif /* _NDYNDNS_H_ */

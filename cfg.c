@@ -575,8 +575,7 @@ enum prs_state {
 #define PRS_CONFIG_STR "[config]"
 #define PRS_NAMECHEAP_STR "[namecheap]"
 #define PRS_HE_STR "[he]"
-#define DETACH_STR "detach"
-#define NODETACH_STR "nodetach"
+#define BACKGROUND_STR "background"
 #define QUIET_STR "quiet"
 #define DISABLE_CHROOT_STR "disable-chroot"
 #define REMOTE_STR "remote"
@@ -719,7 +718,7 @@ int parse_config(char *file)
                     parse_warn(lnum, "chroot");
                     break;
                 case PRS_CONFIG:
-                    copy_cmdarg(chroot_dir, tmp, sizeof chroot_dir, "chroot");
+                    cfg_set_chroot(tmp);
                     break;
             }
             free(tmp);
@@ -754,20 +753,6 @@ int parse_config(char *file)
             continue;
         }
 
-        tmp = parse_line_string(point, "group");
-        if (tmp) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "group");
-                    break;
-                case PRS_CONFIG:
-                    cfg_set_group(tmp);
-                    break;
-            }
-            free(tmp);
-            continue;
-        }
-
         tmp = parse_line_string(point, "interface");
         if (tmp) {
             switch (prs) {
@@ -782,22 +767,13 @@ int parse_config(char *file)
             continue;
         }
 
-        if (!strncmp(DETACH_STR, point, sizeof DETACH_STR - 1)) {
+        if (!strncmp(BACKGROUND_STR, point, sizeof BACKGROUND_STR - 1)) {
             switch (prs) {
                 default:
-                    parse_warn(lnum, "detach");
+                    parse_warn(lnum, "background");
                     break;
                 case PRS_CONFIG:
-                    break;
-            }
-            continue;
-        }
-        if (!strncmp(NODETACH_STR, point, sizeof NODETACH_STR - 1)) {
-            switch (prs) {
-                default:
-                    parse_warn(lnum, "nodetach");
-                    break;
-                case PRS_CONFIG:
+                    cfg_set_background();
                     break;
             }
             continue;
@@ -808,6 +784,7 @@ int parse_config(char *file)
                     parse_warn(lnum, "quiet");
                     break;
                 case PRS_CONFIG:
+                    cfg_set_quiet();
                     break;
             }
             continue;
@@ -818,6 +795,7 @@ int parse_config(char *file)
                     parse_warn(lnum, "disable-chroot");
                     break;
                 case PRS_CONFIG:
+                    cfg_set_disable_chroot();
                     break;
             }
             continue;
@@ -828,6 +806,7 @@ int parse_config(char *file)
                     parse_warn(lnum, "remote");
                     break;
                 case PRS_CONFIG:
+                    cfg_set_remote();
                     break;
             }
             continue;

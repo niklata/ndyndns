@@ -71,7 +71,8 @@ char chroot_dir[PATH_MAX] = "";
 
 static int update_interval = 120; // seconds
 static int update_from_remote = 0;
-static int cfg_uid = 0, cfg_gid = 0;
+static uid_t cfg_uid = 0;
+static gid_t cfg_gid = 0;
 static bool chroot_enabled = true;
 
 static volatile sig_atomic_t pending_exit;
@@ -160,37 +161,39 @@ void cfg_set_pidfile(char *pidfname)
 
 void cfg_set_user(char *username)
 {
-    char *p;
-    int t = (unsigned int) strtol(username, &p, 10);
-    if (*p != '\0') {
-        struct passwd *pws = getpwnam(username);
-        if (pws) {
-            cfg_uid = (int)pws->pw_uid;
-            if (!cfg_gid)
-                cfg_gid = (int)pws->pw_gid;
-        } else
-            suicide("%s: invalid uid specified.", __func__);
-    } else
-        cfg_uid = t;
-}
-
-void cfg_set_group(char *groupname)
-{
-    char *p;
-    int t = (unsigned int) strtol(groupname, &p, 10);
-    if (*p != '\0') {
-        struct group *grp = getgrnam(groupname);
-        if (grp)
-            cfg_gid = (int)grp->gr_gid;
-        else
-            suicide("%s: invalid gid specified.", __func__);
-    } else
-        cfg_gid = t;
+    if (nk_uidgidbyname(username, &cfg_uid, &cfg_gid))
+        suicide("invalid user '%s' specified", username);
 }
 
 void cfg_set_interface(char *interface)
 {
     copy_cmdarg(ifname, interface, sizeof ifname, "interface");
+}
+
+void cfg_set_chroot(char *chroot)
+{
+    copy_cmdarg(chroot_dir, chroot, sizeof chroot_dir, "chroot");
+}
+
+void cfg_set_background(void)
+{
+    gflags_detach = 1;
+}
+
+void cfg_set_quiet(void)
+{
+    gflags_quiet = 1;
+}
+
+void cfg_set_disable_chroot(void)
+{
+    chroot_enabled = false;
+}
+
+void cfg_set_remote(void)
+{
+    update_from_remote = 1;
+    update_interval = 600;
 }
 
 int main(int argc, char** argv)
@@ -210,7 +213,6 @@ int main(int argc, char** argv)
             {"file", 1, 0, 'f'},
             {"cfg-stdin", 0, 0, 'F'},
             {"user", 1, 0, 'u'},
-            {"group", 1, 0, 'g'},
             {"interface", 1, 0, 'i'},
             {"remote", 0, 0, 'r'},
             {"help", 0, 0, 'h'},
@@ -218,7 +220,7 @@ int main(int argc, char** argv)
             {0, 0, 0, 0}
         };
 
-        int c = getopt_long(argc, argv, "rbp:qc:xf:Fu:g:i:hv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "rbp:qc:xf:Fu:i:hv", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -236,7 +238,6 @@ int main(int argc, char** argv)
 "  -F, --cfg-stdin             read configuration file from standard input\n"
 "  -p, --pidfile               pidfile path\n"
 "  -u, --user                  user name that ndyndns should run as\n"
-"  -g, --group                 group name that ndyndns should run as\n"
 "  -i, --interface             interface ip to check (default: ppp0)\n"
 "  -r, --remote                get ip from remote dyndns host (overrides -i)\n"
 "  -h, --help                  print this help and exit\n"
@@ -271,24 +272,23 @@ int main(int argc, char** argv)
                 break;
 
             case 'r':
-                update_from_remote = 1;
-                update_interval = 600;
+                cfg_set_remote();
                 break;
 
             case 'b':
-                gflags_detach = 1;
+                cfg_set_background();
                 break;
 
             case 'q':
-                gflags_quiet = 1;
+                cfg_set_quiet();
                 break;
 
             case 'x':
-                chroot_enabled = false;
+                cfg_set_disable_chroot();
                 break;
 
             case 'c':
-                copy_cmdarg(chroot_dir, optarg, sizeof chroot_dir, "chroot");
+                cfg_set_chroot(optarg);
                 break;
 
             case 'f':
@@ -317,10 +317,6 @@ int main(int argc, char** argv)
 
             case 'u':
                 cfg_set_user(optarg);
-                break;
-
-            case 'g':
-                cfg_set_group(optarg);
                 break;
 
             case 'i':
