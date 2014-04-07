@@ -357,7 +357,7 @@ int main(int argc, char** argv)
     /* Note that failure cases are handled by called fns. */
     if (chroot_enabled)
         nk_set_chroot(chroot_dir);
-    nk_set_uidgid(cfg_uid, cfg_gid);
+    nk_set_uidgid(cfg_uid, cfg_gid, NULL);
 
     /* Cover our tracks... */
     memset(chroot_dir, '\0', sizeof chroot_dir);
