@@ -2,8 +2,8 @@ project (ndyndns)
 
 cmake_minimum_required (VERSION 2.6)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wextra -Wno-format-extra-args -Wno-format-zero-length -Wformat-nonliteral -Wformat-security -pedantic")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu99 -Wall -Wextra -Wno-format-extra-args -Wno-format-zero-length -Wformat-nonliteral -Wformat-security -pedantic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -pedantic -Wall -Wextra -Wformat=2 -Wformat-security -Wpointer-arith -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -pedantic -Wall -Wextra -Wformat=2 -Wformat-security -Wpointer-arith -Wno-unused-parameter")
 
 include_directories("${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/ncmlib")
 add_subdirectory(ncmlib)
