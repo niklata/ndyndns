@@ -1,3 +1,9 @@
+2.3:
+* No functional difference; the new version number is simply to
+  indicate the movement from google code.  2.x will be a stable
+  version that will retain dyn.com support and will have few other
+  changes.
+
 2.2:
 
 * Change layout of the chroot. THIS REQUIRES USER INTERVENTION. It's safer on
