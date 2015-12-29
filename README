@@ -1,7 +1,5 @@
-ndyndns, Copyright (c) 2005-2014
-Nicholas J. Kain < njkain <at> gmail <dot> com >
-Licensed under BSD.
-
+ndyndns - dynamic dns update daemon
+(C) 2005-2015 Nicholas J. Kain.  Licensed under 2-clause BSD.
 
 REQUIREMENTS
 ============
@@ -24,7 +22,7 @@ DOWNLOADING
 
 If you need to update ndyndns, the latest version can be found at:
 
-http://ndyndns.googlecode.com
+https://github.com/niklata/ndyndns/tree/master
 
 
 INSTALLING
@@ -162,12 +160,4 @@ suggesting the implementation of a facility to read configuration files
 from standard input.
 
 Seth Fulton for spotting a bug in subdomain updates for Namecheap ddns.
-
-CONTACT
-=======
-
-If you find any problems, please don't hesitate to contact me.  Email is best
-for a prompt response, but I also check the issue tracker on googlecode from
-time to time.
-
 

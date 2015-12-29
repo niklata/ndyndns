@@ -1,6 +1,13 @@
-2.3:
+3.0:
 * Remove support for dyn.com dynamic DNS.  My old free dynamic dns hostnames
   no longer exist despite having been regularly updated.
+* ncmlib is now an external repo.
+
+2.3:
+* No functional difference; the new version number is simply to
+  indicate the movement from google code.  2.x will be a stable
+  version that will retain dyn.com support and will have few other
+  changes.
 
 2.2:
 
