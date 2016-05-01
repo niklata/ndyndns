@@ -397,9 +397,6 @@ int main(int argc, char** argv)
     umask(077);
     fix_signals();
 
-    if (!chroot_exists())
-        suicide("FATAL - No chroot path specified.  Refusing to run.");
-
     /* Note that failure cases are handled by called fns. */
     imprison(get_chroot());
     drop_root(cfg_uid, cfg_gid);
