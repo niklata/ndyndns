@@ -19,6 +19,13 @@ there for your operating system.
 It will also be necessary to update the configure system to reflect the
 requirements for your libc to resolve dns names.
 
+PLATFORM NOTES
+==============
+
+x86_64: No issues.  Primary development platform.
+x86: No issues.
+ARM7vl (Raspberry Pi): chroot must be disabled with -x flag.
+
 DOWNLOADING
 ===========
 
