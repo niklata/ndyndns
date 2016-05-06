@@ -66,7 +66,7 @@
 #include "dns_he.h"
 
 static char ifname[IFNAMSIZ] = "ppp0";
-static char pidfile[PATH_MAX] = "/var/run/ndyndns.pid";
+static char pidfile[PATH_MAX] = "";
 char chroot_dir[PATH_MAX] = "";
 
 static int update_interval = 120; // seconds
@@ -74,6 +74,7 @@ static int update_from_remote = 0;
 static uid_t cfg_uid = 0;
 static gid_t cfg_gid = 0;
 static bool chroot_enabled = true;
+static bool write_pid_enabled = false;
 
 static volatile sig_atomic_t pending_exit;
 
@@ -156,6 +157,7 @@ static void check_ssl(void)
 
 void cfg_set_pidfile(char *pidfname)
 {
+    write_pid_enabled = true;
     copy_cmdarg(pidfile, pidfname, sizeof pidfile, "pidfile");
 }
 
@@ -347,9 +349,8 @@ int main(int argc, char** argv)
         if (daemon(0,0))
             suicide("FATAL: detaching fork failed");
 
-    if (file_exists(pidfile, "w") == -1)
-        suicide("FATAL: cannot open pidfile for write");
-    write_pid(pidfile);
+    if (write_pid_enabled)
+        write_pid(pidfile);
 
     umask(077);
     fix_signals();
