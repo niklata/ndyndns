@@ -174,7 +174,6 @@ static int update_ip_curl_errcheck(int val, char *cerr)
         case CURLE_SSL_ENGINE_SETFAILED:
         case CURLE_SSL_CERTPROBLEM:
         case CURLE_SSL_CIPHER:
-        case CURLE_SSL_CACERT:
         case CURLE_BAD_CONTENT_ENCODING:
         case CURLE_SSL_ENGINE_INITFAILED:
         case CURLE_LOGIN_DENIED:
