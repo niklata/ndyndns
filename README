@@ -48,6 +48,7 @@ chroot and configuration much easier.
 Building:
 --------
 
+autoconf
 ./configure
 make
 make install
